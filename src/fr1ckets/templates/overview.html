@@ -1,0 +1,38 @@
+{% include "header.html" %}
+<!-- vim: set sw=2 ts=2: -->
+
+<div class="row">
+	<div class="col s12 m8 offset-m2">
+		<canvas id="chart_timeline" width="600" height="400"></canvas>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col s6 m4 offset-m2">
+		<table class="striped">
+			<tbody>
+				{% for o in overview_tickets %}
+					<tr>
+						<td>{{ o.name }}</td>
+						<td>{{ o.n }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<div class="col s6 m4">
+		<table class="striped">
+			<tbody>
+				{% for o in overview_tshirts%}
+					<tr>
+						<td>{{ o.name }}</td>
+						<td>{{ o.n }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% include "footer.html" %}
+

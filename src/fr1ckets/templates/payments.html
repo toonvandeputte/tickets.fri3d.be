@@ -1,0 +1,47 @@
+{% include "header.html" %}
+<!-- vim: set sw=2 ts=2: -->
+
+<div class="row">
+	<div class="col s12">
+		<table class="striped">
+			<thead>
+				<tr>
+					<th data-field="date">date</th>
+					<th data-field="id">purchase id</th>
+					<th data-field="email">email</th>
+					<th data-field="handle">handle</th>
+					<th data-field="total_price">total price</th>
+					<th data-field="mark_paid">mark paid</th>
+					<th data-field="remove">remove</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for p in purchases %}
+				<tr id="row_{{ p.id }}">
+					{% if p.overtime %}
+						<td><font color="red">{{ p.created_at }}</font></td>
+					{% else %}
+						<td>{{ p.created_at }}</td>
+					{% endif %}
+					<td>{{ p.id }}</td>
+					<td>{{ p.email }}</td>
+					<td>{{ p.handle }}</td>
+					<td>{{ p.total_price }}</td>
+					{% if not p.paid %}
+						<td id="mark_paid_{{ p.id }}"><a class="waves-effect waves-light btn" onclick="mark_paid({{ p.id }});">PAID</td>
+					{% else %}
+						<td>yes</td>
+					{% endif %}
+					{% if p.overtime %}
+						<td id="remove_{{ p.id }}"><a class="waves-effect waves-light btn" onclick="purchase_remove({{ p.id }});">REMOVE</td>
+					{% else %}
+						<td>no reason</td>
+					{% endif %}
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% include "footer.html" %}
