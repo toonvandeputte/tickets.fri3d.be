@@ -77,7 +77,7 @@ def tickets():
 
 		if tickets_available < n_tickets:
 			return render_template("tickets_retry.html",
-				tickets_available=TICKETS_MAX-tickets_available,
+				tickets_available=tickets_available,
 				tickets_ordered=n_tickets)
 	
 		nonce = model.create(g.db_cursor,
