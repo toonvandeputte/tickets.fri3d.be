@@ -20,8 +20,14 @@ serve:
 deb: all
 	./mkdeb.sh $(project) $(version) $(output)
 
+docker:
+	docker run -it -p 5000:5000 -v $$PWD:/fr1ckets fr1ckets bash
+
+docker-build:
+	docker build -t fr1ckets docker/
+
 clean:
 	rm -rf $(output) *.deb
 	find src/ -name '*.pyc' | xargs rm || true
 
-.PHONY: clean serve
+.PHONY: clean serve docker
