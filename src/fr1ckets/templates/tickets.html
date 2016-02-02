@@ -1,5 +1,17 @@
-{% include "header.html" %}
+<!DOCTYPE html>
+<html lang="en">
 <!-- vim: set sw=2 ts=2: -->
+	<head>
+		<meta charset="utf-8">
+		<title>Fri3d Camp 2016</title>
+<!--
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+-->
+		<link rel="stylesheet" href="/static/css/app.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
 
 {# if we don't have any tickets available, disable some controls #}
 {% if tickets_available == 0 %}
@@ -12,81 +24,206 @@
 <div class="container">
 
 	<div class="row">
-		<div class="col s12 m8 offset-m2">
-			<div class="card blue-grey darken-1">
-				<div class="card-content white-text">
-					<span class="card-title">Hallo!</span>
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+			<div class="page-header">
+				<h1>Hallo!<small>
 					{% if tickets_available > 0 %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
-					<p>Ten tijde van je HTTP request hadden we nog {{ tickets_available }} tickets beschikbaar!</p>
+					<p>Er zijn nog <b>{{ tickets_available }}</b> tickets beschikbaar!</p>
 					<p>Bij verdere vragen, gelieven ons te mailen op foo@example.org</p>
 					{% else %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Alle tickets zijn de deur uit! Maar je kan nog rustig tshirts bijbestellen hoor.</p>
 					<p>Bij verdere vragen, gelieven ons te mailen op foo@example.org</p>
-					{% endif %}
-				</div>
+					{% endif %}</small></h1>
 			</div>
 		</div>
 	</div>
 
-	<div class="row">
+	<form action="tickets" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2">
+		{{ form.csrf_token }}
 
-		<form action="tickets" method="POST" class="col s8 offset-s2">
-			{{ form.csrf_token }}
-			<div class="row">
-				<div class="col s12 center">
-					Identificatie
+		<!-- BEGIN EMAIL -->
+		<div class="form-group">
+			<label for="email" class="col-sm-3 control-label">Email</label>
+			<div class="col-sm-9">
+				<input class="form-control" id="email" name="email" type="email" required aria-required="true">
+			</div>
+		</div>
+		<!-- END EMAIL -->
+
+		<!-- BEGIN HANDLE -->
+		<div class="form-group">
+			<label for="handle" class="col-sm-3 control-label">Naam</label>
+			<div class="col-sm-9">
+				<input class="form-control" id="handle" name="handle" type="text" required aria-required="true" placeholder="Uw naam/handle/nick/collectief/...">
+			</div>
+		</div>
+		<!-- END HANDLE -->
+
+		<!-- NORMAL TICKET -->
+		<div class="form-group">
+			<label for="ticket_supporter" class="col-xs-6 col-sm-3 control-label">Normale tickets:</label>
+			<div class="col-xs-6 col-sm-3">
+				<select id="ticket_supporter" name="ticket_supporter" class="form-control" {{ inhibit }}>
+					<option value="0" selected>0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<p>€{{ prices.ticket_supporter }}! De normale tickets bieden de kans om even mee te helpen aan het kamp! Slechts enkele uurtjes mee de infobalie bemannen of drankjes tappen, of zelfs meehelpen met de setup/teardown.</p>
+			</div>
+		</div>
+		<!-- END NORMAL TICKET -->
+
+		<!-- PREMIUM TICKET -->
+		<div class="form-group">
+			<label for="ticket_premium" class="col-xs-6 col-sm-3 control-label">Premium tickets</label>
+			<div class="col-xs-6 col-sm-3">
+				<select id="ticket_premium" name="ticket_premium" class="form-control" {{ inhibit }}>
+					<option value="0" selected>0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<p>€{{ prices.ticket_premium }}! Voor mensen die de tijd niet zullen hebben om even mee te helpen zijn de iets duurdere premium tickets ideaal!</p>
+			</div>
+		</div>
+		<!-- END PREMIUM TICKET -->
+
+		<!-- PADAWAN TICKET -->
+		<div class="form-group">
+			<label for="ticket_padawan" class="col-xs-6 col-sm-3 control-label">Padawan tickets:</label>
+			<div class="col-xs-6 col-sm-3">
+				<select id="ticket_padawan" name="ticket_padawan" class="form-control" {{ inhibit }}>
+					<option value="0" selected>0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<p>€{{ prices.ticket_padawan }}! Voor kinderen onder de 12 zijn er de goedkopere Padawan-tickets. Natuurlijk geen volunteering verwacht, enkel plezier maken!</p>
+			</div>
+		</div>
+		<!-- END PADAWAN TICKET -->
+
+		<!-- BUSINESS TICKET -->
+		<div class="form-group">
+			<label for="ticket_business" class="col-xs-6 col-sm-3 control-label">Business tickets:</label>
+			<div class="col-xs-6 col-sm-3">
+				<select id="ticket_business" name="ticket_business" class="form-control" {{ inhibit }}>
+					<option value="0" selected>0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+				</select>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<p>€{{ prices.ticket_business }}! Voor zij die graag zakelijk hun schouders onder het kamp zetten zijn er de business tickets. Mogelijkheid tot factuur op bevestigingspagina.</p>
+			</div>
+		</div>
+		<!-- END BUSINESS TICKET -->
+
+		<!-- YELLOW TSHIRTS -->
+		<div class="row">
+			<div class="col-xs-12 col-sm-6">
+				<div class="thumbnail">
+					<img src="/static/img/tshirt_mockup_yellow.jpg" class="img-circle">
+					<div class="caption">
+						<h3>Gele tshirts!</h3>
+						<p>Alle tshirts kosten 20€.</p>
+					</div>
 				</div>
 			</div>
-			<div class="row">
-				<div class="input-field col s12">
-					<input class="validated" id="email" name="email" type="email" required aria-required="true">
-					<label for="email">Uw email adres:</label>
-				</div>
-			</div>
-			<div class="row">
-				<div class="input-field col s12">
-					<input class="validated" id="handle" name="handle" type="text" required aria-required="true">
-						<label for="handle">Uw naam/nick/handle/...</label>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col s12 m12">
-					<div class="card">
-						<div class="card-image">
-							<img src="http://dummyimage.com/800x128/ffffff/000000.png&text=ticket+png+here">
+			<div class="col-xs-12 col-sm-6">
+				<div class="row">
+					<div class="form-group">
+						<label for="tshirt_yellow_s" class="col-xs-4 col-sm-2 control-label">S:</label>
+						<div class="col-xs-2 col-sm-4">
+							<select id="tshirt_yellow_s" name="tshirt_yellow_s" class="form-control">
+								<option value="0" selected>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
 						</div>
-						<div class="card-content center center-align">
-							<p>De normale tickets bieden de kans om even mee te helpen aan het kamp! Slechts enkele uurtjes mee de infobalie bemannen of drankjes tappen, of zelfs meehelpen met de setup/teardown. Voor mensen die de tijd niet zullen hebben om even mee te helpen zijn de iets duurdere premium tickets ideaal!</p>
-							<p>Voor kinderen onder de 12 zijn er de goedkopere Padawan-tickets.</p>
-							<p>Voor zij die graag zakelijk hun schouders onder het kamp zetten zijn er de business tickets. Vraag ons een factuurtje!</p>
+						<label for="tshirt_yellow_m" class="col-xs-4 col-sm-2 control-label">M:</label>
+						<div class="col-xs-2 col-sm-4">
+							<select id="tshirt_yellow_m" name="tshirt_yellow_m" class="form-control">
+								<option value="0" selected>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-group">
+						<label for="tshirt_yellow_l" class="col-xs-4 col-sm-2 control-label">L:</label>
+						<div class="col-xs-2 col-sm-4">
+							<select id="tshirt_yellow_l" name="tshirt_yellow_l" class="form-control">
+								<option value="0" selected>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+						</div>
+						<label for="tshirt_yellow_xl" class="col-xs-4 col-sm-2 control-label">XL:</label>
+						<div class="col-xs-2 col-sm-4">
+							<select id="tshirt_yellow_xl" name="tshirt_yellow_xl" class="form-control">
+								<option value="0" selected>0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
 						</div>
 					</div>
 				</div>
 			</div>
+		</div>
+		<!-- END YELLOW TSHIRTS -->
 
-			<div class="row">
-			<font color="red">mannen, kleine dev note, twee ticket choosers zijn dropdowns, rest zijn plus/min-able numbers, wat denken jullie?</font>
-			</div>
-
-			<!-- NORMAL TICKET -->
-			<div class="row">
-				<div class="col s4">
-					<label for="ticket_supporter">Aantal normale tickets:</label>
-				</div>
-				<div class="input-field col s8">
-					<input id="ticket_supporter" name="ticket_supporter" type="number" min="0" max="10" step="1" value="0" {{ inhibit }}>
+		<!-- RED TSHIRTS -->
+		<div class="row">
+			<div class="col-xs-8 col-xs-offset-2 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+				<div class="thumbnail">
+					<img src="/static/img/tshirt_mockup_red.jpg" class="img-circle">
+					<div class="caption">
+						<h3>Rode tshirts!</h3>
+						<p>Alle tshirts kosten 20€.</p>
+					</div>
 				</div>
 			</div>
-			<!-- END NORMAL TICKET -->
-			<!-- PREMIUM TICKET -->
-			<div class="row">
-				<div class="col s4">
-					<label for="ticket_premium">Aantal premium tickets:</label>
+		</div>
+		<div class="row">
+			<div class="form-group">
+				<label for="tshirt_red_s" class="col-xs-2 col-sm-2 col-md-1 control-label">S:</label>
+				<div class="col-xs-4 col-sm-4 col-md-2">
+					<select id="tshirt_red_s" name="tshirt_red_s" class="form-control">
+						<option value="0" selected>0</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+					</select>
 				</div>
-				<div class="input-field col s8">
-					<select id="ticket_premium" name="ticket_premium" {{ inhibit }}>
+				<label for="tshirt_red_m" class="col-xs-2 col-sm-2 col-md-1 control-label">M:</label>
+				<div class="col-xs-4 col-sm-4 col-md-2">
+					<select id="tshirt_red_m" name="tshirt_red_m" class="form-control">
 						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
@@ -95,24 +232,20 @@
 					</select>
 				</div>
 			</div>
-			<!-- END PREMIUM TICKET -->
-			<!-- PADAWAN TICKET -->
-			<div class="row">
-				<div class="col s4">
-					<label for="ticket_padawan">Aantal padawan tickets:</label>
+			<div class="form-group">
+				<label for="tshirt_red_l" class="col-xs-2 col-sm-2 col-md-1 control-label">L:</label>
+				<div class="col-xs-4 col-sm-4 col-md-2">
+					<select id="tshirt_red_l" name="tshirt_red_l" class="form-control">
+						<option value="0" selected>0</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+					</select>
 				</div>
-				<div class="input-field col s8">
-					<input id="ticket_padawan" name="ticket_padawan" type="number" min="0" max="10" step="1" value="0" {{ inhibit }}>
-				</div>
-			</div>
-			<!-- END PADAWAN TICKET -->
-			<!-- BUSINESS TICKET -->
-			<div class="row">
-				<div class="col s4">
-					<label for="ticket_business">Aantal professionele tickets:</label>
-				</div>
-				<div class="col s8">
-					<select id="ticket_business" name="ticket_business" {{ inhibit }}>
+				<label for="tshirt_red_xl" class="col-xs-2 col-sm-2 col-md-1 control-label">XL:</label>
+				<div class="col-xs-4 col-sm-4 col-md-2">
+					<select id="tshirt_red_xl" name="tshirt_red_xl" class="form-control">
 						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
@@ -121,131 +254,40 @@
 					</select>
 				</div>
 			</div>
-			<!-- END BUSINESS TICKET -->
+		</div>
+		<!-- END RED TSHIRTS -->
 
-			<div class="row">
-			<font color="red">drie tshirts, eerste verschilt layout-matig van de andere twee, preferences? Op small screens ziet de eerste er uit zoals de laatsten. Ook, allemaal numbers ipv dropdowns hier, werkt mijn insziens beter op small screens. Wat vinden jullie?</font>
-			</div>
-			<div class="row">
-				<div class="col s12 m4 offset-m4">
-					<div class="card">
-						<div class="card-image">
-							<img src="http://dummyimage.com/256x128/f2ff00/000000.png&text=tshirt+png+here">
-						</div>
-						<div class="card-content center">
-							Gele tshirts!
-						</div>
-					</div>
+
+		<!-- BLACK TONGUE OF MORDOR -->
+		<div class="form-group">
+			<div class="col-xs-12 col-sm-10 col-sm-offset-2">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" id="terms_payment" name="terms_payment" required aria-required="true" class="filled-in">Ik stem er mee in het totale bedrag binnen 14 dagen via bank-overschrijving te betalen (details op volgende pagina). Als ik dit niet binnen deze termijn overschrijf, worden de geselecteerde tickets en tshirts terug publiek aangeboden.
+					</label>
 				</div>
 			</div>
-			<div class="row">
-				<div class="input-field col s6 m3">
-					<label for="tshirt_yellow_s">S</label>
-					<input id="tshirt_yellow_s" name="tshirt_yellow_s" type="number" min="0" max="10" step="1" value="0">
-				</div>
-				<div class="input-field col s6 m3">
-					<label for="tshirt_yellow_m">M</label>
-					<input id="tshirt_yellow_m" name="tshirt_yellow_m" type="number" min="0" max="10" step="1" value="0">
-				</div>
-				<div class="input-field col s6 m3">
-					<label for="tshirt_yellow_l">L</label>
-					<input id="tshirt_yellow_l" name="tshirt_yellow_l" type="number" min="0" max="10" step="1" value="0">
-				</div>
-				<div class="input-field col s6 m3">
-					<label for="tshirt_yellow_xl">XL</label>
-					<input id="tshirt_yellow_xl" name="tshirt_yellow_xl" type="number" min="0" max="10" step="1" value="0">
-				</div>
+		</div>
+		<!-- END BLACK TONGUE OF MORDOR -->
+
+		<div class="form-group">
+			<div class="col-xs-6 col-xs-offset-3 col-sm-10 col-sm-offset-2">
+				<button type="submit" class="btn btn-default">Bestellen!</button>
 			</div>
+		</div>
 
-			<div class="row">
-				<div class="col s12 m4">
-					<div class="card">
-						<div class="card-image">
-							<img src="http://dummyimage.com/256x128/00ff00/000000.png&text=tshirt+png+here">
-						</div>
-						<div class="card-content center">
-							Groene tshirts!
-						</div>
-					</div>
-				</div>
-				<div class="col s12 m6 valign-wrapper center">
-					<div class="row">
-						<div class="input-field col s6">
-							<label for="tshirt_green_s">S</label>
-							<input id="tshirt_green_s" name="tshirt_green_s" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_green_m">M</label>
-							<input id="tshirt_green_m" name="tshirt_green_m" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_green_l">L</label>
-							<input id="tshirt_green_l" name="tshirt_green_l" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_green_xl">XL</label>
-							<input id="tshirt_green_xl" name="tshirt_green_xl" type="number" min="0" max="10" step="1" value="0">
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col s12 m4">
-					<div class="card">
-						<div class="card-image">
-							<img src="http://dummyimage.com/256x128/ff0000/000000.png&text=tshirt+png+here">
-						</div>
-						<div class="card-content center">
-							Rode tshirts!
-						</div>
-					</div>
-				</div>
-				<div class="col s12 m6 valign-wrapper center-align">
-					<div class="row">
-						<div class="input-field col s6">
-							<label for="tshirt_red_s">S</label>
-							<input id="tshirt_red_s" name="tshirt_red_s" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_red_m">M</label>
-							<input id="tshirt_red_m" name="tshirt_red_m" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_red_l">L</label>
-							<input id="tshirt_red_l" name="tshirt_red_l" type="number" min="0" max="10" step="1" value="0">
-						</div>
-						<div class="input-field col s6">
-							<label for="tshirt_red_xl">XL</label>
-							<input id="tshirt_red_xl" name="tshirt_red_xl" type="number" min="0" max="10" step="1" value="0">
-						</div>
-					</div>
-				</div>
-			</div>
-
-<!--
-			<div class="row">
-				<div class="col s12 center">
-					Final words!
-				</div>
-			</div>
--->
-			<div class="row">
-				<div class="input-field col s12">
-					<input type="checkbox" id="terms_payment" name="terms_payment" required aria-required="true" class="filled-in">
-					<label for="terms_payment">Ik stem er mee in het totale bedrag binnen 14 dagen via bank-overschrijving te betalen (details op volgende pagina). Als ik dit niet binnen deze termijn overschrijf, worden de geselecteerde tickets en tshirts terug publiek aangeboden.</label>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="input-field col s4 offset-s8">
-					<button type="submit" class="left-align btn waves-effect waves-light">Bestellen!<i class="material-icons right">Bestellen!</i></button>
-				</div>
-			</div> <!-- row -->
-
-
-		</form>
-
-	</div>
+	</form>
 </div>
-{% include "footer.html" %}
+<!-- eff your french article meme -->
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+{% if page_opts and page_opts['charting'] %}
+<script src="/static/js/moment.js"></script>
+<script src="/static/js/Chart.js"></script>
+{% endif %}
+{% if page_opts and page_opts['internal'] %}
+<script src="/static/js/fr1ckets_overview.js"></script>
+{% endif %}
+<script src="/static/js/fr1ckets.js"></script>
+	</body>
+</html>
