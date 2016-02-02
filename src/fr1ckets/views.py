@@ -89,7 +89,10 @@ def tickets():
 			amount=model.get_purchase_total(g.db_cursor, nonce),
 			days_max=DAYS_MAX)
 	else:
-		return render_template('tickets.html', form=form, tickets_available=tickets_available)
+		prices = { p[0] : p[1] for p in model.get_prices(g.db_cursor) }
+		app.logger.debug(repr(prices))
+		app.logger.debug(repr(tickets_available))
+		return render_template('tickets.html', form=form, tickets_available=tickets_available, prices=prices)
 
 @app.route('/payments', methods=[ 'GET' ])
 @req_auth_basic

@@ -91,6 +91,14 @@ def get_total_tickets(cursor):
 	rs = cursor.fetchone()
 	return rs['n_tickets'] or 0
 
+def get_prices(cursor):
+	"""
+	get all prices in [ { product_name : price } ]
+	"""
+	q = """select name, price from product;"""
+	cursor.execute(q)
+	return cursor.fetchall()
+
 def get_purchases(cursor, strip_removed=False):
 	"""
 	get total overview of all purchases in the system, including all types
