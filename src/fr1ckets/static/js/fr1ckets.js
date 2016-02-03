@@ -1,6 +1,28 @@
+var prices = {};
+
 $(document).ready(function() {
-	$('select').material_select();
+	$.ajax({
+		url : 'api/get_prices',
+		success: function(data) {
+			prices = JSON.parse(data);
+			for (thing in prices) {
+				$('#' + thing).on('change', function() {
+					recalc_total();
+				});
+			}
+			recalc_total();
+		},
+	});
 });
+
+function recalc_total() {
+	var total = 0;
+	for (thing in prices) {
+		var n = parseInt($('#'+thing).val());
+		total += n * prices[thing];
+	}
+	$('#price_total').html("€" + total);
+}
 
 function mark_paid(id) {
 	$.ajax({

@@ -134,6 +134,12 @@ def api_purchase_remove(purchase_id):
 	model.purchase_remove(g.db_cursor, purchase_id)
 	return "ok", 200
 
+@app.route('/api/get_prices', methods=[ 'GET' ])
+@req_auth_basic
+def api_get_prices():
+	prices = { p[0] : p[1] for p in model.get_prices(g.db_cursor) }
+	return json.dumps(prices), 200
+
 @app.route('/api/get_timeline_tickets')
 @req_auth_basic
 def api_get_timeline_tickets():
