@@ -24,36 +24,38 @@
 
 <div class="container">
 
-<div class="row">
-	<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
-		<div class="center-block" id="mainlogo">
+	<div class="row">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+			<div class="center-block" id="mainlogo">
 
-			<svg version="1.1" class="logo-fox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-					 width="260px" height="2300px" viewBox="0 0 260 230" enable-background="new 0 0 260 230" xml:space="preserve">
-				<g>
+				<svg version="1.1" class="logo-fox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+						 width="260px" height="2300px" viewBox="0 0 260 230" enable-background="new 0 0 260 230" xml:space="preserve">
 					<g>
-						<path class="logoline-A" fill="#DD7222" d="M227.1,17.2l-98.5,197L17.8,103.4L227.1,17.2 M237.6,7.5L9,101.6l121,121L237.6,7.5L237.6,7.5z"/>
-					</g>
-					<g>
-						<path class="logoline-B" fill="#0E98AF" d="M32.9,17.2l209.3,86.2L131.4,214.2L32.9,17.2 M22.4,7.5L130,222.6l121-121L22.4,7.5L22.4,7.5z"/>
-					</g>
+						<g>
+							<path class="logoline-A" fill="#DD7222" d="M227.1,17.2l-98.5,197L17.8,103.4L227.1,17.2 M237.6,7.5L9,101.6l121,121L237.6,7.5L237.6,7.5z"/>
+						</g>
+						<g>
+							<path class="logoline-B" fill="#0E98AF" d="M32.9,17.2l209.3,86.2L131.4,214.2L32.9,17.2 M22.4,7.5L130,222.6l121-121L22.4,7.5L22.4,7.5z"/>
+						</g>
 
-					<line class="logoline-A" fill="none" stroke="#DD7222" stroke-width="5" stroke-linecap="round" stroke-miterlimit="10" x1="93" y1="70.3" x2="32.8" y2="95"/>
-				</g>
-			</svg>
-			<div class="logo-name">Fri3d<br>Camp</div><div class="logo-year">2016</div>
+						<line class="logoline-A" fill="none" stroke="#DD7222" stroke-width="5" stroke-linecap="round" stroke-miterlimit="10" x1="93" y1="70.3" x2="32.8" y2="95"/>
+					</g>
+				</svg>
+				<div class="logo-name">Fri3d<br>Camp</div><div class="logo-year">2016</div>
+			</div>
 		</div>
 	</div>
-</div>
 
 	<div class="row">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
 			<div class="well">
-				<h1>Danku!<small>
-				<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ amount }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
-				<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de tickets en tshirts terug te koop aanbieden.</p>
-				<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
-				<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
+				<h1>Danku!</h1>
+				<h4>
+					<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ amount }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
+					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de tickets en tshirts terug te koop aanbieden.</p>
+					<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
+					<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
+				</h4>
 			</div>
 		</div>
 	</div>
@@ -62,8 +64,11 @@
 	<div class="row">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
 			<div class="well">
-				<p>U hebt één of meerdere business tickets aangekocht. Hieronder kan u uw bedrijfsgegevens noteren.</p>
-				<p>Een factuur zal u later per mail worden toegestuurd voor het totaal van deze business-tickets: €{{amount_business}}.</p>
+				<h4>
+					<p>U hebt één of meerdere business tickets aangekocht. Desgewenst kunnen we u hiervoor een factuur sturen.</p>
+					<p>Daarvoor kan u hieronder uw details invullen. Indien u geen factuur wenst moet u niets meer doen.</p>
+					<p>Een factuur zal u later per mail worden toegestuurd voor het totaal van deze business-tickets: €{{amount_business}}.</p>
+				</h4>
 			</div>
 		</div>
 	</div>
@@ -126,6 +131,5 @@
 {% if page_opts and page_opts['internal'] %}
 <script src="/static/js/fr1ckets_overview.js"></script>
 {% endif %}
-<script src="/static/js/fr1ckets.js"></script>
 	</body>
 </html>
