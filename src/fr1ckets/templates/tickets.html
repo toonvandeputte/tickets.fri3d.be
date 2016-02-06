@@ -50,16 +50,18 @@
 	<div class="row">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
 			<div class="well"> <!--page-header">-->
-				<h1>Hallo!<small>
+				<h1>Hallo!</h1>
+				<h4>
 					{% if tickets_available > 0 %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Er zijn nog <b>{{ tickets_available }}</b> tickets beschikbaar!</p>
-					<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					<p>Bij verdere vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% else %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Alle tickets zijn de deur uit! Maar je kan nog rustig tshirts bijbestellen hoor.</p>
-					<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
-					{% endif %}</small></h1>
+					<p>Bij verdere vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					{% endif %}
+				</h4>
 			</div>
 		</div>
 	</div>
