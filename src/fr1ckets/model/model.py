@@ -50,7 +50,26 @@ def create(cursor, email, handle, products):
 
 	return nonce
 
-def get_purchase_total(cursor, nonce):
+def set_business_details(cursor, nonce, name, address, vat):
+	q = """
+		UPDATE
+			purchase
+		SET
+			business_name = :name,
+			business_address = :address,
+			business_vat = :vat
+		WHERE
+			nonce = :nonce;
+		"""
+	qd = {
+		'nonce' : nonce,
+		'name' : name,
+		'address' : address,
+		'vat' : vat,
+	}
+	cursor.execute(q, qd)
+
+def get_purchase_total(cursor, nonce, product_filter='%'):
 	"""
 	get total cost of order id'd by nonce
 	"""
@@ -62,10 +81,12 @@ def get_purchase_total(cursor, nonce):
 			inner join product on purchase_items.product_id = product.id
 			inner join purchase on purchase_items.purchase_id = purchase.id
 		where
-			purchase.nonce = :nonce;
+			purchase.nonce = :nonce
+			and product.name like :filter;
 		"""
 	qd = {
 		'nonce' : nonce,
+		'filter' : product_filter,
 	}
 	cursor.execute(q, qd)
 	rs = cursor.fetchone()

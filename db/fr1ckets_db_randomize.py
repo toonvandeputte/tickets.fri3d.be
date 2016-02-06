@@ -9,8 +9,8 @@ import datetime
 reset_sql_file = "./fr1ckets_db.sql"
 db_file = "/var/tmp/fr1ckets.sqlite"
 
-MAX_TICKETS = 16
-MAX_AGE_DAYS = 365
+MAX_TICKETS = 192
+MAX_AGE_DAYS = 14
 
 print "deleting db file {0}"
 try:
@@ -61,6 +61,13 @@ while True:
 		where
 			product.name = ?"""
 	db_cur.execute(q, (purchase_id, n, t))
+
+	if 'business' in t:
+		q = """
+			update purchase
+			set business_name=?, business_address=?, business_vat=?
+			where nonce=?;"""
+		db_cur.execute(q, (handle + ' NV', "{0} street\n{0} ville\nschoten".format(handle), 'BE 4444.333.333', nonce))
 
 	likes_tshirts = random.choice([0, 1])
 	n_tshirts = n * 2

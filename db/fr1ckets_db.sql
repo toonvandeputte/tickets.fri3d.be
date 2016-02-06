@@ -16,7 +16,10 @@ create table purchase (
 	created_at text not null,
 	removed_at text default '',
 	paid_at text default '',
-	comments text default ''
+	comments text default '',
+	business_name text default '',
+	business_address text default '',
+	business_vat text default ''
 );
 
 drop table if exists purchase_items;

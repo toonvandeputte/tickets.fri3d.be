@@ -13,7 +13,7 @@ import time
 import json
 import datetime
 
-TICKETS_MAX = 32
+TICKETS_MAX = 256
 DAYS_MAX = 14
 
 def check_auth_basic(u, p):
@@ -85,14 +85,41 @@ def tickets():
 			form.handle.data,
 			products
 		)
-		return render_template('confirm.html',
-			amount=model.get_purchase_total(g.db_cursor, nonce),
-			days_max=DAYS_MAX)
+		return redirect(url_for('confirm', nonce=nonce))
 	else:
 		prices = { p[0] : p[1] for p in model.get_prices(g.db_cursor) }
 		app.logger.debug(repr(prices))
 		app.logger.debug(repr(tickets_available))
 		return render_template('tickets.html', form=form, tickets_available=tickets_available, prices=prices)
+
+class BusinessAdressForm(Form):
+	for e in [ 'name', 'address', 'vat' ]:
+		vars()[e] = StringField(e, validators=[ validators.DataRequired() ])
+
+@app.route('/confirm/<nonce>', methods=[ 'GET', 'POST' ])
+@req_auth_basic
+def confirm(nonce=None):
+	form = BusinessAdressForm()
+	amount = model.get_purchase_total(g.db_cursor, nonce)
+	amount_business = model.get_purchase_total(g.db_cursor, nonce, product_filter='%business%')
+	if form.validate_on_submit():
+		model.set_business_details(g.db_cursor, nonce,
+			form.name.data,
+			form.address.data,
+			form.vat.data)
+		return render_template('confirm.html',
+			amount=amount,
+			amount_business=amount_business,
+			days_max=DAYS_MAX,
+			page_opts = { 'business_details_have' : True })
+	else:
+		return render_template('confirm.html',
+			form=form,
+			amount=amount,
+			amount_business=amount_business,
+			days_max=DAYS_MAX,
+			nonce=nonce,
+			page_opts = { 'business_details_need' : bool(amount_business) })
 
 @app.route('/payments', methods=[ 'GET' ])
 @req_auth_basic

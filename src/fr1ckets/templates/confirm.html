@@ -1,19 +1,131 @@
-{% include "header.html" %}
+<!DOCTYPE html>
+<html lang="en">
 <!-- vim: set sw=2 ts=2: -->
+	<head>
+		<meta charset="utf-8">
+		<title>Fri3d Camp 2016</title>
+<!--
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+-->
+		<link rel="stylesheet" href="/static/css/app.css">
+		<link rel="stylesheet" href="/static/css/tickets.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+
+{# if we don't have any tickets available, disable some controls #}
+{% if tickets_available == 0 %}
+	{% set inhibit='disabled=\"disabled\"' %}
+{% else %}
+	{% set inhibit='' %}
+{% endif %}
+	{{ disabled }}
+
+<div class="container">
 
 <div class="row">
-	<div class="col s12 m4 offset-m4">
-		<div class="card blue-grey darken-1">
-			<div class="card-content white-text">
-				<span class="card-title">Danku!</span>
-				<p>Uw bestelling is goed ontvangen. Gelieve binnen twee weken het bedrag van €{{ amount }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
-				<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de tickets en tshirts terug te koop aanbieden.</p>
-				<p>Bij verdere vragen, gelieven ons te mailen op foo@example.org</p>
-				<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
-			</div>
+	<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+		<div class="center-block" id="mainlogo">
+
+			<svg version="1.1" class="logo-fox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+					 width="260px" height="2300px" viewBox="0 0 260 230" enable-background="new 0 0 260 230" xml:space="preserve">
+				<g>
+					<g>
+						<path class="logoline-A" fill="#DD7222" d="M227.1,17.2l-98.5,197L17.8,103.4L227.1,17.2 M237.6,7.5L9,101.6l121,121L237.6,7.5L237.6,7.5z"/>
+					</g>
+					<g>
+						<path class="logoline-B" fill="#0E98AF" d="M32.9,17.2l209.3,86.2L131.4,214.2L32.9,17.2 M22.4,7.5L130,222.6l121-121L22.4,7.5L22.4,7.5z"/>
+					</g>
+
+					<line class="logoline-A" fill="none" stroke="#DD7222" stroke-width="5" stroke-linecap="round" stroke-miterlimit="10" x1="93" y1="70.3" x2="32.8" y2="95"/>
+				</g>
+			</svg>
+			<div class="logo-name">Fri3d<br>Camp</div><div class="logo-year">2016</div>
 		</div>
 	</div>
 </div>
 
-{% include "footer.html" %}
+	<div class="row">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+			<div class="well">
+				<h1>Danku!<small>
+				<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ amount }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
+				<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de tickets en tshirts terug te koop aanbieden.</p>
+				<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
+				<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
+			</div>
+		</div>
+	</div>
 
+{% if page_opts and page_opts['business_details_need'] %}
+	<div class="row">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+			<div class="well">
+				<p>U hebt één of meerdere business tickets aangekocht. Hieronder kan u uw bedrijfsgegevens noteren.</p>
+				<p>Een factuur zal u later per mail worden toegestuurd voor het totaal van deze business-tickets: €{{amount_business}}.</p>
+			</div>
+		</div>
+	</div>
+	<form action="/confirm/{{ nonce }}" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2">
+		{{ form.csrf_token }}
+
+		<!-- BEGIN NAME -->
+		<div class="form-group">
+			<label for="name" class="col-sm-3 control-label">Naam</label>
+			<div class="col-sm-9">
+				<input class="form-control" id="name" name="name" type="text" required aria-required="true">
+			</div>
+		</div>
+		<!-- END NAME -->
+
+		<!-- BEGIN ADDRESS -->
+		<div class="form-group">
+			<label for="handle" class="col-sm-3 control-label">Adres</label>
+			<div class="col-sm-9">
+				<textarea class="form-control" id="address" name="address" required aria-required="true" rows="4"></textarea>
+			</div>
+		</div>
+		<!-- END ADDRESS -->
+
+		<!-- BEGIN VAT -->
+		<div class="form-group">
+			<label for="vat" class="col-sm-3 control-label">BTW</label>
+			<div class="col-sm-9">
+				<input class="form-control" id="vat" name="vat" type="text" required aria-required="true" placeholder="BE 4444.333.333">
+			</div>
+		</div>
+		<!-- END NAME -->
+
+		<div class="form-group">
+			<div class="col-xs-12 text-right">
+				<button type="submit" class="btn btn-default">Bestellen</button>
+			</div>
+		</div>
+
+	</form>
+{% endif %}
+{% if page_opts and page_opts['business_details_have'] %}
+	<div class="row">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+			<div class="alert alert-success" role="alert">
+				<p>Uw bedrijfsgegevens zijn genoteerd. U krijgt binnenkort per mail een factuur toegestuurd voor het bedrag van €{{ amount_business }}.</p>
+			</div>
+		</div>
+	</div>
+{% endif %}
+
+</div>
+<!-- eff your french article meme -->
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+{% if page_opts and page_opts['charting'] %}
+<script src="/static/js/moment.js"></script>
+<script src="/static/js/Chart.js"></script>
+{% endif %}
+{% if page_opts and page_opts['internal'] %}
+<script src="/static/js/fr1ckets_overview.js"></script>
+{% endif %}
+<script src="/static/js/fr1ckets.js"></script>
+	</body>
+</html>
