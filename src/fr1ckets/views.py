@@ -6,18 +6,17 @@ from wtforms import StringField, validators
 from wtforms import SelectField, BooleanField, IntegerField
 from wtforms.fields.html5 import EmailField
 from fr1ckets import app
+from fr1ckets.texts import texts
 from fr1ckets.model import model
+from fr1ckets.mail import mail
 from functools import wraps
 import pprint
 import time
 import json
 import datetime
 
-TICKETS_MAX = 256
-DAYS_MAX = 14
-
 def check_auth_basic(u, p):
-	return u == 'hello' and p == 'world'
+	return u == app.config['TEMP_SHIELDING_USERNAME'] and p == app.config['TEMP_SHIELDING_PASSWORD']
 
 def auth_basic():
 	return Response('No', 401, { 'WWW-Authenticate' : 'Basic realm="Login Required"' })
@@ -63,7 +62,7 @@ class TicketForm(Form):
 @req_auth_basic
 def tickets():
 	form = TicketForm()
-	tickets_available = TICKETS_MAX - model.get_total_tickets(g.db_cursor)
+	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
 
 	if form.validate_on_submit():
 		products = {}
@@ -85,11 +84,22 @@ def tickets():
 			form.handle.data,
 			products
 		)
+
+		mail_data = {
+			'amount' : model.get_purchase_total(g.db_cursor, nonce),
+			'days_max' : app.config['DAYS_MAX'],
+			'email' : form.email.data
+		}
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_TICKETS_SUBJECT'],
+			msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
+
 		return redirect(url_for('confirm', nonce=nonce))
 	else:
 		prices = { p[0] : p[1] for p in model.get_prices(g.db_cursor) }
-		app.logger.debug(repr(prices))
-		app.logger.debug(repr(tickets_available))
 		return render_template('tickets.html', form=form, tickets_available=tickets_available, prices=prices)
 
 class BusinessAdressForm(Form):
@@ -110,22 +120,23 @@ def confirm(nonce=None):
 		return render_template('confirm.html',
 			amount=amount,
 			amount_business=amount_business,
-			days_max=DAYS_MAX,
+			days_max=app.config['DAYS_MAX'],
 			page_opts = { 'business_details_have' : True })
 	else:
 		return render_template('confirm.html',
 			form=form,
 			amount=amount,
 			amount_business=amount_business,
-			days_max=DAYS_MAX,
+			days_max=app.config['DAYS_MAX'],
 			nonce=nonce,
 			page_opts = { 'business_details_need' : bool(amount_business) })
+	
 
 @app.route('/payments', methods=[ 'GET' ])
 @req_auth_basic
 def payments():
 	now = datetime.datetime.utcnow()
-	time_delta = datetime.timedelta(days=DAYS_MAX)
+	time_delta = datetime.timedelta(days=app.config['DAYS_MAX'])
 
 	p = map(dict, model.get_purchases(g.db_cursor, strip_removed=True))
 	for x in p:

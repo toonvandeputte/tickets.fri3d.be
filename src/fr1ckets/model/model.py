@@ -15,7 +15,6 @@ def random_string(length=32):
 				string.ascii_uppercase + string.digits)
 			for _ in range(length)
 		])
-import pprint
 
 def create(cursor, email, handle, products):
 	"""

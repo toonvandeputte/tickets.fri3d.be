@@ -4,7 +4,7 @@ from fr1ckets import app
 
 @app.before_request
 def setup_db():
-	g.db_con = sqlite3.connect('/var/tmp/fr1ckets.sqlite', detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+	g.db_con = sqlite3.connect(app.config['DB_PATH'], detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 	g.db_con.row_factory = sqlite3.Row
 	g.db_cursor = g.db_con.cursor()
 
