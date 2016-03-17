@@ -132,6 +132,7 @@ def get_purchases(cursor, strip_removed=False):
 			pu.email as email,
 			pu.handle as handle,
 			pu.paid as paid,
+			pu.removed as removed,
 			sum(pui.n * pr.price) as total_price
 		from
 			purchase_items pui

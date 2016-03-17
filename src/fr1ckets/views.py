@@ -138,7 +138,7 @@ def payments():
 	now = datetime.datetime.utcnow()
 	time_delta = datetime.timedelta(days=app.config['DAYS_MAX'])
 
-	p = map(dict, model.get_purchases(g.db_cursor, strip_removed=True))
+	p = map(dict, model.get_purchases(g.db_cursor, strip_removed=False))
 	for x in p:
 		created_at = datetime.datetime.strptime(x['created_at'], '%Y-%m-%d %H:%M:%S.%f')
 		if not x['paid'] and (created_at + time_delta) < now:
@@ -160,9 +160,9 @@ def overview():
 			'charting' : True,
 			'internal' : True})
 
-@app.route('/api/purchase_mark_paid/<int:purchase_id>', methods=[ 'GET' ])
+@app.route('/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
 @req_auth_basic
-def api_purchase_mark_paid(purchase_id):
+def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id)
 	return "ok", 200
 
