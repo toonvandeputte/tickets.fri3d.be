@@ -74,7 +74,7 @@ $('#ticket_supporter').on('change', function() {
 		f += '      Vegetarisch';
 		f += '    </label>';
 		f += '  </div>';
-		f += '  <div class="checkbox col-sm-offset-4 col-xs-6">';
+		f += '  <div class="checkbox col-sm-4 col-xs-6">';
 		f += '    <label>';
 		f += '      <input type="checkbox" id="'+id+'" name="'+id+'">';
 		f += '      Premium';
@@ -84,11 +84,11 @@ $('#ticket_supporter').on('change', function() {
 	}
 	f += '<hr/>';
 
-	$("#foo").html(f);
+	$("#ticket_details").html(f);
 	if (val) {
-		$("#foo").collapse('show');
+		$("#ticket_details").collapse('show');
 	} else {
-		$("#foo").collapse('hide');
+		$("#ticket_details").collapse('hide');
 	}
 
 });
