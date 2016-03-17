@@ -10,6 +10,8 @@
 -->
 		<link rel="stylesheet" href="/static/css/app.css">
 		<link rel="stylesheet" href="/static/css/tickets.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/css/bootstrap-datepicker3.min.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
 	<body>
@@ -109,7 +111,7 @@
 				<p>€{{ prices.ticket_supporter }} per ticket. De normale tickets bieden de kans om even mee te helpen aan het kamp! Slechts enkele uurtjes mee de infobalie bemannen of drankjes tappen, of zelfs meehelpen met de setup/teardown.</p>
 			</div>
 		</div>
-		<div class="collapsible" id="ticker_details">
+		<div class="collapsible" id="ticket_details">
 		</div>
 		<!-- END NORMAL TICKET -->
 
@@ -224,6 +226,7 @@
 <!-- eff your french article meme -->
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js"></script>
 {% if page_opts and page_opts['charting'] %}
 <script src="/static/js/moment.js"></script>
 <script src="/static/js/Chart.js"></script>
