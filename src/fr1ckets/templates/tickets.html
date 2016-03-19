@@ -91,9 +91,9 @@
 
 		<!-- NORMAL TICKET -->
 		<div class="form-group">
-			<label for="ticket_supporter" class="col-xs-6 col-sm-3 control-label">Normale tickets</label>
+			<label for="ticket_normal" class="col-xs-6 col-sm-3 control-label">Normale tickets</label>
 			<div class="col-xs-6 col-sm-3">
-				<select id="ticket_supporter" name="ticket_supporter" class="form-control" {{ inhibit }}>
+				<select id="ticket_normal" name="ticket_normal" class="form-control" {{ inhibit }}>
 					<option value="0" selected>0</option>
 					<option value="1">1</option>
 					<option value="2">2</option>
@@ -108,13 +108,38 @@
 				</select>
 			</div>
 			<div class="col-xs-12 col-sm-6">
-				<p>€{{ prices.ticket_supporter }} per ticket. De normale tickets bieden de kans om even mee te helpen aan het kamp! Slechts enkele uurtjes mee de infobalie bemannen of drankjes tappen, of zelfs meehelpen met de setup/teardown.</p>
+				<p>Dit zijn de normale kamp-tickets. Voor zij ouder dan 16 inclusief de kans even mee te helpen aan het kamp zelf, zoals enkele uurtjes drankjes tappen of de infobalie bemannen. Je kan zelfs kiezen een dagje langer te blijven om mee te helpen met de afbraak, wij voorzien die dag de pizza! Heb je de tijd niet om tijdens het kamp te helpen kan je de premium-optie aanvinken, je betaald iets meer maar je wordt niet geacht mee te helpen.</p>
 			</div>
 		</div>
-		<div class="collapsible" id="ticket_details">
+		<div class="collapsible" id="ticket_normal_visitors">
 		</div>
 		<!-- END NORMAL TICKET -->
 
+		<!-- BILLABLE TICKET -->
+		<div class="form-group">
+			<label for="ticket_billable" class="col-xs-6 col-sm-3 control-label">Factureerbare tickets</label>
+			<div class="col-xs-6 col-sm-3">
+				<select id="ticket_billable" name="ticket_billable" class="form-control" {{ inhibit }}>
+					<option value="0" selected>0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+				</select>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+				<p>Voor zakelijke supporters van het kamp zijn er deze factureerbare tickets! Ook deze bezoekers mogen aanduiden of ze graag zouden meehelpen, of zelfs helpen opruimen de dag erna, als ze 16 zijn of ouder. Als je dit niet wenst is hier geen meerkost.</p>
+			</div>
+		</div>
+		<div class="collapsible" id="ticket_billable_visitors">
+		</div>
+		<!-- END NORMAL TICKET -->
 		<!-- YELLOW TSHIRTS -->
 		<div class="row">
 			<div class="col-xs-12 col-sm-4 col-sm-offset-2">
