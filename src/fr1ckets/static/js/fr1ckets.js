@@ -252,6 +252,10 @@ $('#ticket_normal').on('change', function() {
 	var val = parseInt($("#ticket_normal").val());
 	var f = "";
 
+	f += '<div class="row text-center">';
+	f += '  <p><h4>Normale tickets:</h4></p>';
+	f += '</div>';
+
 	// for each ticket, add some form fields to the collapsible target
 	// each of those containing itself a collapsible part on their own,
 	// which gets collapsed by datepicking
@@ -268,8 +272,17 @@ $('#ticket_normal').on('change', function() {
 		f += '</div>';
 		f += '<div class="form-group">';
 		f += '  <label for="'+dob_id+'" class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
-		f += '  <div class="col-sm-8">';
+		f += '  <div class="col-sm-4">';
+		/*
 		f += '   <input id="'+dob_id+'" name="'+dob_id+'" class="form-control" type="text" required aria-required="true">';
+		*/
+		f += '   <input class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '  </div>';
+		f += '  <div class="col-sm-2">';
+		f += '   <input class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '  </div>';
+		f += '  <div class="col-sm-2">';
+		f += '   <input class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="collapsible" id="'+options_id+'">';
@@ -304,25 +317,8 @@ $('#ticket_billable').on('change', function() {
 	var val = parseInt($("#ticket_billable").val());
 	var f = "";
 
-	// for billables, always include the company details
-	f += '<hr/>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <input class="form-control" id="ticket_billable_name" name="ticket_billable_name" type=text required aria-required="true">';
-	f += '  </div>';
-	f += '</div>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <input class="form-control" id="ticket_billable_address" name="ticket_billable_address" type=text required aria-required="true">';
-	f += '  </div>';
-	f += '</div>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_vat" class="control-label col-sm-3 col-sm-offset-1">BTW nr</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <input class="form-control" id="ticket_billable_vat" name="ticket_billable_vat" type=text required aria-required="true">';
-	f += '  </div>';
+	f += '<div class="row text-center">';
+	f += '  <p><h4>Factureerbare tickets:</h4></p>';
 	f += '</div>';
 
 	// for each ticket, add some form fields to the collapsible target
@@ -348,6 +344,30 @@ $('#ticket_billable').on('change', function() {
 		f += '<div class="collapsible" id="'+options_id+'">';
 		f += '</div>';
 	}
+	// for billables, always include the company details
+	f += '<hr/>';
+	f += '<div class="row text-center">';
+	f += '  <p><h4>Factuurgegevens:</h4></p>';
+	f += '</div>';
+	f += '<hr/>';
+	f += '<div class="form-group">';
+	f += '  <label for="ticket_billable_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
+	f += '  <div class="col-sm-8">';
+	f += '    <input class="form-control" id="ticket_billable_name" name="ticket_billable_name" type=text required aria-required="true">';
+	f += '  </div>';
+	f += '</div>';
+	f += '<div class="form-group">';
+	f += '  <label for="ticket_billable_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
+	f += '  <div class="col-sm-8">';
+	f += '    <textarea class="form-control" id="ticket_billable_address" name="ticket_billable_address" rows="3" required aria-required="true"></textarea>';
+	f += '  </div>';
+	f += '</div>';
+	f += '<div class="form-group">';
+	f += '  <label for="ticket_billable_vat" class="control-label col-sm-3 col-sm-offset-1">BTW</label>';
+	f += '  <div class="col-sm-8">';
+	f += '    <input class="form-control" id="ticket_billable_vat" name="ticket_billable_vat" type=text required aria-required="true" placeholder="BE 4444.333.333">';
+	f += '  </div>';
+	f += '</div>';
 	f += '<hr/>';
 
 	// push it into the DOM so we can hook event listeners on it
