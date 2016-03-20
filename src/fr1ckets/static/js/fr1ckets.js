@@ -91,9 +91,9 @@ function purchase_remove(id) {
 	});
 }
 
-function make_cb_dob_change_normal(visitor) {
+function make_cb_dob_change_normal(visitor, year_src, month_src, day_src) {
 	return function(e) {
-		var dob = e.date.getTime();
+		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
 		var can_volunteer = dob < ticket_volunteering_cutoff;
 		var ticket = undefined;
 		var f = "";
@@ -176,9 +176,9 @@ function make_cb_dob_change_normal(visitor) {
 	}
 }
 
-function make_cb_dob_change_billable(visitor) {
+function make_cb_dob_change_billable(visitor, year_src, month_src, day_src) {
 	return function(e) {
-		var dob = e.date.getTime();
+		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
 		var can_volunteer = dob < ticket_volunteering_cutoff;
 		var ticket = undefined;
 		var f = "";
@@ -261,7 +261,9 @@ $('#ticket_normal').on('change', function() {
 	// which gets collapsed by datepicking
 	for (var i = 0; i < val; i++) {
 		var name_id = "ticket_normal_visitors_"+i+"_name";
-		var dob_id = "ticket_normal_visitors_"+i+"_dob";
+		var dob_year_id = "ticket_normal_visitors_"+i+"_dob_year";
+		var dob_month_id = "ticket_normal_visitors_"+i+"_dob_month";
+		var dob_day_id = "ticket_normal_visitors_"+i+"_dob_day";
 		var options_id = "ticket_normal_visitors_"+i+"_options";
 		f += '<hr/>';
 		f += '<div class="form-group">';
@@ -271,18 +273,16 @@ $('#ticket_normal').on('change', function() {
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="form-group">';
-		f += '  <label for="'+dob_id+'" class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
+		// XXX label for what?
+		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
 		f += '  <div class="col-sm-4">';
-		/*
-		f += '   <input id="'+dob_id+'" name="'+dob_id+'" class="form-control" type="text" required aria-required="true">';
-		*/
-		f += '   <input class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
+		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="collapsible" id="'+options_id+'">';
@@ -295,13 +295,15 @@ $('#ticket_normal').on('change', function() {
 
 	// for each ticket, add relevant event handlers
 	for (var i = 0; i < val; i++) {
-		var options_id = "ticket_normal_visitors_"+i+"_options";
-		// instantiate datepicker, hand the callback the per-ticket
-		// collapsible area to handle
-		$("#ticket_normal_visitors_"+i+"_dob").datepicker({
-				format : 'yyyy-mm-dd',
-				autoclose : true
-		}).on('changeDate', make_cb_dob_change_normal(options_id));
+		// changing the dob should result in a collapse of the
+		// per-ticket options, so wire in the callback giving
+		// it the needed parts to fill the per-ticket collapsable
+		var dob_year_id = "ticket_normal_visitors_"+i+"_dob_year";
+		var dob_month_id = "ticket_normal_visitors_"+i+"_dob_month";
+		var dob_day_id = "ticket_normal_visitors_"+i+"_dob_day";
+		$("#"+dob_year_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
+		$("#"+dob_month_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
+		$("#"+dob_day_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
 	}
 
 	// and collapse the whole target if a nonzero number of tickets was selected
@@ -326,8 +328,10 @@ $('#ticket_billable').on('change', function() {
 	// which gets collapsed by datepicking
 	for (var i = 0; i < val; i++) {
 		var name_id = "ticket_billable_visitors_"+i+"_name";
-		var dob_id = "ticket_billable_visitors_"+i+"_dob";
 		var options_id = "ticket_billable_visitors_"+i+"_options";
+		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
+		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
+		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
 		f += '<hr/>';
 		f += '<div class="form-group">';
 		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
@@ -336,9 +340,16 @@ $('#ticket_billable').on('change', function() {
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="form-group">';
-		f += '  <label for="'+dob_id+'" class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
-		f += '  <div class="col-sm-8">';
-		f += '   <input id="'+dob_id+'" name="'+dob_id+'" class="form-control" type="text" required aria-required="true">';
+		// XXX label for what?
+		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
+		f += '  <div class="col-sm-4">';
+		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '  </div>';
+		f += '  <div class="col-sm-2">';
+		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '  </div>';
+		f += '  <div class="col-sm-2">';
+		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="collapsible" id="'+options_id+'">';
@@ -376,12 +387,19 @@ $('#ticket_billable').on('change', function() {
 	// for each ticket, add relevant event handlers
 	for (var i = 0; i < val; i++) {
 		var options_id = "ticket_billable_visitors_"+i+"_options";
-		// instantiate datepicker, hand the callback the per-ticket
-		// collapsible area to handle
-		$("#ticket_billable_visitors_"+i+"_dob").datepicker({
-				format : 'yyyy-mm-dd',
-				autoclose : true
-		}).on('changeDate', make_cb_dob_change_billable(options_id));
+		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
+		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
+		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
+
+		// changing the dob should result in a collapse of the
+		// per-ticket options, so wire in the callback giving
+		// it the needed parts to fill the per-ticket collapsable
+		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
+		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
+		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
+		$("#"+dob_year_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
+		$("#"+dob_month_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
+		$("#"+dob_day_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
 	}
 
 	// and collapse the whole target if a nonzero number of tickets was selected
