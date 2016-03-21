@@ -44,25 +44,146 @@ class TicketForm(Form):
 	email = EmailField('email', validators=[
 		validators.Email(message="Really an email?"),
 		])
-	handle = StringField('handle', validators=[
-		validators.DataRequired()
+
+	ticket_normal = IntegerField('ticket_normal', validators=[
+		validators.NumberRange(min=0, max=10),
+		])
+	ticket_billable = IntegerField('ticket_billable', validators=[
+		validators.NumberRange(min=0, max=10),
 		])
 
-	for ticket in generate_tickets():
-		vars()[ticket] = IntegerField()
-	for tshirt in generate_tshirts():
-		vars()[tshirt] = IntegerField()
-
-	terms_payment = BooleanField('I agree to pay', default=False,
+	terms_payment = BooleanField('', default=False,
 		validators=[
-			validators.DataRequired(message="HEEELA")
+			validators.DataRequired(message="did not agree to terms")
 		])
+	terms_supervision = BooleanField('', default=False,
+		validators=[
+			validators.DataRequired(message="did not agree to terms")
+		])
+
+def make_form_billable_tickets(n_tickets):
+	class BillableTicketForm(Form):
+		pass
+
+	if (n_tickets_billable > 0):
+		for e in [ 'name', 'address', 'vat' ]:
+			name = 'ticket_billable_{0}'.format(e)
+			setattr(BillableTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
+
+	for i in range(n_tickets_billable):
+		fmt = "ticket_billable_visitors_{0}".format(i)
+		name = fmt + '_name'
+		setattr(BillableTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
+
+		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
+			name = fmt + field
+			setattr(BillableTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
+
+		fmt += "_options"
+		for field in [ '_volunteering_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
+			name = fmt + field
+			setattr(BillableTicketForm, name, BooleanField(name))
+
+	return BillableTicketForm
+
+def make_form_individual_tickets(n_tickets_normal, n_tickets_billable):
+	class IndividualTicketForm(Form):
+		pass
+
+	for i in range(n_tickets_normal):
+		fmt = "ticket_normal_visitors_{0}".format(i)
+		name = fmt + '_name'
+		setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
+
+		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
+			name = fmt + field
+			setattr(IndividualTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
+
+		fmt += "_options"
+		for field in [ '_premium_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
+			name = fmt + field
+			setattr(IndividualTicketForm, name, BooleanField(name))
+
+	for i in range(n_tickets_billable):
+		fmt = "ticket_billable_visitors_{0}".format(i)
+		name = fmt + '_name'
+		setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
+
+		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
+			name = fmt + field
+			setattr(IndividualTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
+
+		fmt += "_options"
+		for field in [ '_volunteering_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
+			name = fmt + field
+			setattr(IndividualTicketForm, name, BooleanField(name))
+
+	if (n_tickets_billable > 0):
+		for e in [ 'name', 'address', 'vat' ]:
+			name = 'ticket_billable_{0}'.format(e)
+			setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
+
+	return IndividualTicketForm
+
+def find_form_individual_tickets(form, n_tickets_normal, n_tickets_billable):
+
+	out = []
+
+	for i in range(n_tickets_normal):
+		fmt = 'ticket_normal_visitors_{0}'.format(i)
+		this = {
+			'dob' : datetime.date(getattr(form, fmt + '_dob_year').data,
+				getattr(form, fmt + '_dob_month').data,
+				getattr(form, fmt + '_dob_day').data),
+			'name' : getattr(form, fmt + '_name').data,
+			'volunteers_during' : not getattr(form, fmt + '_options_premium_toggle').data,
+			'volunteers_after' : getattr(form, fmt + '_options_cleanup_toggle').data,
+			'food_vegitarian' : getattr(form, fmt + '_options_cleanup_toggle').data,
+		}
+		out.append(this)
+	
+	for i in range(n_tickets_billable):
+		fmt = 'ticket_billable_visitors_{0}'.format(i)
+		this = {
+			'dob' : datetime.date(getattr(form, fmt + '_dob_year').data,
+				getattr(form, fmt + '_dob_month').data,
+				getattr(form, fmt + '_dob_day').data),
+			'name' : getattr(form, fmt + '_name').data,
+			'volunteers_during' : getattr(form, fmt + '_options_volunteering_toggle').data,
+			'volunteers_after' : getattr(form, fmt + '_options_cleanup_toggle').data,
+			'food_vegitarian' : getattr(form, fmt + '_options_cleanup_toggle').data,
+		}
+		out.append(this)
+	
+	return out
 
 @app.route('/tickets', methods=[ 'GET', 'POST' ])
 @req_auth_basic
 def tickets():
 	form = TicketForm()
-	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
+	#tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
+
+	if form.validate_on_submit():
+		n_tickets_normal = form.ticket_normal.data
+		n_tickets_billable = form.ticket_billable.data
+		n_tickets = n_tickets_normal + n_tickets_billable
+		app.logger.debug("n_tickets={0}".format(n_tickets))
+
+		individual_form = make_form_individual_tickets(n_tickets_normal, n_tickets_billable)()
+
+		if individual_form.validate_on_submit():
+			app.logger.debug(repr(find_form_individual_tickets(individual_form, n_tickets_normal, n_tickets_billable)))
+			raise YEEHAA
+
+		if (billable_form.validate_on_submit() and normal_form.validate_on_submit()):
+			normal_tickets = find_form_normal_tickets(normal_form, form.ticket_normal.data)
+			billable_tickets = find_form_billable_tickets(normal_form, form.ticket_normal.data)
+			app.logger.debug(repr(find_form_normal_tickets(normal_form, form.ticket_normal.data)))
+			app.logger.debug("SMASHING!")
+		raise foo
+
+	else:
+		return render_template('tickets.html', tickets_available=10, form=form)
 
 	if form.validate_on_submit():
 		products = {}
@@ -102,9 +223,6 @@ def tickets():
 		prices = { p[0] : p[1] for p in model.get_prices(g.db_cursor) }
 		return render_template('tickets.html', form=form, tickets_available=tickets_available, prices=prices)
 
-class BusinessAdressForm(Form):
-	for e in [ 'name', 'address', 'vat' ]:
-		vars()[e] = StringField(e, validators=[ validators.DataRequired() ])
 
 @app.route('/confirm/<nonce>', methods=[ 'GET', 'POST' ])
 @req_auth_basic

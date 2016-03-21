@@ -276,13 +276,13 @@ $('#ticket_normal').on('change', function() {
 		// XXX label for what?
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
 		f += '  <div class="col-sm-4">';
-		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[0-9]{4}" required aria-required="true" placeholder="YYYY">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="MM">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
+		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="collapsible" id="'+options_id+'">';
@@ -298,6 +298,7 @@ $('#ticket_normal').on('change', function() {
 		// changing the dob should result in a collapse of the
 		// per-ticket options, so wire in the callback giving
 		// it the needed parts to fill the per-ticket collapsable
+		var options_id = "ticket_normal_visitors_"+i+"_options";
 		var dob_year_id = "ticket_normal_visitors_"+i+"_dob_year";
 		var dob_month_id = "ticket_normal_visitors_"+i+"_dob_month";
 		var dob_day_id = "ticket_normal_visitors_"+i+"_dob_day";
@@ -343,13 +344,13 @@ $('#ticket_billable').on('change', function() {
 		// XXX label for what?
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
 		f += '  <div class="col-sm-4">';
-		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[1-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[0-9]{4}" required aria-required="true" placeholder="YYYY">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="MM">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[1-9]{1,2}" required aria-required="true" placeholder="DD">';
+		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="collapsible" id="'+options_id+'">';
