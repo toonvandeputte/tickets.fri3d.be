@@ -30,16 +30,6 @@ def req_auth_basic(f):
 		return f(*args, **kwargs)
 	return fn
 
-def generate_tickets():
-	return [ 'ticket_{0}'.format(t) for t in [ 'business', 'supporter', 'premium', 'padawan' ] ]
-
-def generate_tshirts():
-	tshirts = []
-	for color in [ 'red', 'yellow', 'green' ]:
-		for size in [ 's', 'm', 'l', 'xl' ]:
-			tshirts.append('tshirt_{0}_{1}'.format(color, size))
-	return tshirts
-
 class TicketForm(Form):
 	email = EmailField('email', validators=[
 		validators.Email(message="Really an email?"),
@@ -60,31 +50,6 @@ class TicketForm(Form):
 		validators=[
 			validators.DataRequired(message="did not agree to terms")
 		])
-
-def make_form_billable_tickets(n_tickets):
-	class BillableTicketForm(Form):
-		pass
-
-	if (n_tickets_billable > 0):
-		for e in [ 'name', 'address', 'vat' ]:
-			name = 'ticket_billable_{0}'.format(e)
-			setattr(BillableTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
-
-	for i in range(n_tickets_billable):
-		fmt = "ticket_billable_visitors_{0}".format(i)
-		name = fmt + '_name'
-		setattr(BillableTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
-
-		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
-			name = fmt + field
-			setattr(BillableTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
-
-		fmt += "_options"
-		for field in [ '_volunteering_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
-			name = fmt + field
-			setattr(BillableTicketForm, name, BooleanField(name))
-
-	return BillableTicketForm
 
 def make_form_individual_tickets(n_tickets_normal, n_tickets_billable):
 	class IndividualTicketForm(Form):
