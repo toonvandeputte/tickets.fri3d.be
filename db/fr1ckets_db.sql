@@ -32,6 +32,7 @@ create table reservation (
 	email text not null,
 	discount integer default 0,
 	available_from integer not null,
+	claimed integer default 0,
 	claimed_at text default '',
 	comments text default ''
 );

@@ -31,38 +31,51 @@ def reservation_find(cursor, email):
 		from
 			reservation
 		where
-			email = :email;
+			email = :email
+			and claimed = 0;
 		"""
 	qd = { 'email' : email }
 	
 	cursor.execute(q, qd)
 	rs = cursor.fetchall()
 
-	if len(rs) != 1:
+	if len(rs) != 1 and email != 'default':
 		return reservation_find(cursor, 'default')
 
-	return rs
+	return rs[0]
 
-def purchase_create(cursor, email, coupon='NONE'):
+def reservation_claim(cursor, email):
+	res = reservation_find(cursor, email)
+	if res['email'] == 'default':
+		return res['id']
+
+	q = """
+		update
+			reservation
+		set
+			claimed = 1,
+			claimed_at = :now
+		where
+			email = :email
+			AND claimed = 0;
+		"""
+	qd = {
+		'now' : now = datetime.datetime.utcnow(),
+		'email' : email,
+	}
+
+	cursor.execute(q, qd)
+	D("last_row_id={0}, rowcount={1}".format(cursor.last_row_id, cursor.rowcount))
+
+
+
+def purchase_create(cursor, email):
 	"""
-	create a new purchase for the specified email, linked to the specified
-	coupon, which has to exist and has to have an available_from in the past,
-	as well as a matching email address (if the coupon's not '*'), otherwise
-	we raise PurchaseInvalidCoupon
-
-	returns an (id, nonce) pair, id is used internally, nonce externally
 	"""
 	now = datetime.datetime.utcnow()
 	nonce = random_string(16)
 
-	D("looking for coupon code {0}".format(coupon))
-	cursor.execute('SELECT id, email, available_from FROM coupon WHERE code=?', (coupon))
-	coupon_details = cursor.fetchone()
-	coupon_expired = datetime.datetime.strptime(coupon_details['available_from'], '%Y-%m-%d %H:%M:%S.%f')
-	if not coupon_details or now < coupon_expired:
-		D(" .. not found")
-		raise PurchaseInvalidCoupon()
-	
+	reservation_id = reservation_claim(cursor, email)
 	# the purchase proper
 	cursor.execute('INSERT INTO purchase (email, nonce, coupon_id, created_at) VALUES (?, ?, ?, ?);',
 		(email, handle, nonce, coupon_details['id'], now))

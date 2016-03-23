@@ -280,6 +280,15 @@ def api_get_timeline_tickets():
 		'at' : [ t['at'] for t in timeline_tickets ],
 		'n' : [ t['n'] for t in timeline_tickets ]})
 
+@app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
+def api_get_reservation(email):
+	r = model.reservation_find(g.db_cursor, email)
+	# prune what we need
+	return json.dumps({
+			'discount' : r['discount'],
+			'available_from' : r['available_from']
+		})
+
 @app.route("/")
 @req_auth_basic
 def index():
