@@ -26,23 +26,25 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'tshirt_kid_xl', 'kinder- tshirt extra large', 20, 20, '', 0),
 	( 'token', 'dranktoken', 1.5, 20, '', 0);
 	
-drop table if exists coupon;
-create table coupon (
+drop table if exists reservation;
+create table reservation (
 	id integer primary key autoincrement not null,
-	code text not null,
 	email text not null,
-	available_from integer not null
+	discount integer default 0,
+	available_from integer not null,
+	claimed_at text default '',
+	comments text default ''
 );
-create unique index if not exists index_coupon_code on coupon(code);
+create unique index if not exists index_reservation_email on reservation(email);
 
-insert into coupon (code, email, available_from) values
-	('NONE', '*', '2016-06-01 19:00:00.000000'),
-	('TEST', '*', '1016-06-01 19:00:00.000000');
+insert into reservation (email, discount, available_from) values
+	('default',           0,  '2016-06-01 19:00:00.000000'),
+	('jef.vdb@gmail.com', 10, '1016-06-01 19:00:00.000000');
 
 drop table if exists purchase;
 create table purchase (
 	id integer primary key autoincrement not null,
-	coupon_id integer,
+	reservation_id integer,
 	email text not null,
 	nonce text not null,
 	queued integer default 0,
@@ -55,7 +57,7 @@ create table purchase (
 	business_name text default '',
 	business_address text default '',
 	business_vat text default '',
-	foreign key(coupon_id) references coupon(id)
+	foreign key(reservation_id) references reservation(id)
 );
 create unique index if not exists index_purchase_nonce on purchase(nonce);
 

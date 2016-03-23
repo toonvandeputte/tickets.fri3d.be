@@ -17,8 +17,31 @@ def random_string(length=32):
 			for _ in range(length)
 		])
 
-class PurchaseInvalidCoupon(Exception):
-	pass
+def reservation_find(cursor, email):
+	"""
+	find any unclaimed reservation for this email, if none is found we return
+	the default reservation
+	"""
+	q = """
+		select
+			id,
+			email,
+			discount,
+			available_from
+		from
+			reservation
+		where
+			email = :email;
+		"""
+	qd = { 'email' : email }
+	
+	cursor.execute(q, qd)
+	rs = cursor.fetchall()
+
+	if len(rs) != 1:
+		return reservation_find(cursor, 'default')
+
+	return rs
 
 def purchase_create(cursor, email, coupon='NONE'):
 	"""
