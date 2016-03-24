@@ -11,7 +11,8 @@ def setup_db():
 @app.teardown_request
 def wrapup_db(error):
 	db_con = getattr(g, 'db_con', None)
-	if db_con:
+	db_commit = getattr(g, 'db_commit', None)
+	if db_con and db_commit:
 		if error:
 			app.logger.error("wrapup_db(error={0}), rolling back".format(error))
 			db_con.rollback()

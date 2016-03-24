@@ -30,6 +30,13 @@ def req_auth_basic(f):
 		return f(*args, **kwargs)
 	return fn
 
+def generate_tshirt_names():
+	out = []
+	for tshirt in [ 'adult' ]:
+		for size in [ 's', 'm', 'l', 'xl' ]:
+			out.append("tshirt_{0}_{1}".format(tshirt, size))
+	return out
+
 class TicketForm(Form):
 	email = EmailField('email', validators=[
 		validators.Email(message="Really an email?"),
@@ -41,6 +48,15 @@ class TicketForm(Form):
 	ticket_billable = IntegerField('ticket_billable', validators=[
 		validators.NumberRange(min=0, max=10),
 		])
+
+	tokens = IntegerField('tokens', validators=[
+		validators.NumberRange(min=0),
+		])
+
+	for tshirt in generate_tshirt_names():
+		vars()[tshirt] = IntegerField(tshirt, validators=[
+			validators.NumberRange(min=0),
+			])
 
 	terms_payment = BooleanField('', default=False,
 		validators=[
@@ -97,30 +113,59 @@ def find_form_individual_tickets(form, n_tickets_normal, n_tickets_billable):
 	for i in range(n_tickets_normal):
 		fmt = 'ticket_normal_visitors_{0}'.format(i)
 		this = {
-			'dob' : datetime.date(getattr(form, fmt + '_dob_year').data,
+			'dob' : datetime.datetime(getattr(form, fmt + '_dob_year').data,
 				getattr(form, fmt + '_dob_month').data,
 				getattr(form, fmt + '_dob_day').data),
 			'name' : getattr(form, fmt + '_name').data,
 			'volunteers_during' : not getattr(form, fmt + '_options_premium_toggle').data,
 			'volunteers_after' : getattr(form, fmt + '_options_cleanup_toggle').data,
 			'food_vegitarian' : getattr(form, fmt + '_options_cleanup_toggle').data,
+			'billable' : False,
 		}
 		out.append(this)
 	
 	for i in range(n_tickets_billable):
 		fmt = 'ticket_billable_visitors_{0}'.format(i)
 		this = {
-			'dob' : datetime.date(getattr(form, fmt + '_dob_year').data,
+			'dob' : datetime.datetime(getattr(form, fmt + '_dob_year').data,
 				getattr(form, fmt + '_dob_month').data,
 				getattr(form, fmt + '_dob_day').data),
 			'name' : getattr(form, fmt + '_name').data,
 			'volunteers_during' : getattr(form, fmt + '_options_volunteering_toggle').data,
 			'volunteers_after' : getattr(form, fmt + '_options_cleanup_toggle').data,
 			'food_vegitarian' : getattr(form, fmt + '_options_cleanup_toggle').data,
+			'billable' : True,
 		}
 		out.append(this)
 	
 	return out
+
+def map_to_products(cursor, tickets, tshirts, tokens):
+	p = map(dict, model.products_get(cursor))
+	known_tickets = sorted([ t for t in p if 'ticket_' in t['name'] ], key=lambda t: t['max_dob'], reverse=True)
+	known_tshirts= [ t for t in p if 'tshirt_' in t['name'] ]
+
+	out = []
+
+	for r in tickets:
+		relevant_ticket = None
+		for t in known_tickets:
+			if t['billable'] != r['billable']:
+				continue
+			if r['dob'] >= t['max_dob']:
+				relevant_ticket = t
+				break
+		out.append({
+			'product_id' : relevant_ticket['id'],
+			'n' : 1,
+			'person_name' : r['name'],
+			'person_volunteers_during' : r['volunteers_during'],
+			'person_volunteers_after' : r['volunteers_after'],
+			'person_food_vegitarian' : r['food_vegitarian'],
+		})
+
+
+	return requested
 
 @app.route('/tickets', methods=[ 'GET', 'POST' ])
 @req_auth_basic
@@ -132,12 +177,18 @@ def tickets():
 		n_tickets_normal = form.ticket_normal.data
 		n_tickets_billable = form.ticket_billable.data
 		n_tickets = n_tickets_normal + n_tickets_billable
-		app.logger.debug("n_tickets={0}".format(n_tickets))
+
+		# check the reservation first
+		reservation = model.reservation_find(g.db_cursor, form.email.data)
+		if not reservation['available_from'] <= datetime.datetime.utcnow():
+			return redirect(url_for('confirm', available_from=reservation['available_from']))
 
 		individual_form = make_form_individual_tickets(n_tickets_normal, n_tickets_billable)()
 
 		if individual_form.validate_on_submit():
-			app.logger.debug(repr(find_form_individual_tickets(individual_form, n_tickets_normal, n_tickets_billable)))
+			tickets_requested = find_form_individual_tickets(individual_form, n_tickets_normal, n_tickets_billable)
+			tickets = map_tickets(g.db_cursor, tickets_requested)
+
 			raise YEEHAA
 
 		if (billable_form.validate_on_submit() and normal_form.validate_on_submit()):
@@ -148,6 +199,7 @@ def tickets():
 		raise foo
 
 	else:
+		app.logger.debug(form.errors)
 		return render_template('tickets.html', tickets_available=10, form=form)
 
 	if form.validate_on_submit():
@@ -247,12 +299,14 @@ def overview():
 @req_auth_basic
 def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id)
+	g.db_commit = True
 	return "ok", 200
 
 @app.route('/api/purchase_remove/<int:purchase_id>', methods=[ 'GET' ])
 @req_auth_basic
 def api_purchase_remove(purchase_id):
 	model.purchase_remove(g.db_cursor, purchase_id)
+	g.db_commit = True
 	return "ok", 200
 
 @app.route('/api/get_prices', methods=[ 'GET' ])
@@ -286,7 +340,7 @@ def api_get_reservation(email):
 	# prune what we need
 	return json.dumps({
 			'discount' : r['discount'],
-			'available_from' : r['available_from']
+			'available_from' : int(time.mktime(r['available_from'].timetuple())),
 		})
 
 @app.route("/")

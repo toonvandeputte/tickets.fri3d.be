@@ -5,7 +5,7 @@ create table product (
 	display text not null,
 	price float not null,
 	volunteering_price float not null,
-	max_dob integer not null,
+	max_dob timestamp not null,
 	billable integer not null
 );
 
@@ -31,7 +31,7 @@ create table reservation (
 	id integer primary key autoincrement not null,
 	email text not null,
 	discount integer default 0,
-	available_from integer not null,
+	available_from timestamp not null,
 	claimed integer default 0,
 	claimed_at text default '',
 	comments text default ''
@@ -40,7 +40,7 @@ create unique index if not exists index_reservation_email on reservation(email);
 
 insert into reservation (email, discount, available_from) values
 	('default',           0,  '2016-06-01 19:00:00.000000'),
-	('jef.vdb@gmail.com', 10, '1016-06-01 19:00:00.000000');
+	('jef.vdb@gmail.com', 10, '2015-06-01 19:00:00.000000');
 
 drop table if exists purchase;
 create table purchase (

@@ -57,17 +57,18 @@ def reservation_claim(cursor, email):
 			claimed_at = :now
 		where
 			email = :email
-			AND claimed = 0;
+			AND claimed = 0
+			AND available_from <= datetime('now');
 		"""
 	qd = {
-		'now' : now = datetime.datetime.utcnow(),
+		'now' : datetime.datetime.utcnow(),
 		'email' : email,
 	}
 
 	cursor.execute(q, qd)
-	D("last_row_id={0}, rowcount={1}".format(cursor.last_row_id, cursor.rowcount))
+	D("last_row_id={0}, rowcount={1}".format(cursor.lastrowid, cursor.rowcount))
 
-
+	return res
 
 def purchase_create(cursor, email):
 	"""
@@ -75,14 +76,11 @@ def purchase_create(cursor, email):
 	now = datetime.datetime.utcnow()
 	nonce = random_string(16)
 
-	reservation_id = reservation_claim(cursor, email)
+	reservation = reservation_claim(cursor, email)
 	# the purchase proper
-	cursor.execute('INSERT INTO purchase (email, nonce, coupon_id, created_at) VALUES (?, ?, ?, ?);',
-		(email, handle, nonce, coupon_details['id'], now))
+	cursor.execute('INSERT INTO purchase (email, nonce, reservation_id, created_at) VALUES (?, ?, ?, ?);',
+		(email, nonce, reservation['id'], now))
 	purchase_id = cursor.lastrowid
-
-	D("created, nonce={0}".format(nonce))
-	return purchase_id, nonce
 
 def purchase_add(cursor, purchase_id, product_name, n, personal_details=None):
 	"""
@@ -115,6 +113,22 @@ def purchase_add(cursor, purchase_id, product_name, n, personal_details=None):
 
 	return cursor.rowcount
 
+
+def products_get(cursor):
+	q = """
+		select
+			id,
+			name,
+			display,
+			price,
+			volunteering_price,
+			max_dob,
+			billable
+		from
+			product;
+		"""
+	cursor.execute(q)
+	return cursor.fetchall()
 
 def purchase_set_business_details(cursor, nonce, name, address, vat):
 	q = """
