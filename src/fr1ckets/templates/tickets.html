@@ -10,8 +10,6 @@
 -->
 		<link rel="stylesheet" href="/static/css/app.css">
 		<link rel="stylesheet" href="/static/css/tickets.css">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/css/bootstrap-datepicker3.min.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
 	<body>
@@ -76,6 +74,12 @@
 			<label for="email" class="col-sm-3 control-label">Email</label>
 			<div class="col-sm-9">
 				<input class="form-control" id="email" name="email" type="email" required aria-required="true">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-offset-1 col-sm-10">
+				<div class="collapsable" id="email_reservation_collapse">
+				</div>
 			</div>
 		</div>
 		<!-- END EMAIL -->
@@ -221,9 +225,9 @@
 
 		<!-- BEGIN TOKENS -->
 		<div class="form-group">
-			<label for="tokens" class="col-xs-6 col-sm-3 control-label">Tokens</label>
+			<label for="token" class="col-xs-6 col-sm-3 control-label">Tokens</label>
 			<div class="col-xs-6 col-sm-3">
-				<select id="tokens" name="tokens" class="form-control">
+				<select id="token" name="token" class="form-control">
 					<option value="0" selected>0</option>
 					<option value="1">1</option>
 					<option value="2">2</option>

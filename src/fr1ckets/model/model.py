@@ -70,48 +70,44 @@ def reservation_claim(cursor, email):
 
 	return res
 
-def purchase_create(cursor, email):
+def purchase_create(cursor, email, products, billing_info):
 	"""
 	"""
 	now = datetime.datetime.utcnow()
 	nonce = random_string(16)
 
+	# get the reservation for this email
 	reservation = reservation_claim(cursor, email)
+
 	# the purchase proper
-	cursor.execute('INSERT INTO purchase (email, nonce, reservation_id, created_at) VALUES (?, ?, ?, ?);',
-		(email, nonce, reservation['id'], now))
+	q = """
+		insert into purchase (
+			email, nonce, reservation_id, created_at,
+			business_name, business_address, business_vat )
+		values
+			(?, ?, ?, ?, ?, ?, ?);
+		"""
+	cursor.execute(q, (email, nonce, reservation['id'], now,
+		billing_info['name'], billing_info['address'], billing_info['vat']))
+
 	purchase_id = cursor.lastrowid
 
-def purchase_add(cursor, purchase_id, product_name, n, personal_details=None):
-	"""
-	add a product (specified by product_name) to a purchase (specified by id),
-	if personal_details is present this should contain the following (which is
-	saved next to the purchase_item):
-	{
-		'name' : person's name,
-		'dob' : person's dob,
-		'volunteers_after' : bool,
-		'volunteers_during' : bool,
-		'food_vegitarian' : bool
-	}
-	returns affected rows (0 == error)
-	"""
-	# the purchased items
+	# add the products
 	q = """
-		INSERT INTO
-			purchase_items (purchase_id, product_id, n, person_name, person_dob,
-				person_volunteers_during, person_volunteers_after, person_food_vegitarian)
-		SELECT
-			:purchase_id, product.id, :n, :name, :dob, :vol_during, :vol_after, :food_veggy
-		FROM
-			product
-		WHERE
-			product.name = :what"""
-	qd = { 'purchase_id' : purchase_id, 'n' : n, 'what' : product_name }
-	qd.extend(personal_details if personal_details else { '', '', False, False, False })
-	cursor.execute(q, qd)
+		insert into purchase_items (
+			purchase_id, product_id, n, person_name, person_dob,
+			person_volunteers_during, person_volunteers_after, person_food_vegitarian)
+		values
+			(:purchase_id, :product_id, :n, :person_name, :person_dob,
+			:person_volunteers_during, :person_volunteers_after, :person_food_vegitarian);
+		"""
+	for p in products:
+		p['purchase_id'] = purchase_id
+		D("p={0!r}".format(p))
+		cursor.execute(q, p)
+	#cursor.executemany(q, products)
 
-	return cursor.rowcount
+	return nonce
 
 
 def products_get(cursor):
@@ -130,44 +126,53 @@ def products_get(cursor):
 	cursor.execute(q)
 	return cursor.fetchall()
 
-def purchase_set_business_details(cursor, nonce, name, address, vat):
-	q = """
-		UPDATE
-			purchase
-		SET
-			business_name = :name,
-			business_address = :address,
-			business_vat = :vat
-		WHERE
-			nonce = :nonce;
-		"""
-	qd = {
-		'nonce' : nonce,
-		'name' : name,
-		'address' : address,
-		'vat' : vat,
-	}
-	cursor.execute(q, qd)
-
-def get_purchase_total(cursor, nonce, product_filter='%'):
-	"""
-	get total cost of order id'd by nonce
-	"""
+def get_purchase_discount(cursor, nonce):
 	q = """
 		select
-			sum(purchase_items.n * product.price) as total
+			reservation.discount as discount
+		from
+			purchase
+			inner join reservation on purchase.reservation_id = reservation.id
+		where
+			purchase.nonce = :nonce;
+		"""
+	qd = { 'nonce' : nonce }
+	cursor.execute(q, qd)
+	rs = cursor.fetchone()
+	return rs['discount'] or 0
+
+def get_purchase_total(cursor, nonce, only_billable=False):
+	"""
+	get total cost of order id'd by nonce,
+	per item we take volunteering_price if any volunteering is done
+	(otherwise we take price), and we deduct any discounts
+	"""
+
+	f = ''
+	if (only_billable):
+		f = 'and product.billable = 1'
+
+	q = """
+		select
+			sum(purchase_items.n * (case
+				when (
+					purchase_items.person_volunteers_during or
+					purchase_items.person_volunteers_after)
+				then
+					product.volunteering_price
+				else
+					product.price
+				end)
+			)
+			as total
 		from
 			purchase_items
 			inner join product on purchase_items.product_id = product.id
 			inner join purchase on purchase_items.purchase_id = purchase.id
 		where
-			purchase.nonce = :nonce
-			and product.name like :filter;
-		"""
-	qd = {
-		'nonce' : nonce,
-		'filter' : product_filter,
-	}
+			purchase.nonce = :nonce {0};
+		""".format(f)
+	qd = { 'nonce' : nonce }
 	cursor.execute(q, qd)
 	rs = cursor.fetchone()
 	return rs['total'] or 0

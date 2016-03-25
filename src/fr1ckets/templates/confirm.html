@@ -14,13 +14,6 @@
 	</head>
 	<body>
 
-{# if we don't have any tickets available, disable some controls #}
-{% if tickets_available == 0 %}
-	{% set inhibit='disabled=\"disabled\"' %}
-{% else %}
-	{% set inhibit='' %}
-{% endif %}
-	{{ disabled }}
 
 <div class="container">
 
@@ -51,74 +44,17 @@
 			<div class="well">
 				<h1>Danku!</h1>
 				<h4>
-					<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ amount }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
-					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de tickets en tshirts terug te koop aanbieden.</p>
-					<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
+					<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
+					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de bestelde items terug te koop aanbieden.</p>
+{% if price_billable > 0 %}
+					<p>U hebt één of meerdere factureerbare tickets gekocht. We sturen u spoedig een factuur voor €{{ price_billable }}.</p>
+{% endif %}
+				<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
 					<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
 				</h4>
 			</div>
 		</div>
 	</div>
-
-{% if page_opts and page_opts['business_details_need'] %}
-	<div class="row">
-		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
-			<div class="well">
-				<h4>
-					<p>U hebt één of meerdere business tickets aangekocht. Desgewenst kunnen we u hiervoor een factuur sturen.</p>
-					<p>Daarvoor kan u hieronder uw details invullen. Indien u geen factuur wenst moet u niets meer doen.</p>
-					<p>Een factuur zal u later per mail worden toegestuurd voor het totaal van deze business-tickets: €{{amount_business}}.</p>
-				</h4>
-			</div>
-		</div>
-	</div>
-	<form action="/confirm/{{ nonce }}" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2">
-		{{ form.csrf_token }}
-
-		<!-- BEGIN NAME -->
-		<div class="form-group">
-			<label for="name" class="col-sm-3 control-label">Naam</label>
-			<div class="col-sm-9">
-				<input class="form-control" id="name" name="name" type="text" required aria-required="true">
-			</div>
-		</div>
-		<!-- END NAME -->
-
-		<!-- BEGIN ADDRESS -->
-		<div class="form-group">
-			<label for="handle" class="col-sm-3 control-label">Adres</label>
-			<div class="col-sm-9">
-				<textarea class="form-control" id="address" name="address" required aria-required="true" rows="4"></textarea>
-			</div>
-		</div>
-		<!-- END ADDRESS -->
-
-		<!-- BEGIN VAT -->
-		<div class="form-group">
-			<label for="vat" class="col-sm-3 control-label">BTW</label>
-			<div class="col-sm-9">
-				<input class="form-control" id="vat" name="vat" type="text" required aria-required="true" placeholder="BE 4444.333.333">
-			</div>
-		</div>
-		<!-- END NAME -->
-
-		<div class="form-group">
-			<div class="col-xs-12 text-right">
-				<button type="submit" class="btn btn-default">Bestellen</button>
-			</div>
-		</div>
-
-	</form>
-{% endif %}
-{% if page_opts and page_opts['business_details_have'] %}
-	<div class="row">
-		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
-			<div class="alert alert-success" role="alert">
-				<p>Uw bedrijfsgegevens zijn genoteerd. U krijgt binnenkort per mail een factuur toegestuurd voor het bedrag van €{{ amount_business }}.</p>
-			</div>
-		</div>
-	</div>
-{% endif %}
 
 </div>
 <!-- eff your french article meme -->

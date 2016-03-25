@@ -1,17 +1,67 @@
-var prices = {};
+var products = [];
+var costs = {
+	tickets : {},
+	reset : {},
+};
+
+function handle_reservation(data) {
+
+	if ($('#email').val() == '') {
+		$("#email_reservation_collapse").html('');
+		return;
+	}
+
+	var reservation = JSON.parse(data);
+	var available = Date.now() >= (reservation.available_from*1000);
+	var f = '';
+
+	if (!available) {
+		var available_date = new Date();
+		available_date.setTime(reservation.available_from*1000);
+		f += '<div class="row">';
+		f += '  <div class="alert alert-danger text-center" role="alert">';
+		f += '    <p>Met dit email kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen!</p>';
+		f += '  </div>';
+		f += '</div>';
+	} else if (available && reservation.discount > 0) {
+		f += '<div class="row">';
+		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '    <p>Met dit email krijg je éénmalig €'+reservation.discount+' korting!</p>';
+		f += '  </div>';
+		f += '</div>';
+	}
+
+	$("#email_reservation_collapse").html(f);
+
+}
 
 $(document).ready(function() {
 	$.ajax({
-		url : 'api/get_prices',
+		url : 'api/get_products',
 		success: function(data) {
-			prices = JSON.parse(data);
-			for (thing in prices) {
-				$('#' + thing).on('change', function() {
-					recalc_total();
-				});
+			products = JSON.parse(data);
+			for (var i in products) {
+				console.log(products[i]);
+				if (products[i].max_dob) {
+					products[i].max_dob *= 1000;
+				}
 			}
-			recalc_total();
 		},
+	});
+	$('#email').on('change', function() {
+		if ($('#email').val().length > 0) {
+			$.ajax({
+				url : 'api/get_reservation/' + $('#email').val(),
+				success: function(data) {
+					handle_reservation(data);
+				},
+				error: function(data) {
+					handle_reservation(data);
+				},
+			});
+		} else {
+			handle_reservation('');
+		}
 	});
 });
 
@@ -97,9 +147,15 @@ function make_cb_dob_change_normal(visitor, year_src, month_src, day_src) {
 		var can_volunteer = dob < ticket_volunteering_cutoff;
 		var ticket = undefined;
 		var f = "";
-		for (var t in tickets_normal) {
-			if (dob >= tickets_normal[t].dob) {
-				ticket = tickets_normal[t];
+		for (var t in products) {
+			if (products[t].name.indexOf('ticket') == -1) {
+				continue;
+			}
+			if (products[t].billable) {
+				continue;
+			}
+			if (dob >= products[t].max_dob) {
+				ticket = products[t];
 				break;
 			}
 		}
@@ -110,12 +166,12 @@ function make_cb_dob_change_normal(visitor, year_src, month_src, day_src) {
 		var visitor_veggy_toggle = visitor + '_veggy_toggle';
 
 		function update_ticket(ticket, show_premium) {
-			var name = ticket.name;
-			var price = ticket.price;
+			var name = ticket.display;
+			var price = ticket.volunteering_price;
 
 			if (show_premium) {
 				name += " (premium)";
-				price += ticket.premium;
+				price = ticket.price;
 			}
 			$('#'+visitor_ticket_name).text(name);
 			$('#'+visitor_ticket_price).text("€"+price);
@@ -182,9 +238,15 @@ function make_cb_dob_change_billable(visitor, year_src, month_src, day_src) {
 		var can_volunteer = dob < ticket_volunteering_cutoff;
 		var ticket = undefined;
 		var f = "";
-		for (var t in tickets_billable) {
-			if (dob >= tickets_billable[t].dob) {
-				ticket = tickets_billable[t];
+		for (var t in products) {
+			if (products[t].name.indexOf('ticket') == -1) {
+				continue;
+			}
+			if (!products[t].billable) {
+				continue;
+			}
+			if (dob >= products[t].max_dob) {
+				ticket = products[t];
 				break;
 			}
 		}
@@ -195,12 +257,12 @@ function make_cb_dob_change_billable(visitor, year_src, month_src, day_src) {
 		var visitor_veggy_toggle = visitor + '_veggy_toggle';
 
 		function update_ticket(ticket, show_volunteering) {
-			var name = ticket.name;
+			var name = ticket.display;
 			var price = ticket.price;
 
 			if (show_volunteering) {
 				name += " (volunteering)";
-				price += ticket.volunteering;
+				price += ticket.volunteering_price;
 			}
 			$('#'+visitor_ticket_name).text(name);
 			$('#'+visitor_ticket_price).text("€"+price);
@@ -356,31 +418,33 @@ $('#ticket_billable').on('change', function() {
 		f += '<div class="collapsible" id="'+options_id+'">';
 		f += '</div>';
 	}
-	// for billables, always include the company details
-	f += '<hr/>';
-	f += '<div class="row text-center">';
-	f += '  <p><h4>Factuurgegevens:</h4></p>';
-	f += '</div>';
-	f += '<hr/>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <input class="form-control" id="ticket_billable_name" name="ticket_billable_name" type=text required aria-required="true">';
-	f += '  </div>';
-	f += '</div>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <textarea class="form-control" id="ticket_billable_address" name="ticket_billable_address" rows="3" required aria-required="true"></textarea>';
-	f += '  </div>';
-	f += '</div>';
-	f += '<div class="form-group">';
-	f += '  <label for="ticket_billable_vat" class="control-label col-sm-3 col-sm-offset-1">BTW</label>';
-	f += '  <div class="col-sm-8">';
-	f += '    <input class="form-control" id="ticket_billable_vat" name="ticket_billable_vat" type=text required aria-required="true" placeholder="BE 4444.333.333">';
-	f += '  </div>';
-	f += '</div>';
-	f += '<hr/>';
+	// for billables, always include the company details (so long as there is a ticket shown)
+	if (val > 0) {
+		f += '<hr/>';
+		f += '<div class="row text-center">';
+		f += '  <p><h4>Factuurgegevens:</h4></p>';
+		f += '</div>';
+		f += '<hr/>';
+		f += '<div class="form-group">';
+		f += '  <label for="ticket_billable_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <input class="form-control" id="ticket_billable_name" name="ticket_billable_name" type=text required aria-required="true">';
+		f += '  </div>';
+		f += '</div>';
+		f += '<div class="form-group">';
+		f += '  <label for="ticket_billable_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <textarea class="form-control" id="ticket_billable_address" name="ticket_billable_address" rows="3" required aria-required="true"></textarea>';
+		f += '  </div>';
+		f += '</div>';
+		f += '<div class="form-group">';
+		f += '  <label for="ticket_billable_vat" class="control-label col-sm-3 col-sm-offset-1">BTW</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <input class="form-control" id="ticket_billable_vat" name="ticket_billable_vat" type=text required aria-required="true" placeholder="BE 4444.333.333">';
+		f += '  </div>';
+		f += '</div>';
+		f += '<hr/>';
+	}
 
 	// push it into the DOM so we can hook event listeners on it
 	$("#ticket_billable_visitors").html(f);

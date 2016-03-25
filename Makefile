@@ -1,6 +1,7 @@
 output = output
 version = $(shell git log -1 --format=%ct-%h)
 project = fr1ckets
+db = /var/tmp/fr1ckets.sqlite
 
 all: populate
 
@@ -14,7 +15,11 @@ populate: output
 	cp -R conf/* $(output)/conf/
 	#cp -R ssl/* $(output)/ssl/
 
-serve:
+$(db):
+	@echo "couldn't find $(db), generating..."
+	sqlite3 $(db) < db/fr1ckets_db.sql
+
+test: $(db)
 	python src/wsgi.py
 
 deb: all
