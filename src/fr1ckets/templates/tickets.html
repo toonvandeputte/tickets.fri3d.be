@@ -86,9 +86,9 @@
 
 		<!-- NORMAL TICKET -->
 		<div class="form-group">
-			<label for="ticket_normal" class="col-xs-6 col-sm-3 control-label">Normale tickets</label>
+			<label for="n_tickets" class="col-xs-6 col-sm-3 control-label">Tickets</label>
 			<div class="col-xs-6 col-sm-3">
-				<select id="ticket_normal" name="ticket_normal" class="form-control" {{ inhibit }}>
+				<select id="n_tickets" name="n_tickets" class="form-control" {{ inhibit }}>
 					<option value="0" selected>0</option>
 					<option value="1">1</option>
 					<option value="2">2</option>
@@ -108,34 +108,8 @@
 		</div>
 		<!-- END NORMAL TICKET -->
 
-		<!-- BILLABLE TICKET -->
-		<div class="form-group">
-			<label for="ticket_billable" class="col-xs-6 col-sm-3 control-label">Factureerbare tickets</label>
-			<div class="col-xs-6 col-sm-3">
-				<select id="ticket_billable" name="ticket_billable" class="form-control" {{ inhibit }}>
-					<option value="0" selected>0</option>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-					<option value="6">6</option>
-					<option value="7">7</option>
-					<option value="8">8</option>
-					<option value="9">9</option>
-					<option value="10">10</option>
-				</select>
-			</div>
-			<div class="col-xs-12 col-sm-6">
-				<p>Voor zakelijke supporters van het kamp zijn er deze factureerbare tickets! Ook deze bezoekers mogen aanduiden of ze graag zouden meehelpen, of zelfs helpen opruimen de dag erna, als ze 16 zijn of ouder. Als je dit niet wenst is hier geen meerkost.</p>
-			</div>
-		</div>
-		<!-- END NORMAL TICKET -->
-
 		<!-- BEGIN INDIVIDIAL TICKETS -->
-		<div class="collapsible" id="ticket_normal_visitors">
-		</div>
-		<div class="collapsible" id="ticket_billable_visitors">
+		<div class="collapsible" id="tickets">
 		</div>
 		<!-- END INDIVIDIAL TICKETS -->
 

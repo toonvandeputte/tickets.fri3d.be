@@ -1,8 +1,4 @@
 var products = [];
-var costs = {
-	tickets : {},
-	reset : {},
-};
 
 function handle_reservation(data) {
 
@@ -20,7 +16,7 @@ function handle_reservation(data) {
 		available_date.setTime(reservation.available_from*1000);
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
-		f += '    <p>Met dit email kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen!</p>';
+		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen!</p>';
 		f += '  </div>';
 		f += '</div>';
 	} else if (available && reservation.discount > 0) {
@@ -35,13 +31,83 @@ function handle_reservation(data) {
 
 }
 
+function find_ticket_by_dob(dob, billable) {
+
+	var ticket = undefined;
+	for (var t in products) {
+		if (products[t].name.indexOf('ticket') == -1) {
+			continue;
+		}
+		if (products[t].billable != billable) {
+			continue;
+		}
+		if (dob >= products[t].max_dob) {
+			ticket = products[t];
+			break;
+		}
+	}
+	return ticket;
+
+}
+
+function enumerate_choices() {
+	var choices = [];
+
+	for (var i in products) {
+		if (products[i].name.indexOf('ticket') != -1) {
+			// skip tickets
+			continue;
+		}
+		var n = parseInt($('#'+products[i].name).val() || 0);
+		if (n == 0) {
+			continue;
+		}
+		var c = {
+			n : n,
+			price : products[i].price,
+			name : products[i].display,
+		}
+		choices.push(c);
+	}
+
+	var n_tickets_normal = parseInt($('#ticket_normal').val());
+	var n_tickets_billable = parseInt($('#ticket_billable').val());
+
+	for (var i = 0; i < n_tickets_normal; i++) {
+		var src = 'ticket_normal_visitors_'+i;
+		var year_src = src + '_dob_year';
+		var month_src = src + '_dob_month';
+		var day_src = src + '_dob_day';
+		var name_src = src + '_name';
+		var premium_src = src + '_options_premium_toggle';
+		var cleanup_src = src + '_options_cleanup_toggle';
+		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
+		var ticket = find_ticket_by_dob(dob, false);
+		var name = $('#' + name_src).val();
+		var volunteering = !$('#'+premium_src).val() || $('#'+cleanup_src).val();
+		console.log(volunteering);
+		var price = ticket.price;
+		if (volunteering) {
+			price = ticket.volunteering_price;
+		}
+		var c = {
+			n : 1,
+			price : price,
+			name : ticket.display + " voor " + name,
+		}
+		choices.push(c);
+	}
+
+	console.dir(choices);
+
+}
+
 $(document).ready(function() {
 	$.ajax({
 		url : 'api/get_products',
 		success: function(data) {
 			products = JSON.parse(data);
 			for (var i in products) {
-				console.log(products[i]);
 				if (products[i].max_dob) {
 					products[i].max_dob *= 1000;
 				}
@@ -141,77 +207,100 @@ function purchase_remove(id) {
 	});
 }
 
-function make_cb_dob_change_normal(visitor, year_src, month_src, day_src) {
+function mk_cb_update_visitor_options(index) {
 	return function(e) {
-		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
-		var can_volunteer = dob < ticket_volunteering_cutoff;
-		var ticket = undefined;
-		var f = "";
-		for (var t in products) {
-			if (products[t].name.indexOf('ticket') == -1) {
-				continue;
-			}
-			if (products[t].billable) {
-				continue;
-			}
-			if (dob >= products[t].max_dob) {
-				ticket = products[t];
-				break;
-			}
-		}
-		var visitor_ticket_name = visitor + '_display_ticket_name';
-		var visitor_ticket_price = visitor + '_display_ticket_price';
-		var visitor_premium_toggle = visitor + '_premium_toggle';
-		var visitor_cleanup_toggle = visitor + '_cleanup_toggle';
-		var visitor_veggy_toggle = visitor + '_veggy_toggle';
+		var fmt = "tickets_"+index;
+		var name_id = fmt+"_name";
+		var dob_year_id = fmt+"_dob_year";
+		var dob_month_id = fmt+"_dob_month";
+		var dob_day_id = fmt+"_dob_day";
+		var billable_id = fmt+"_billable";
+		var options_id = fmt+"_options";
 
-		function update_ticket(ticket, show_premium) {
-			var name = ticket.display;
-			var price = ticket.volunteering_price;
+		var dob = new Date($('#'+dob_year_id).val(), $('#'+dob_month_id).val(), $('#'+dob_day_id).val()).getTime();
+		var billable = Boolean($('#'+billable_id).prop('checked'));
+		var can_volunteer = Boolean(dob < ticket_volunteering_cutoff);
 
-			if (show_premium) {
-				name += " (premium)";
-				price = ticket.price;
-			}
-			$('#'+visitor_ticket_name).text(name);
-			$('#'+visitor_ticket_price).text("€"+price);
-		}
+		var ticket = find_ticket_by_dob(dob, billable);
 
+		var ticket_name_id = fmt + "_options_ticket_name";
+		var ticket_price_id = fmt + "_options_ticket_price";
+		var vegitarian_id = fmt + "_options_vegitarian";
+
+		var f = '';
 		// this part needs to be shown for every ticket
 		f += '<div class="row">';
 		f += '  <div class="col-sm-6 col-sm-offset-4">';
-		f += '    <p id="'+visitor_ticket_name+'">'+ticket.name+'</p>';
+		f += '    <p id="'+ticket_name_id+'">'+ticket.display+'</p>';
 		f += '  </div>';
 		f += '  <div class="col-sm-2 text-right">';
-		f += '    <p id="'+visitor_ticket_price+'">€'+ticket.price+'</p>';
+		f += '    <p id="'+ticket_price_id+'">€'+ticket.price+'</p>';
 		f += '  </div>';
 		f += '</div>';
 		f += '<div class="form-group">';
 		f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
 		f += '    <label>';
-		f += '      <input type="checkbox" id="'+visitor_veggy_toggle+'" name="'+visitor_veggy_toggle+'">';
+		f += '      <input type="checkbox" id="'+vegitarian_id+'" name="'+vegitarian_id+'">';
 		f += '      Vegetarisch';
 		f += '    </label>';
 		f += '  </div>';
-		if (can_volunteer) {
+
+		if (billable && can_volunteer) {
+			var volunteering_id = fmt + "_options_volunteers_during";
+			var cleanup_id = fmt + "_options_volunteers_after";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+visitor_premium_toggle+'" name="'+visitor_premium_toggle+'">';
+			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'">';
+			f += '      Help graag mee tijdens kamp';
+			f += '    </label>';
+			f += '  </div>';
+			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'">';
+			f += '      Help opkuisen de dag er na (pizza voorzien!)';
+			f += '    </label>';
+			f += '  </div>';
+		} else if (!billable && can_volunteer) {
+			var premium_id = fmt + "_options_premium";
+			var cleanup_id = fmt + "_options_volunteers_after";
+			f += '  <div class="checkbox col-sm-4 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+premium_id+'" name="'+premium_id+'">';
 			f += '      Premium';
 			f += '    </label>';
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+visitor_cleanup_toggle+'" name="'+visitor_cleanup_toggle+'">';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'">';
 			f += '      Help opkuisen de dag er na (pizza voorzien!)';
 			f += '    </label>';
 			f += '  </div>';
 		}
 		f += '</div>';
-
 		// throw it into the DOM so we can add events to it
-		$('#'+visitor).html(f);
+		$('#'+options_id).html(f);
+		if (billable && can_volunteer) {
+			;
+		} else if (!billable && can_volunteer) {
+			var premium_id = fmt + "_options_premium";
+			var cleanup_id = fmt + "_options_volunteers_after";
+			$('#'+premium_id).on('change', function() {
+				var display_name = '';
+				var display_price = 0;
+				var is_premium = Boolean(this.checked);
+				if (is_premium) {
+					display_name = ticket.display + ' (premium)';
+					display_price = ticket.price;
+				} else {
+					display_name = ticket.display;
+					display_price = ticket.volunteering_price;
+				}
+				$('#'+ticket_name_id).text(display_name);
+				$('#'+ticket_price_id).text('€'+display_price);
+			});
+		}
 
+		/*
 		update_ticket(ticket, false);
 
 		// wire in needed handlers
@@ -226,114 +315,41 @@ function make_cb_dob_change_normal(visitor, year_src, month_src, day_src) {
 				$('#'+visitor_cleanup_toggle).prop('disabled', false);
 			}
 		});
-
+		*/
 		// and collapse it
-		$('#'+visitor).collapse('show');
+		$('#'+options_id).collapse('show');
+
 	}
 }
 
-function make_cb_dob_change_billable(visitor, year_src, month_src, day_src) {
-	return function(e) {
-		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
-		var can_volunteer = dob < ticket_volunteering_cutoff;
-		var ticket = undefined;
-		var f = "";
-		for (var t in products) {
-			if (products[t].name.indexOf('ticket') == -1) {
-				continue;
-			}
-			if (!products[t].billable) {
-				continue;
-			}
-			if (dob >= products[t].max_dob) {
-				ticket = products[t];
-				break;
-			}
-		}
-		var visitor_ticket_name = visitor + '_display_ticket_name';
-		var visitor_ticket_price = visitor + '_display_ticket_price';
-		var visitor_volunteering_toggle = visitor + '_volunteering_toggle';
-		var visitor_cleanup_toggle = visitor + '_cleanup_toggle';
-		var visitor_veggy_toggle = visitor + '_veggy_toggle';
-
-		function update_ticket(ticket, show_volunteering) {
-			var name = ticket.display;
-			var price = ticket.price;
-
-			if (show_volunteering) {
-				name += " (volunteering)";
-				price += ticket.volunteering_price;
-			}
-			$('#'+visitor_ticket_name).text(name);
-			$('#'+visitor_ticket_price).text("€"+price);
-		}
-
-		// this part needs to be shown for every ticket
-		f += '<div class="row">';
-		f += '  <div class="col-sm-6 col-sm-offset-4">';
-		f += '    <p id="'+visitor_ticket_name+'">'+ticket.name+'</p>';
-		f += '  </div>';
-		f += '  <div class="col-sm-2 text-right">';
-		f += '    <p id="'+visitor_ticket_price+'">€'+ticket.price+'</p>';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="form-group">';
-		f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
-		f += '    <label>';
-		f += '      <input type="checkbox" id="'+visitor_veggy_toggle+'" name="'+visitor_veggy_toggle+'">';
-		f += '      Vegetarisch';
-		f += '    </label>';
-		f += '  </div>';
-		if (can_volunteer) {
-			f += '  <div class="checkbox col-sm-4 col-xs-6">';
-			f += '    <label>';
-			f += '      <input type="checkbox" id="'+visitor_volunteering_toggle+'" name="'+visitor_volunteering_toggle+'">';
-			f += '      Help graag mee tijdens kamp';
-			f += '    </label>';
-			f += '  </div>';
-			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
-			f += '    <label>';
-			f += '      <input type="checkbox" id="'+visitor_cleanup_toggle+'" name="'+visitor_cleanup_toggle+'">';
-			f += '      Help opkuisen de dag er na (pizza voorzien!)';
-			f += '    </label>';
-			f += '  </div>';
-		}
-		f += '</div>';
-
-		// throw it into the DOM so we can add events to it
-		$('#'+visitor).html(f);
-
-		update_ticket(ticket, false);
-
-		// and collapse it
-		$('#'+visitor).collapse('show');
-	}
-}
-
-$('#ticket_normal').on('change', function() {
-	var val = parseInt($("#ticket_normal").val());
+$('#n_tickets').on('change', function() {
+	var val = parseInt($("#n_tickets").val());
 	var f = "";
 
 	f += '<div class="row text-center">';
-	f += '  <p><h4>Normale tickets:</h4></p>';
+	f += '  <p><h4>Individuele tickets:</h4></p>';
 	f += '</div>';
 
 	// for each ticket, add some form fields to the collapsible target
 	// each of those containing itself a collapsible part on their own,
 	// which gets collapsed by datepicking
 	for (var i = 0; i < val; i++) {
-		var name_id = "ticket_normal_visitors_"+i+"_name";
-		var dob_year_id = "ticket_normal_visitors_"+i+"_dob_year";
-		var dob_month_id = "ticket_normal_visitors_"+i+"_dob_month";
-		var dob_day_id = "ticket_normal_visitors_"+i+"_dob_day";
-		var options_id = "ticket_normal_visitors_"+i+"_options";
+		var fmt = 'tickets_'+i
+		var name_id = fmt+"_name";
+		var dob_year_id = fmt+"_dob_year";
+		var dob_month_id = fmt+"_dob_month";
+		var dob_day_id = fmt+"_dob_day";
+		var billable_id = fmt+"_billable";
+		var options_id = fmt+"_options";
 		f += '<hr/>';
+		// name box
 		f += '<div class="form-group">';
 		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
 		f += '  <div class="col-sm-8">';
 		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true">';
 		f += '  </div>';
 		f += '</div>';
+		// dob box
 		f += '<div class="form-group">';
 		// XXX label for what?
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
@@ -347,131 +363,45 @@ $('#ticket_normal').on('change', function() {
 		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
+		// bill box
+		f += '<div class="form-group">';
+		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€256+BTW)</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'">'
+		f += '  </div>';
+		f += '</div>';
+		// collapse for options depending on input above
 		f += '<div class="collapsible" id="'+options_id+'">';
 		f += '</div>';
 	}
 	f += '<hr/>';
 
 	// push it into the DOM so we can hook event listeners on it
-	$("#ticket_normal_visitors").html(f);
+	$("#tickets").html(f);
 
 	// for each ticket, add relevant event handlers
 	for (var i = 0; i < val; i++) {
 		// changing the dob should result in a collapse of the
 		// per-ticket options, so wire in the callback giving
 		// it the needed parts to fill the per-ticket collapsable
-		var options_id = "ticket_normal_visitors_"+i+"_options";
-		var dob_year_id = "ticket_normal_visitors_"+i+"_dob_year";
-		var dob_month_id = "ticket_normal_visitors_"+i+"_dob_month";
-		var dob_day_id = "ticket_normal_visitors_"+i+"_dob_day";
-		$("#"+dob_year_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
-		$("#"+dob_month_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
-		$("#"+dob_day_id).on('change', make_cb_dob_change_normal(options_id, dob_year_id, dob_month_id, dob_day_id));
+		var fmt = "tickets_"+i;
+		var name_id = fmt+"_name";
+		var dob_year_id = fmt+"_dob_year";
+		var dob_month_id = fmt+"_dob_month";
+		var dob_day_id = fmt+"_dob_day";
+		var billable_id = fmt+"_billable";
+		var options_id = fmt+"_options";
+		$("#"+dob_year_id).on('change', mk_cb_update_visitor_options(i));
+		$("#"+dob_month_id).on('change', mk_cb_update_visitor_options(i));
+		$("#"+dob_day_id).on('change', mk_cb_update_visitor_options(i));
+		$("#"+billable_id).on('change', mk_cb_update_visitor_options(i));
 	}
 
 	// and collapse the whole target if a nonzero number of tickets was selected
 	if (val) {
-		$("#ticket_normal_visitors").collapse('show');
+		$("#tickets").collapse('show');
 	} else {
-		$("#ticket_normal_visitors").collapse('hide');
-	}
-
-});
-
-$('#ticket_billable').on('change', function() {
-	var val = parseInt($("#ticket_billable").val());
-	var f = "";
-
-	f += '<div class="row text-center">';
-	f += '  <p><h4>Factureerbare tickets:</h4></p>';
-	f += '</div>';
-
-	// for each ticket, add some form fields to the collapsible target
-	// each of those containing itself a collapsible part on their own,
-	// which gets collapsed by datepicking
-	for (var i = 0; i < val; i++) {
-		var name_id = "ticket_billable_visitors_"+i+"_name";
-		var options_id = "ticket_billable_visitors_"+i+"_options";
-		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
-		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
-		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
-		f += '<hr/>';
-		f += '<div class="form-group">';
-		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true">';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="form-group">';
-		// XXX label for what?
-		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
-		f += '  <div class="col-sm-4">';
-		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[0-9]{4}" required aria-required="true" placeholder="YYYY">';
-		f += '  </div>';
-		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="MM">';
-		f += '  </div>';
-		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="DD">';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="collapsible" id="'+options_id+'">';
-		f += '</div>';
-	}
-	// for billables, always include the company details (so long as there is a ticket shown)
-	if (val > 0) {
-		f += '<hr/>';
-		f += '<div class="row text-center">';
-		f += '  <p><h4>Factuurgegevens:</h4></p>';
-		f += '</div>';
-		f += '<hr/>';
-		f += '<div class="form-group">';
-		f += '  <label for="ticket_billable_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="ticket_billable_name" name="ticket_billable_name" type=text required aria-required="true">';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="form-group">';
-		f += '  <label for="ticket_billable_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <textarea class="form-control" id="ticket_billable_address" name="ticket_billable_address" rows="3" required aria-required="true"></textarea>';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="form-group">';
-		f += '  <label for="ticket_billable_vat" class="control-label col-sm-3 col-sm-offset-1">BTW</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="ticket_billable_vat" name="ticket_billable_vat" type=text required aria-required="true" placeholder="BE 4444.333.333">';
-		f += '  </div>';
-		f += '</div>';
-		f += '<hr/>';
-	}
-
-	// push it into the DOM so we can hook event listeners on it
-	$("#ticket_billable_visitors").html(f);
-
-	// for each ticket, add relevant event handlers
-	for (var i = 0; i < val; i++) {
-		var options_id = "ticket_billable_visitors_"+i+"_options";
-		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
-		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
-		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
-
-		// changing the dob should result in a collapse of the
-		// per-ticket options, so wire in the callback giving
-		// it the needed parts to fill the per-ticket collapsable
-		var dob_year_id = "ticket_billable_visitors_"+i+"_dob_year";
-		var dob_month_id = "ticket_billable_visitors_"+i+"_dob_month";
-		var dob_day_id = "ticket_billable_visitors_"+i+"_dob_day";
-		$("#"+dob_year_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
-		$("#"+dob_month_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
-		$("#"+dob_day_id).on('change', make_cb_dob_change_billable(options_id, dob_year_id, dob_month_id, dob_day_id));
-	}
-
-	// and collapse the whole target if a nonzero number of tickets was selected
-	if (val) {
-		$("#ticket_billable_visitors").collapse('show');
-	} else {
-		$("#ticket_billable_visitors").collapse('hide');
+		$("#tickets").collapse('hide');
 	}
 
 });
