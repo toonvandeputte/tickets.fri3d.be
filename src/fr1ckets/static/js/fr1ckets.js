@@ -46,6 +46,7 @@ function find_ticket_by_dob(dob, billable) {
 			break;
 		}
 	}
+	console.log("mapped date "+dob+" to ticket "+ticket.name);
 	return ticket;
 
 }
@@ -70,22 +71,20 @@ function enumerate_choices() {
 		choices.push(c);
 	}
 
-	var n_tickets_normal = parseInt($('#ticket_normal').val());
-	var n_tickets_billable = parseInt($('#ticket_billable').val());
+	var n_tickets = parseInt($('#n_tickets').val());
 
-	for (var i = 0; i < n_tickets_normal; i++) {
-		var src = 'ticket_normal_visitors_'+i;
+	for (var i = 0; i < n_tickets; i++) {
+		var src = 'tickets_'+i;
 		var year_src = src + '_dob_year';
 		var month_src = src + '_dob_month';
 		var day_src = src + '_dob_day';
 		var name_src = src + '_name';
-		var premium_src = src + '_options_premium_toggle';
+		var premium_src = src + '_options_premium';
 		var cleanup_src = src + '_options_cleanup_toggle';
 		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
 		var ticket = find_ticket_by_dob(dob, false);
 		var name = $('#' + name_src).val();
-		var volunteering = !$('#'+premium_src).val() || $('#'+cleanup_src).val();
-		console.log(volunteering);
+		var volunteering = !$('#'+premium_src).prop('checked') || $('#'+cleanup_src).prop('checked');
 		var price = ticket.price;
 		if (volunteering) {
 			price = ticket.volunteering_price;
@@ -207,6 +206,60 @@ function purchase_remove(id) {
 	});
 }
 
+var showing_business_info = false;
+function display_business_info() {
+
+	var n_tickets = parseInt($('#n_tickets').val());
+	var n_tickets_billable = 0;
+
+	console.log("checking");
+	for (var i = 0; i < n_tickets; i++) {
+		var fmt = "tickets_"+i;
+		var billable_id = fmt+"_billable";
+		var billable = Boolean($('#'+billable_id).prop('checked'));
+		if (billable) {
+			n_tickets_billable++;
+		}
+	}
+
+	if (!n_tickets_billable && showing_business_info) {
+		// hide
+		showing_business_info = false;
+		$('#business_info').html('');
+		$('#business_info').collapse('hide');
+	} else if (n_tickets_billable && !showing_business_info) {
+		// display
+		showing_business_info = true;
+		var f = '';
+		f += '<div class="row text-center">';
+		f += '  <p><h4>Factuurgegevens:</h4></p>';
+		f += '</div>';
+		f += '<hr/>';
+		f += '<div class="form-group">';
+		f += '  <label for="business_name" class="control-label col-sm-3 col-sm-offset-1">Bedrijf</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <input class="form-control" id="business_name" name="business_name" type=text required aria-required="true">';
+		f += '  </div>';
+		f += '</div>';
+		f += '<div class="form-group">';
+		f += '  <label for="business_address" class="control-label col-sm-3 col-sm-offset-1">Adres</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <textarea class="form-control" id="business_address" name="business_address" rows="3" required aria-required="true"></textarea>';
+		f += '  </div>';
+		f += '</div>';
+		f += '<div class="form-group">';
+		f += '  <label for="business_vat" class="control-label col-sm-3 col-sm-offset-1">BTW</label>';
+		f += '  <div class="col-sm-8">';
+		f += '    <input class="form-control" id="business_vat" name="business_vat" type=text required aria-required="true" placeholder="BE 4444.333.333">';
+		f += '  </div>';
+		f += '</div>';
+		f += '<hr/>';
+		$('#business_info').html(f);
+		$('#business_info').collapse('show');
+	}
+
+}
+
 function mk_cb_update_visitor_options(index) {
 	return function(e) {
 		var fmt = "tickets_"+index;
@@ -217,6 +270,11 @@ function mk_cb_update_visitor_options(index) {
 		var billable_id = fmt+"_billable";
 		var options_id = fmt+"_options";
 
+		if ($('#'+dob_year_id).val() == '' &&
+			$('#'+dob_month_id).val() == '' &&
+			$('#'+dob_day_id).val() == '') {
+			return;
+		}
 		var dob = new Date($('#'+dob_year_id).val(), $('#'+dob_month_id).val(), $('#'+dob_day_id).val()).getTime();
 		var billable = Boolean($('#'+billable_id).prop('checked'));
 		var can_volunteer = Boolean(dob < ticket_volunteering_cutoff);
@@ -229,22 +287,23 @@ function mk_cb_update_visitor_options(index) {
 
 		var f = '';
 		// this part needs to be shown for every ticket
-		f += '<div class="row">';
-		f += '  <div class="col-sm-6 col-sm-offset-4">';
-		f += '    <p id="'+ticket_name_id+'">'+ticket.display+'</p>';
-		f += '  </div>';
-		f += '  <div class="col-sm-2 text-right">';
-		f += '    <p id="'+ticket_price_id+'">€'+ticket.price+'</p>';
-		f += '  </div>';
-		f += '</div>';
-		f += '<div class="form-group">';
-		f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
-		f += '    <label>';
-		f += '      <input type="checkbox" id="'+vegitarian_id+'" name="'+vegitarian_id+'">';
-		f += '      Vegetarisch';
-		f += '    </label>';
-		f += '  </div>';
-
+		if (ticket) {
+			f += '<div class="row">';
+			f += '  <div class="col-sm-6 col-sm-offset-4">';
+			f += '    <p id="'+ticket_name_id+'">'+ticket.display+'</p>';
+			f += '  </div>';
+			f += '  <div class="col-sm-2 text-right">';
+			f += '    <p id="'+ticket_price_id+'">€'+ticket.price+'</p>';
+			f += '  </div>';
+			f += '</div>';
+			f += '<div class="form-group">';
+			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+vegitarian_id+'" name="'+vegitarian_id+'">';
+			f += '      Vegetarisch';
+			f += '    </label>';
+			f += '  </div>';
+		}
 		if (billable && can_volunteer) {
 			var volunteering_id = fmt + "_options_volunteers_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
@@ -322,6 +381,7 @@ function mk_cb_update_visitor_options(index) {
 	}
 }
 
+$('#n_tickets').on('change', display_business_info);
 $('#n_tickets').on('change', function() {
 	var val = parseInt($("#n_tickets").val());
 	var f = "";
@@ -351,7 +411,6 @@ $('#n_tickets').on('change', function() {
 		f += '</div>';
 		// dob box
 		f += '<div class="form-group">';
-		// XXX label for what?
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
 		f += '  <div class="col-sm-4">';
 		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[0-9]{4}" required aria-required="true" placeholder="YYYY">';
@@ -391,10 +450,12 @@ $('#n_tickets').on('change', function() {
 		var dob_day_id = fmt+"_dob_day";
 		var billable_id = fmt+"_billable";
 		var options_id = fmt+"_options";
-		$("#"+dob_year_id).on('change', mk_cb_update_visitor_options(i));
-		$("#"+dob_month_id).on('change', mk_cb_update_visitor_options(i));
-		$("#"+dob_day_id).on('change', mk_cb_update_visitor_options(i));
-		$("#"+billable_id).on('change', mk_cb_update_visitor_options(i));
+		var cb = mk_cb_update_visitor_options(i);
+		$("#"+dob_year_id).on('change', cb);
+		$("#"+dob_month_id).on('change', cb);
+		$("#"+dob_day_id).on('change', cb);
+		$("#"+billable_id).on('change', display_business_info);
+		$("#"+billable_id).on('change', cb);
 	}
 
 	// and collapse the whole target if a nonzero number of tickets was selected
