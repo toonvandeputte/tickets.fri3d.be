@@ -57,20 +57,17 @@ class TicketForm(Form):
 		validators.Email(message="Really an email?"),
 		])
 
-	ticket_normal = IntegerField('ticket_normal', validators=[
-		validators.NumberRange(min=0, max=10),
-		])
-	ticket_billable = IntegerField('ticket_billable', validators=[
-		validators.NumberRange(min=0, max=10),
+	n_tickets = IntegerField('n_tickets', validators=[
+		validators.NumberRange(min=0, max=20),
 		])
 
 	token = IntegerField('token', validators=[
-		validators.NumberRange(min=0),
+		validators.NumberRange(min=0, max=100),
 		])
 
 	for tshirt in generate_tshirt_names():
 		vars()[tshirt] = IntegerField(tshirt, validators=[
-			validators.NumberRange(min=0),
+			validators.NumberRange(min=0, max=10),
 			])
 
 	terms_payment = BooleanField('', default=False,
@@ -81,43 +78,48 @@ class TicketForm(Form):
 		validators=[
 			validators.DataRequired(message="did not agree to terms")
 		])
+	terms_excellent = BooleanField('', default=False,
+		validators=[
+			validators.DataRequired(message="did not agree to terms")
+		])
 
-def make_form_individual_tickets(n_tickets_normal, n_tickets_billable):
+class BusinessForm(Form):
+	business_name = StringField("business_name", validators=[ validators.DataRequired() ])
+	business_address = StringField("business_address", validators=[ validators.DataRequired() ])
+	business_vat = StringField("business_vat", validators=[ validators.DataRequired() ])
+
+def make_form_individual_tickets(n_tickets):
 	class IndividualTicketForm(Form):
 		pass
 
-	for i in range(n_tickets_normal):
-		fmt = "ticket_normal_visitors_{0}".format(i)
+	for i in range(n_tickets):
+		fmt = "tickets_{0}".format(i)
 		name = fmt + '_name'
 		setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
 
-		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
-			name = fmt + field
-			setattr(IndividualTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
+		name = fmt + '_billable'
+		setattr(IndividualTicketForm, name, BooleanField(name))
+
+		name = fmt = '_dob_year'
+		setattr(IndividualTicketForm, name, IntegerField(name,
+			validators=[
+				validators.NumberRange(min=1900, max=datetime.date.fromtimestamp(time.time()).year)
+				]))
+		name = fmt = '_dob_month'
+		setattr(IndividualTicketForm, name, IntegerField(name,
+			validators=[
+				validators.NumberRange(min=1, max=12)
+				]))
+		name = fmt = '_dob_day'
+		setattr(IndividualTicketForm, name, IntegerField(name,
+			validators=[
+				validators.NumberRange(min=1, max=31)
+				]))
 
 		fmt += "_options"
-		for field in [ '_premium_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
+		for field in [ '_volunteers_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
 			setattr(IndividualTicketForm, name, BooleanField(name))
-
-	for i in range(n_tickets_billable):
-		fmt = "ticket_billable_visitors_{0}".format(i)
-		name = fmt + '_name'
-		setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
-
-		for field in [ '_dob_year', '_dob_month', '_dob_day' ]:
-			name = fmt + field
-			setattr(IndividualTicketForm, name, IntegerField(name, validators=[ validators.NumberRange() ]))
-
-		fmt += "_options"
-		for field in [ '_volunteering_toggle', '_cleanup_toggle', '_veggy_toggle' ]:
-			name = fmt + field
-			setattr(IndividualTicketForm, name, BooleanField(name))
-
-	if (n_tickets_billable > 0):
-		for e in [ 'name', 'address', 'vat' ]:
-			name = 'ticket_billable_{0}'.format(e)
-			setattr(IndividualTicketForm, name, StringField(name, validators=[ validators.DataRequired() ]))
 
 	return IndividualTicketForm
 
@@ -126,7 +128,7 @@ def extract_billing_info(form_tickets):
 	out = {}
 
 	for e in [ 'name', 'address', 'vat' ]:
-		field = getattr(form_tickets, 'ticket_billable_{0}'.format(e), None)
+		field = getattr(form_tickets, 'business_{0}'.format(e), None)
 		out[e] = field.data if field else ''
 
 	return out
@@ -138,13 +140,10 @@ def extract_products(cursor, form_general, form_tickets):
 	known_tickets = sorted([ t for t in p if 'ticket' in t['name'] ], key=lambda t: t['max_dob'], reverse=True)
 	known_tshirts = [ t for t in p if 'tshirt' in t['name'] ]
 	known_tokens = [ t for t in p if 'token' in t['name'] ]
-
+	seen_business_tickets = False
 	out = []
 
-	n_tickets_normal = form_general.ticket_normal.data
-	n_tickets_billable = form_general.ticket_billable.data
-
-	D("n_tickets_normal/_billable={0}/{1}".format(n_tickets_normal, n_tickets_billable))
+	n_tickets = form_general.n_tickets.data
 
 	def find_knowns(known, form):
 		out = []
@@ -167,51 +166,31 @@ def extract_products(cursor, form_general, form_tickets):
 	out.extend(find_knowns(known_tshirts, form_general))
 	out.extend(find_knowns(known_tokens, form_general))
 
-	D("scanning for normal tickets")
-	for i in range(n_tickets_normal):
-		fmt = 'ticket_normal_visitors_{0}'.format(i)
+	for i in range(n_tickets):
+		fmt = 'tickets_{0}'.format(i)
 		dob = datetime.datetime(getattr(form_tickets, fmt + '_dob_year').data,
 			getattr(form_tickets, fmt + '_dob_month').data,
 			getattr(form_tickets, fmt + '_dob_day').data)
+		billable = getattr(form_tickets, fmt + '_billable').data
 		relevant_ticket = None
-		for t in [ t for t in known_tickets if t['billable'] ==  False ]:
+		for t in [ t for t in known_tickets if t['billable'] == billable]:
 			if dob >= t['max_dob']:
 				relevant_ticket = t
 				break
+		if billable:
+			seen_business_tickets = True
 		D("adding ticket: name={0} id={1}".format(relevant_ticket['name'], relevant_ticket['id']))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
 			'person_dob' : dob,
 			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_premium_toggle').data,
-			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_cleanup_toggle').data,
-			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_veggy_toggle').data,
+			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_volunteers_during').data,
+			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
+			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
 		})
 	
-	D("scanning for billable tickets")
-	for i in range(n_tickets_billable):
-		fmt = 'ticket_billable_visitors_{0}'.format(i)
-		dob = datetime.datetime(getattr(form_tickets, fmt + '_dob_year').data,
-			getattr(form_tickets, fmt + '_dob_month').data,
-			getattr(form_tickets, fmt + '_dob_day').data)
-		relevant_ticket = None
-		for t in [ t for t in known_tickets if t['billable'] == True ]:
-			if dob >= t['max_dob']:
-				relevant_ticket = t
-				break
-		D("adding ticket: name={0} id={1}".format(relevant_ticket['name'], relevant_ticket['id']))
-		out.append({
-			'product_id' : relevant_ticket['id'],
-			'n' : 1,
-			'person_dob' : dob,
-			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_during' : getattr(form_tickets, fmt + '_options_volunteering_toggle').data,
-			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_cleanup_toggle').data,
-			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_veggy_toggle').data,
-		})
-
-	return out
+	return out, seen_business_tickets
 
 def price_distribution_strategy(cursor, nonce):
 	"""
@@ -238,15 +217,15 @@ def price_distribution_strategy(cursor, nonce):
 @app.route('/tickets', methods=[ 'GET', 'POST' ])
 @req_auth_basic
 def tickets():
+	D("here");
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
 
 	if form.validate_on_submit():
+		D("main form OK")
 		# the static part of the form is OK, we can check how large the dynamic part is
 		# and build a validator accordingly
-		n_tickets_normal = form.ticket_normal.data
-		n_tickets_billable = form.ticket_billable.data
-		n_tickets = n_tickets_normal + n_tickets_billable
+		n_tickets = form.n_tickets.data
 
 		# check the reservation first
 		reservation = model.reservation_find(g.db_cursor, form.email.data)
@@ -254,38 +233,49 @@ def tickets():
 			# not so fast
 			return redirect(url_for('retry', available_from=reservation['available_from']))
 
-		individual_form = make_form_individual_tickets(n_tickets_normal, n_tickets_billable)()
+		individual_form = make_form_individual_tickets(n_tickets)()
 		if individual_form.validate_on_submit():
+			D("individual form OK")
 			# the dynamic part of the form validated as well, get out all the data
 			# and write to database
-			products  = extract_products(g.db_cursor, form, individual_form)
-			billing_info = extract_billing_info(individual_form)
+			products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
+			
+			if contains_billables:
+				business_form = BusinessForm()
+				if not business_form.validate_on_submit():
+					# business form parse failed
+					return redirect(url_for('retry'))
 
-			# create it all
-			nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info)
+					billing_info = extract_billing_info(business_form)
 
-			# get the prices back (includes reservation discounts, volunteering discounts, ...)
-			price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
-			price_total = price_normal + price_billable
+					# create it all
+					nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info)
 
-			mail_data = {
-				'amount' : price_total,
-				'days_max' : app.config['DAYS_MAX'],
-				'email' : form.email.data
-			}
-			"""
-			mail.send_mail(
-				from_addr=app.config['MAIL_MY_ADDR'],
-				to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
-				subject=texts['MAIL_TICKETS_SUBJECT'],
-				msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
-				msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
-			"""
-			g.db_commit = True
-			return redirect(url_for('confirm', nonce=nonce))
+					# get the prices back (includes reservation discounts, volunteering discounts, ...)
+					price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
+					price_total = price_normal + price_billable
+
+					mail_data = {
+						'amount' : price_total,
+						'days_max' : app.config['DAYS_MAX'],
+						'email' : form.email.data
+					}
+					"""
+					mail.send_mail(
+						from_addr=app.config['MAIL_MY_ADDR'],
+						to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+						subject=texts['MAIL_TICKETS_SUBJECT'],
+						msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
+						msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
+					"""
+					g.db_commit = True
+					return redirect(url_for('confirm', nonce=nonce))
+				else:
 		else:
+			# individual form parse failed
 			return redirect(url_for('retry'))
 	else:
+		# no form submit, or main form parse failed
 		return render_template('tickets.html', form=form, tickets_available=tickets_available)
 
 @app.route('/retry/<reason>', methods=[ 'GET' ])
