@@ -66,7 +66,7 @@
 		</div>
 	</div>
 
-	<form action="tickets" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2">
+	<form action="tickets" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" id="ticket_form">
 		{{ form.csrf_token }}
 
 		<!-- BEGIN EMAIL -->
@@ -252,11 +252,31 @@
 				<p class="form-control-static"><span id="price_total">no js :/</span></p>
 			</div>
 			<div class="col-xs-3 col-sm-6 text-right">
-				<button type="submit" class="btn btn-default">Bestellen</button>
+				<button type="submit" class="btn btn-default" id="check_button">Bestellen</button>
 			</div>
 		</div>
 
 	</form>
+	<div class="modal fade" id="overview_modal" tabindex="-1" role="dialog" arial-labelledby="overview_modal_label">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Sluiten">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="overview_modal_label">Nakijken</h4>
+				</div>
+				<div class="modal-body">
+					<div id="overview_content">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Veranderen</button>
+					<button type="button" class="btn btn-default" id="overview_order">Bestellen!</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 <!-- eff your french article meme -->
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
