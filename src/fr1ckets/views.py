@@ -221,62 +221,63 @@ def tickets():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
 
-	if form.validate_on_submit():
-		D("main form OK")
-		# the static part of the form is OK, we can check how large the dynamic part is
-		# and build a validator accordingly
-		n_tickets = form.n_tickets.data
-
-		# check the reservation first
-		reservation = model.reservation_find(g.db_cursor, form.email.data)
-		if not reservation['available_from'] <= datetime.datetime.utcnow():
-			# not so fast
-			return redirect(url_for('retry', available_from=reservation['available_from']))
-
-		individual_form = make_form_individual_tickets(n_tickets)()
-		if individual_form.validate_on_submit():
-			D("individual form OK")
-			# the dynamic part of the form validated as well, get out all the data
-			# and write to database
-			products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-			
-			if contains_billables:
-				business_form = BusinessForm()
-				if not business_form.validate_on_submit():
-					# business form parse failed
-					return redirect(url_for('retry'))
-
-					billing_info = extract_billing_info(business_form)
-
-					# create it all
-					nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info)
-
-					# get the prices back (includes reservation discounts, volunteering discounts, ...)
-					price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
-					price_total = price_normal + price_billable
-
-					mail_data = {
-						'amount' : price_total,
-						'days_max' : app.config['DAYS_MAX'],
-						'email' : form.email.data
-					}
-					"""
-					mail.send_mail(
-						from_addr=app.config['MAIL_MY_ADDR'],
-						to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
-						subject=texts['MAIL_TICKETS_SUBJECT'],
-						msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
-						msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
-					"""
-					g.db_commit = True
-					return redirect(url_for('confirm', nonce=nonce))
-				else:
-		else:
-			# individual form parse failed
-			return redirect(url_for('retry'))
-	else:
-		# no form submit, or main form parse failed
+	if not form.validate_on_submit():
+		# something amiss in main form, or plain GET
 		return render_template('tickets.html', form=form, tickets_available=tickets_available)
+
+	# the static part of the form is OK, we can check how large the dynamic part is
+	# and build a validator accordingly
+	n_tickets = form.n_tickets.data
+
+	# check the reservation first
+	reservation = model.reservation_find(g.db_cursor, form.email.data)
+	if not reservation['available_from'] <= datetime.datetime.utcnow():
+		# not so fast
+		return redirect(url_for('retry', available_from=reservation['available_from']))
+
+	# validate the dynamic part
+	individual_form = make_form_individual_tickets(n_tickets)()
+	if not individual_form.validate_on_submit():
+		# did not validate OK
+		return redirect(url_for('retry'))
+	
+	# the dynamic part of the form validated as well, get out all the data
+	# and write to database
+	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
+	
+	if contains_billables:
+		# one or more of the products are billable, validate business info
+		business_form = BusinessForm()
+		if not business_form.validate_on_submit():
+			# business form parse failed
+			return redirect(url_for('retry'))
+
+	billing_info = extract_billing_info(business_form)
+
+	# create it all
+	nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info)
+
+	# get the prices back (includes reservation discounts, volunteering discounts, ...)
+	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
+	price_total = price_normal + price_billable
+
+	mail_data = {
+		'amount' : price_total,
+		'days_max' : app.config['DAYS_MAX'],
+		'email' : form.email.data
+	}
+	"""
+	mail.send_mail(
+		from_addr=app.config['MAIL_MY_ADDR'],
+		to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+		subject=texts['MAIL_TICKETS_SUBJECT'],
+		msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
+		msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
+	"""
+	g.db_commit = True
+
+	# smashing!
+	return redirect(url_for('confirm', nonce=nonce))
 
 @app.route('/retry/<reason>', methods=[ 'GET' ])
 @req_auth_basic
