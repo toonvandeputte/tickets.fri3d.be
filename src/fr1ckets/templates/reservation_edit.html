@@ -1,0 +1,42 @@
+{% include "header_bootstrap.html" %}
+<!-- vim: set sw=2 ts=2: -->
+
+{% macro field(form_handle, data_handle=None) -%}
+		<div class="form-group">
+			{{ form_handle.label(class_="control-label col-sm-4") }}
+{% if form_handle.errors %}
+			<i>error: {{form_handle.errors}}</i>
+{% endif %}
+			<div class="col-sm-8">
+				{% if form_handle.type == 'TextAreaField' %}
+					{% set fish = form_handle.process_data(data_handle or "") %}
+					{{ form_handle(class_="form-control", **kwargs) }}
+				{% elif form_handle.type == 'BooleanField' %}
+						{{ form_handle(checked=data_handle, class_="form-control", **kwargs) }}
+				{% else %}
+					{% if data_handle == None %}
+						{{ form_handle(value="", class_="form-control", **kwargs) }}
+					{% else %}
+						{{ form_handle(value=data_handle, class_="form-control", **kwargs) }}
+					{% endif %}
+				{% endif %}
+			</div>
+		</div>
+{% endmacro %}
+
+<div class="row">
+	<form class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" action="{{ form_dest }}" method="POST">
+		{{ form.csrf_token }}
+		{{ field(form.email, reservation.email) }}
+		{{ field(form.discount, reservation.discount) }}
+		{{ field(form.available_from, reservation.available_from) }}
+		{{ field(form.claimed, reservation.claimed) }}
+		{{ field(form.claimed_at, reservation.claimed_at) }}
+		{{ field(form.comments, reservation.comments, rows=10) }}
+		<div class="form-group text-right">
+			<button type="submit" class="btn btn-default">Save</button>
+		</div>
+	</form>
+</div>
+
+{% include "footer_bootstrap.html" %}

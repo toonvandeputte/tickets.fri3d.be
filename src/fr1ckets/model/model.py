@@ -7,6 +7,7 @@ import json
 import random
 import sqlite3
 import datetime
+import copy
 
 D = app.logger.debug
 def random_string(length=32):
@@ -69,6 +70,75 @@ def reservation_claim(cursor, email):
 	D("last_row_id={0}, rowcount={1}".format(cursor.lastrowid, cursor.rowcount))
 
 	return res
+
+def reservation_get(cursor, id=None):
+	f = ""
+	if id:
+		f = " where id=:id"
+	q = """
+		select
+			id,
+			email,
+			discount,
+			available_from,
+			claimed,
+			claimed_at,
+			comments
+		from
+			reservation
+		""" + f + ";"
+	app.logger.debug("q={0}".format(q))
+	cursor.execute(q, { 'id' : id })
+	return cursor.fetchall()
+
+def reservation_delete(cursor, id):
+	q = """
+		delete from
+			reservation
+		where
+			id=:id;
+		"""
+	cursor.execute(q, { 'id' : id })
+
+def reservation_update(cursor, id, values):
+	q = """
+		update
+			reservation
+		set
+			email=:email,
+			discount=:discount,
+			available_from=:available_from,
+			claimed=:claimed,
+			claimed_at=:claimed_at,
+			comments=:comments
+		where
+			id=:id;
+		"""
+	qd = copy.deepcopy(values)
+	qd['id'] = id
+	cursor.execute(q, qd)
+
+def reservation_create(cursor, values):
+	q = """
+		insert into
+			reservation (
+				email,
+				discount,
+				available_from,
+				claimed,
+				claimed_at,
+				comments
+			)
+		values (
+			:email,
+			:discount,
+			:available_from,
+			:claimed,
+			:claimed_at,
+			:comments
+		);
+		"""
+	cursor.execute(q, values)
 
 def purchase_create(cursor, email, products, billing_info):
 	"""

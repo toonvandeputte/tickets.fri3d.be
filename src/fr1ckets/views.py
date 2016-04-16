@@ -3,8 +3,8 @@
 from flask import request, jsonify, session, render_template, redirect, url_for, g, abort, Response
 from flask_wtf import Form
 from wtforms import StringField, validators
-from wtforms import SelectField, BooleanField, IntegerField
-from wtforms.fields.html5 import EmailField
+from wtforms import SelectField, BooleanField, IntegerField, TextAreaField
+from wtforms.fields.html5 import EmailField, DateField, DateTimeField
 from fr1ckets import app
 from fr1ckets.texts import texts
 from fr1ckets.model import model
@@ -308,6 +308,119 @@ def payments():
 			x['overtime'] = False
 
 	return render_template('payments.html', purchases=p, page_opts={ 'internal' : True })
+
+@app.route('/admin/reservations')
+@req_auth_basic
+def reservations():
+	"""
+	build a list of reservations, return
+	"""
+	r = model.reservation_get(g.db_cursor)
+	return render_template('reservations.html', reservations=r,
+			page_opts={
+				'internal' : True
+			})
+
+@app.route('/admin/reservation_delete/<int:id>')
+@req_auth_basic
+def reservation_delete(id):
+	"""
+	delete a reservation based on id
+	"""
+	model.reservation_delete(g.db_cursor, id=id)
+	g.db_commit = True
+	return redirect(url_for('reservations'))
+
+class ReservationForm(Form):
+	"""
+	reservation manipulation form
+	"""
+	email = EmailField('Email address', validators=[
+		validators.Email(message="Really an email?"),
+		])
+	discount = IntegerField('Discount on order in €', validators=[
+		validators.NumberRange(message='Not a number!', min=0),
+		])
+	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Required('Needed field.'),
+		])
+	claimed = BooleanField('Has been claimed')
+	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Optional(),
+		])
+	comments = TextAreaField('Internal comments', validators=[
+		validators.Optional(),
+		])
+
+@app.route('/admin/reservation_edit/<int:id>', methods=[ 'GET', 'POST'])
+@req_auth_basic
+def reservation_edit(id):
+	"""
+	overwrite reservation by id
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'discount' : form.discount.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or '',
+			'comments' : form.comments.data,
+		}
+		model.reservation_update(g.db_cursor, id, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show form
+	res = map(dict, model.reservation_get(g.db_cursor, id))
+	for r in res:
+		r['claimed'] = bool(r['claimed'])
+	return render_template('reservation_edit.html', reservation=res[0],
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_edit', id=id))
+
+@app.route('/admin/reservation_add', methods=[ 'GET', 'POST'])
+@req_auth_basic
+def reservation_add():
+	"""
+	add a reservation
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'discount' : form.discount.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or '',
+			'comments' : form.comments.data,
+		}
+		model.reservation_create(g.db_cursor, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show the form, we use the
+	# always-existing "default" reservation (used when no specific hit
+	# was found) as a template, and substract a week since the caller
+	# will likely want to make a prereservation
+	default_id = model.reservation_find(g.db_cursor, 'default')['id']
+	default_r = dict(model.reservation_get(g.db_cursor, default_id)[0])
+	default_r['email'] = u''
+	default_r['discount'] = 0
+	default_r['available_from'] -= datetime.timedelta(weeks=1)
+	default_r['claimed'] = bool(default_r['claimed'])
+	return render_template('reservation_edit.html', reservation=default_r,
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_add', id=id))
 
 @app.route('/overview', methods=[ 'GET' ])
 @req_auth_basic
