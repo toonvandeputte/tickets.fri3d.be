@@ -179,7 +179,6 @@ def purchase_create(cursor, email, products, billing_info):
 
 	return nonce
 
-
 def products_get(cursor):
 	q = """
 		select
@@ -225,9 +224,8 @@ def get_purchase_total(cursor, nonce, only_billable=False):
 	q = """
 		select
 			sum(purchase_items.n * (case
-				when (
-					purchase_items.person_volunteers_during or
-					purchase_items.person_volunteers_after)
+				when
+					purchase_items.person_volunteers_during
 				then
 					product.volunteering_price
 				else
@@ -286,14 +284,20 @@ def get_purchases(cursor, strip_removed=False):
 			pu.nonce as nonce,
 			pu.created_at as created_at,
 			pu.email as email,
-			pu.handle as handle,
 			pu.paid as paid,
 			pu.removed as removed,
-			sum(pui.n * pr.price) as total_price
+			sum(pui.n * (
+				case
+				when (pui.person_volunteers_during)
+				then pr.volunteering_price
+				else pr.price
+				end)
+			) - res.discount as total_price
 		from
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
 			inner join product pr on pui.product_id = pr.id
+			inner join reservation res on pu.reservation_id = res.id
 		{0}
 		group by
 			pu.id;

@@ -100,17 +100,17 @@ def make_form_individual_tickets(n_tickets):
 		name = fmt + '_billable'
 		setattr(IndividualTicketForm, name, BooleanField(name))
 
-		name = fmt = '_dob_year'
+		name = fmt + '_dob_year'
 		setattr(IndividualTicketForm, name, IntegerField(name,
 			validators=[
 				validators.NumberRange(min=1900, max=datetime.date.fromtimestamp(time.time()).year)
 				]))
-		name = fmt = '_dob_month'
+		name = fmt + '_dob_month'
 		setattr(IndividualTicketForm, name, IntegerField(name,
 			validators=[
 				validators.NumberRange(min=1, max=12)
 				]))
-		name = fmt = '_dob_day'
+		name = fmt + '_dob_day'
 		setattr(IndividualTicketForm, name, IntegerField(name,
 			validators=[
 				validators.NumberRange(min=1, max=31)
@@ -119,8 +119,8 @@ def make_form_individual_tickets(n_tickets):
 		fmt += "_options"
 		for field in [ '_volunteers_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
-			setattr(IndividualTicketForm, name, BooleanField(name))
-
+			setattr(IndividualTicketForm, name, BooleanField(name, default=False))
+	D(IndividualTicketForm.__dict__)
 	return IndividualTicketForm
 
 def extract_billing_info(form_tickets):
@@ -147,11 +147,12 @@ def extract_products(cursor, form_general, form_tickets):
 
 	def find_knowns(known, form):
 		out = []
-		for k_t in known_tshirts:
-			n = getattr(form_general, k_t['name'], None)
+		D("finding knowns in {0}".format(known))
+		for k_t in known:
+			n = getattr(form, k_t['name'], None)
 			if not (n and n.data):
 				continue
-			D("found tshirt {0}: {1}".format(k_t['name'], n.data))
+			D("found {0}: {1}".format(k_t['name'], n.data))
 			out.append({
 				'product_id' : k_t['id'],
 				'n' : n.data,
@@ -185,7 +186,7 @@ def extract_products(cursor, form_general, form_tickets):
 			'n' : 1,
 			'person_dob' : dob,
 			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_volunteers_during').data,
+			'person_volunteers_during' : getattr(form_tickets, fmt + '_options_volunteers_during').data,
 			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
 			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
 		})
@@ -197,7 +198,7 @@ def price_distribution_strategy(cursor, nonce):
 	strategy to figure out where to apply any discounts
 	"""
 	price_total = model.get_purchase_total(g.db_cursor, nonce)
-	price_billable = model.get_purchase_total(g.db_cursor, nonce)
+	price_billable = model.get_purchase_total(g.db_cursor, nonce, True)
 	price_unbillable = price_total - price_billable
 	price_discount = model.get_purchase_discount(g.db_cursor, nonce)
 
@@ -244,14 +245,14 @@ def tickets():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-	
+
+	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
 		business_form = BusinessForm()
 		if not business_form.validate_on_submit():
 			# business form parse failed
 			return redirect(url_for('retry'))
-
 	billing_info = extract_billing_info(business_form)
 
 	# create it all
@@ -338,7 +339,7 @@ class ReservationForm(Form):
 	email = EmailField('Email address', validators=[
 		validators.Email(message="Really an email?"),
 		])
-	discount = IntegerField('Discount on order in €', validators=[
+	discount = IntegerField(u'Discount on order in €', validators=[
 		validators.NumberRange(message='Not a number!', min=0),
 		])
 	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
