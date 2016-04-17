@@ -1,10 +1,13 @@
 var products = [];
 var discount = 0;
 
+var overview_shown = false;
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
 	$('#overview_content').html(update_overview());
 	$('#overview_modal').modal('show');
+	if (overview_shown)
+		return;
 	$('#overview_order').on('click', function() {
 		console.log("calling");
 		$.ajax({
@@ -14,6 +17,7 @@ $('#ticket_form').submit(function(e) {
 		});
 		console.log($('form#ticket_form').serialize());
 	});
+	overview_shown = true;
 });
 
 function update_overview() {
