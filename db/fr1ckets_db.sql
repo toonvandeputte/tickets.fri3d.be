@@ -10,21 +10,21 @@ create table product (
 );
 
 insert into product (name, display, price, volunteering_price, max_dob, billable) values
-	( 'ticket_3bit', '3bit 0-3 jaar', 8, 8, '2013-08-15 02:00:00', 0),
-	( 'ticket_4bit', '4bit 3-6 jaar', 16, 16, '2010-08-15 02:00:00', 0),
-	( 'ticket_5bit', '5bit 6-12 jaar', 32, 32, '2004-08-15 02:00:00', 0),
-	( 'ticket_6bit', '6bit 12-24 jaar', 72, 64, '1992-08-15 02:00:00', 0),
-	( 'ticket_7bit', '7bit +24 jaar', 144, 128, '1900-08-15 02:00:00', 0),
-	( 'ticket_8bit', '8bit zakelijk', 256, 256, '1900-08-15 02:00:00', 1),
-	( 'tshirt_adult_s', 'volwassenen tshirt small', 20, 20, '', 0),
-	( 'tshirt_adult_m', 'volwassenen tshirt middle', 20, 20, '', 0),
-	( 'tshirt_adult_l', 'volwassenen tshirt large', 20, 20, '', 0),
+	( 'ticket_3bit',     '3bit 0-3 jaar',                  8, 8, '2013-08-15 02:00:00', 0),
+	( 'ticket_4bit',     '4bit 3-6 jaar',                  16, 16, '2010-08-15 02:00:00', 0),
+	( 'ticket_5bit',     '5bit 6-12 jaar',                 32, 32, '2004-08-15 02:00:00', 0),
+	( 'ticket_6bit',     '6bit 12-24 jaar',                72, 64, '1992-08-15 02:00:00', 0),
+	( 'ticket_7bit',     '7bit +24 jaar',                  144, 128, '1900-08-15 02:00:00', 0),
+	( 'ticket_8bit',     '8bit zakelijk',                  256, 256, '1900-08-15 02:00:00', 1),
+	( 'tshirt_adult_s',  'volwassenen tshirt small',       20, 20, '', 0),
+	( 'tshirt_adult_m',  'volwassenen tshirt middle',      20, 20, '', 0),
+	( 'tshirt_adult_l',  'volwassenen tshirt large',       20, 20, '', 0),
 	( 'tshirt_adult_xl', 'volwassenen tshirt extra large', 20, 20, '', 0),
-	( 'tshirt_kid_s', 'kinder-tshirt small', 20, 20, '', 0),
-	( 'tshirt_kid_m', 'kinder- tshirt middle', 20, 20, '', 0),
-	( 'tshirt_kid_l', 'kinder- tshirt large', 20, 20, '', 0),
-	( 'tshirt_kid_xl', 'kinder- tshirt extra large', 20, 20, '', 0),
-	( 'token', 'dranktoken', 1.5, 20, '', 0);
+	( 'tshirt_kid_s',    'kinder-tshirt small',            20, 20, '', 0),
+	( 'tshirt_kid_m',    'kinder-tshirt middle',           20, 20, '', 0),
+	( 'tshirt_kid_l',    'kinder-tshirt large',            20, 20, '', 0),
+	( 'tshirt_kid_xl',   'kinder-tshirt extra large',      20, 20, '', 0),
+	( 'token',           'dranktoken',                    1.5, 20, '', 0);
 	
 drop table if exists reservation;
 create table reservation (
