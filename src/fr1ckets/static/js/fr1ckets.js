@@ -1,23 +1,30 @@
 var products = [];
 var discount = 0;
 
-var overview_shown = false;
+$('#overview_order').on('click', function() {
+	$.ajax({
+		url : "http://localhost:5000/api/tickets_register",
+		type : 'post',
+		dataType : 'json',
+		data : $('form#ticket_form').serialize(),
+		success : function(resp) {
+			if (resp.status == 'SUCCESS') {
+				if (resp.redirect) {
+					window.location.href = resp.redirect;
+				}
+			} else if (resp.status == 'FAIL') {
+				if (resp.message) {
+					$('#outcome_content').text(resp.message);
+					$('#outcome_modal').modal('show');
+				}
+			}
+		},
+	});
+});
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
 	$('#overview_content').html(update_overview());
 	$('#overview_modal').modal('show');
-	if (overview_shown)
-		return;
-	$('#overview_order').on('click', function() {
-		console.log("calling");
-		$.ajax({
-			url : window.location.href,
-			type : 'post',
-			data : $('form#ticket_form').serialize(),
-		});
-		console.log($('form#ticket_form').serialize());
-	});
-	overview_shown = true;
 });
 
 function update_overview() {

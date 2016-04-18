@@ -124,7 +124,6 @@ def make_form_individual_tickets(n_tickets):
 	return IndividualTicketForm
 
 def extract_billing_info(form_tickets):
-
 	out = {}
 
 	for e in [ 'name', 'address', 'vat' ]:
@@ -132,7 +131,6 @@ def extract_billing_info(form_tickets):
 		out[e] = field.data if field else ''
 
 	return out
-
 
 def extract_products(cursor, form_general, form_tickets):
 
@@ -215,16 +213,23 @@ def price_distribution_strategy(cursor, nonce):
 	return price_unbillable - price_discount, price_billable
 
 
-@app.route('/tickets', methods=[ 'GET', 'POST' ])
+@app.route('/tickets', methods=[ 'GET' ])
 @req_auth_basic
 def tickets():
-	D("here");
+	form = TicketForm()
+	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
+	return render_template('tickets.html', form=form, tickets_available=tickets_available)
+
+@app.route('/api/tickets_register', methods=[ 'POST' ])
+@req_auth_basic
+def ticket_register():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
 
 	if not form.validate_on_submit():
-		# something amiss in main form, or plain GET
-		return render_template('tickets.html', form=form, tickets_available=tickets_available)
+		return jsonify(
+			status='FAIL',
+			message=u"Het formulier is niet volledig!")
 
 	# the static part of the form is OK, we can check how large the dynamic part is
 	# and build a validator accordingly
@@ -234,14 +239,19 @@ def tickets():
 	reservation = model.reservation_find(g.db_cursor, form.email.data)
 	if not reservation['available_from'] <= datetime.datetime.utcnow():
 		# not so fast
-		return redirect(url_for('retry', available_from=reservation['available_from']))
+		time_to_go = reservation['available_from'] - datetime.datetime.utcnow()
+		return jsonify(
+			status='FAIL',
+			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
 	if not individual_form.validate_on_submit():
 		# did not validate OK
-		return redirect(url_for('retry'))
-	
+		return jsonify(
+			status='FAIL',
+			message=u"Het formulier is niet volledig!")
+
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
@@ -252,7 +262,10 @@ def tickets():
 		business_form = BusinessForm()
 		if not business_form.validate_on_submit():
 			# business form parse failed
-			return redirect(url_for('retry'))
+			return jsonify(
+				status='FAIL',
+				message=u"De zakelijke details zijn niet volledig!")
+
 	billing_info = extract_billing_info(business_form)
 
 	# create it all
@@ -278,7 +291,9 @@ def tickets():
 	g.db_commit = True
 
 	# smashing!
-	return redirect(url_for('confirm', nonce=nonce))
+	return jsonify(
+		status='SUCCESS',
+		redirect=url_for('confirm', nonce=nonce))
 
 @app.route('/retry/<reason>', methods=[ 'GET' ])
 @req_auth_basic
