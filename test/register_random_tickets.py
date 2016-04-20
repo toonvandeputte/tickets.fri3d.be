@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 import requests
 from lxml import html
 import pprint
@@ -11,7 +11,7 @@ import datetime
 def D(*args, **kwargs):
 	print("{0} {1}".format(pprint.pformat(*args), pprint.pformat(kwargs) if kwargs else ''))
 
-auth=('not', 'committed')
+auth=('hello', 'world')
 url=sys.argv[1]
 
 class Form(object):
@@ -102,11 +102,27 @@ class RandomForm(Form):
 					'BTW 111.111.4444')
 
 s = requests.session()
+
+ts = time.time()
+
 r = s.get(url+'/tickets', auth=auth)
+
+timing_page = time.time() - ts
+
 page = html.fromstring(r.text)
 csrf_token = page.forms[0].fields['csrf_token']
 r = RandomForm()
-r.fill(2, csrf_token)
+r.fill(5, csrf_token)
 
+ts = time.time()
 o = s.post(url+'/api/tickets_register', auth=auth, data=r.data)
+timing_post = time.time() - ts
 D(o.text)
+import json
+do = json.loads(o.text)
+if 'redirect' in do:
+	ts = time.time()
+	o = s.get(url+do['redirect'])
+	timing_confirm = time.time() - ts
+
+print "timing: page={0} post={1} confirm={2}".format(timing_page, timing_post, timing_confirm)
