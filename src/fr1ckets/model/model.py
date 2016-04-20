@@ -363,6 +363,9 @@ def get_overview_tickets(cursor):
 def get_overview_tshirts(cursor):
 	return get_overview_something(cursor, 'tshirt')
 
+def get_overview_tokens(cursor):
+	return get_overview_something(cursor, 'token')
+
 def get_timeline_something(cursor, what):
 	"""
 	get a timeline of tickets/tshirts/... on a timeline of

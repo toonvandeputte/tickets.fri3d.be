@@ -1,28 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+{% include "header.html" %}
 <!-- vim: set sw=2 ts=2: -->
-	<head>
-		<meta charset="utf-8">
-		<title>Fri3d Camp 2016</title>
-<!--
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
--->
-		<link rel="stylesheet" href="/static/css/app.css">
-		<link rel="stylesheet" href="/static/css/tickets.css">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-	</head>
-	<body>
-
-{# if we don't have any tickets available, disable some controls #}
-{% if tickets_available == 0 %}
-	{% set inhibit='disabled=\"disabled\"' %}
-{% else %}
-	{% set inhibit='' %}
-{% endif %}
-	{{ disabled }}
-
-<div class="container">
 
 <div class="row">
 	<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
@@ -92,7 +69,7 @@
 		<div class="form-group">
 			<label for="n_tickets" class="col-xs-6 col-sm-3 control-label">Tickets</label>
 			<div class="col-xs-6 col-sm-3">
-				<select id="n_tickets" name="n_tickets" class="form-control" {{ inhibit }}>
+				<select id="n_tickets" name="n_tickets" class="form-control">
 					<option value="0" selected>0</option>
 					<option value="1">1</option>
 					<option value="2">2</option>
@@ -324,18 +301,4 @@
 	</div>
 	<!-- END REGISTRATION OUTCOME MODAL -->
 
-</div>
-<!-- eff your french article meme -->
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js"></script>
-{% if page_opts and page_opts['charting'] %}
-<script src="/static/js/moment.js"></script>
-<script src="/static/js/Chart.js"></script>
-{% endif %}
-{% if page_opts and page_opts['internal'] %}
-<script src="/static/js/fr1ckets_overview.js"></script>
-{% endif %}
-<script src="/static/js/fr1ckets.js"></script>
-	</body>
-</html>
+{% include "footer.html" %}

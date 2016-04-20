@@ -460,14 +460,16 @@ def reservation_add():
 			},
 			form_dest=url_for('reservation_add', id=id))
 
-@app.route('/overview', methods=[ 'GET' ])
+@app.route('/admin/overview', methods=[ 'GET' ])
 @req_auth_basic
 def overview():
 	overview_tickets = model.get_overview_tickets(g.db_cursor)
 	overview_tshirts = model.get_overview_tshirts(g.db_cursor)
+	overview_tokens = model.get_overview_tokens(g.db_cursor)
 	return render_template('overview.html',
 		overview_tickets=overview_tickets,
 		overview_tshirts=overview_tshirts,
+		overview_tokens=overview_tokens,
 		page_opts={
 			'charting' : True,
 			'internal' : True})
@@ -504,7 +506,7 @@ def api_get_products():
 			p['max_dob'] = int(time.mktime(p['max_dob'].timetuple()))
 	return json.dumps(products), 200
 
-@app.route('/api/get_timeline_tickets')
+@app.route('/admin/api/get_timeline_tickets')
 @req_auth_basic
 def api_get_timeline_tickets():
 	timeline_tickets = map(dict, model.get_timeline_tickets(g.db_cursor))
