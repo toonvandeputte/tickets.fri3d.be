@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4:sw=4:noexpandtab
-from flask import request, jsonify, session, render_template, redirect, url_for, g, abort, Response
+from flask import request, jsonify, render_template, redirect, url_for, g, Response
 from flask_wtf import Form
 from wtforms import StringField, validators
-from wtforms import SelectField, BooleanField, IntegerField, TextAreaField
-from wtforms.fields.html5 import EmailField, DateField, DateTimeField
+from wtforms import BooleanField, IntegerField, TextAreaField
+from wtforms.fields.html5 import EmailField, DateTimeField
 from fr1ckets import app
 from fr1ckets.texts import texts
 from fr1ckets.model import model
 from fr1ckets.mail import mail
 from functools import wraps
-import pprint
 import time
 import json
 import datetime
@@ -281,25 +280,21 @@ def ticket_register():
 		'days_max' : app.config['DAYS_MAX'],
 		'email' : form.email.data
 	}
-	"""
-	mail.send_mail(
-		from_addr=app.config['MAIL_MY_ADDR'],
-		to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
-		subject=texts['MAIL_TICKETS_SUBJECT'],
-		msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
-		msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
-	"""
+
+	if form.email.data[-len('.notreal'):] != '.notreal':
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_TICKETS_SUBJECT'],
+			msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
+
 	g.db_commit = True
 
 	# smashing!
 	return jsonify(
 		status='SUCCESS',
 		redirect=url_for('confirm', nonce=nonce))
-
-@app.route('/retry/<reason>', methods=[ 'GET' ])
-@req_auth_basic
-def retry(reason=None):
-	return render_template('retry.html', reason=reason)
 
 @app.route('/confirm/<nonce>', methods=[ 'GET' ])
 @req_auth_basic
@@ -532,15 +527,6 @@ def api_get_reservation(email):
 	return json.dumps({
 			'discount' : r['discount'],
 			'available_from' : int(time.mktime(r['available_from'].timetuple())),
-		})
-@app.route("/api/get_purchase_total/<nonce>", methods=[ 'GET' ])
-def api_get_purchase_total(nonce):
-	p = model.get_purchase_total(g.db_cursor, nonce)
-	b = model.get_purchase_total(g.db_cursor, nonce, True)
-	d = model.get_purchase_discount(g.db_cursor, nonce)
-	# prune what we need
-	return json.dumps({
-			'price' : p-d,
 		})
 
 @app.route("/")

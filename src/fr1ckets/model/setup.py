@@ -19,5 +19,3 @@ def wrapup_db(error):
 		else:
 			db_con.commit()
 		db_con.close()
-	else:
-		app.logger.error("wrapup_db(error={0}), no db_con?".format(error))
