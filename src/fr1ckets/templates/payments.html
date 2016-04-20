@@ -1,5 +1,19 @@
-{% include "header.html" %}
+{% include "header_bootstrap.html" %}
 <!-- vim: set sw=2 ts=2: -->
+
+<div class="row">
+	<div class="col s4">
+		<p>Total of active tickets:</p>
+		<h2>{{ tickets_total }}</h2>
+	</div>
+	<div class="col s4">
+		<p>Total of available tickets:</p>
+		<h2>{{ tickets_available }}</h2>
+	</div>
+	<div class="col s4">
+		<p>Total of purchases un-queueable:</p>
+		<h2>{{ purchases_dequeueable }}</h2>
+	</div>
 
 <div class="row">
 	<div class="col s12">
@@ -9,28 +23,29 @@
 					<th data-field="date">date</th>
 					<th data-field="id">purchase id</th>
 					<th data-field="email">email</th>
-					<th data-field="handle">handle</th>
 					<th data-field="total_price">total price</th>
+					<th data-field="n_tickets">tickets</th>
 					<th data-field="paid?">mark paid</th>
 					<th data-field="removed?">remove</th>
+					<th data-field="dequeue?">dequeue?</th>
 				</tr>
 			</thead>
 			<tbody>
-				{% for p in purchases %}
+{% for p in purchases %}
 				<tr id="row_{{ p.id }}">
-					{% if p.overtime %}
+	{% if p.overtime %}
 						<td><font color="red">{{ p.created_at }}</font></td>
-					{% else %}
+	{% else %}
 						<td>{{ p.created_at }}</td>
-					{% endif %}
+	{% endif %}
 					<td>{{ p.id }}</td>
 					<td>{{ p.email }}</td>
-					<td>{{ p.handle }}</td>
 					<td>{{ p.total_price }}</td>
+					<td>{{ p.n_tickets }}</td>
 					<td>
 						<div class="switch">
 							<label>
-								<input type="checkbox" {% if p.paid %}checked{% endif %} onclick="mark_paid({{ p.id }});">
+								<input type="checkbox" id="switch_paid_{{p.id}}" {% if p.paid %}checked{% endif %} onclick="purchase_mark_paid({{ p.id }});">
 								<span class="lever"></span>
 							</label>
 						</div>
@@ -38,13 +53,24 @@
 					<td>
 						<div class="switch">
 							<label>
-								<input type="checkbox" {% if p.removed %}checked{% endif %} onclick="purchase_remove({{ p.id }});">
+								<input type="checkbox" id="switch_removed_{{p.id}}"  {% if p.removed %}checked{% endif %} onclick="purchase_mark_removed({{ p.id }});">
 								<span class="lever"></span>
 							</label>
 						</div>
 					</td>
+	{% if p.can_dequeue %}
+					<td>
+						<a class="waves-effect waves-light btn" onclick="purchase_mark_dequeued({{ p.id }});">dequeue</a>
+					</td>
+	{% else %}
+		{% if p.queued %}
+					<td>queued, no room</td>
+		{% else %}
+					<td>active</td>
+		{% endif %}
+	{% endif %}
 				</tr>
-				{% endfor %}
+{% endfor %}
 			</tbody>
 		</table>
 	</div>

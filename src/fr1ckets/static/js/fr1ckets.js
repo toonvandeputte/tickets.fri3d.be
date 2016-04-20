@@ -201,7 +201,7 @@ function update_price_total_display() {
 
 $(document).ready(function() {
 	$.ajax({
-		url : 'api/get_products',
+		url : '/api/get_products',
 		success: function(data) {
 			products = JSON.parse(data);
 			for (var i in products) {

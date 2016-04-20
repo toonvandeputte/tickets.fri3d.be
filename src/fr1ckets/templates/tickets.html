@@ -52,13 +52,17 @@
 			<div class="well"> <!--page-header">-->
 				<h1>Hallo!</h1>
 				<h4>
-					{% if tickets_available > 0 %}
+					{% if tickets_available > 10 %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Er zijn nog <b>{{ tickets_available }}</b> tickets beschikbaar!</p>
 					<p>Bij verdere vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					{% elif tickets_available > 0 %}
+					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
+					<p>Er zijn nog maar <b>{{ tickets_available }}</b> tickets beschikbaar! Je kan er meer bestellen, maar dan komt je bestelling in de wachtrij tot er terug plaatsen vrij zijn, we laten je dan iets weten.</p>
+					<p>Bij verdere vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% else %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
-					<p>Alle tickets zijn de deur uit! Maar je kan nog rustig tshirts bijbestellen hoor.</p>
+					<p>Alle beschikbare tickets zijn weg! Je kan zeker nog een bestelling plaatsen, deze komt in de wachtrij en we laten je iets weten als er terug plaats is.</p>
 					<p>Bij verdere vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% endif %}
 				</h4>

@@ -44,10 +44,14 @@
 			<div class="well">
 				<h1>Danku!</h1>
 				<h4>
+{% if not queued %}
 					<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
 					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de bestelde items terug te koop aanbieden.</p>
-{% if price_billable > 0 %}
+	{% if price_billable > 0 %}
 					<p>U hebt één of meerdere factureerbare tickets gekocht. We sturen u spoedig een factuur voor €{{ price_billable }}.</p>
+	{% endif %}
+{% else %}
+				<p>Er zijn niet genoeg ticketten beschikbaar voor uw bestelling. We hebben je bestelling op de wachtrij gezet, als er voldoende plaatsen vrijkomen laten we je zeker iets weten.</p>
 {% endif %}
 				<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
 					<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>

@@ -48,7 +48,7 @@ def reservation_find(cursor, email):
 def reservation_claim(cursor, email):
 	res = reservation_find(cursor, email)
 	if res['email'] == 'default':
-		return res['id']
+		return res
 
 	q = """
 		update
@@ -140,7 +140,7 @@ def reservation_create(cursor, values):
 		"""
 	cursor.execute(q, values)
 
-def purchase_create(cursor, email, products, billing_info):
+def purchase_create(cursor, email, products, billing_info, queued):
 	"""
 	"""
 	now = datetime.datetime.utcnow()
@@ -152,12 +152,12 @@ def purchase_create(cursor, email, products, billing_info):
 	# the purchase proper
 	q = """
 		insert into purchase (
-			email, nonce, reservation_id, created_at,
+			email, nonce, reservation_id, created_at, queued,
 			business_name, business_address, business_vat )
 		values
-			(?, ?, ?, ?, ?, ?, ?);
+			(?, ?, ?, ?, ?, ?, ?, ?);
 		"""
-	cursor.execute(q, (email, nonce, reservation['id'], now,
+	cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 		billing_info['name'], billing_info['address'], billing_info['vat']))
 
 	purchase_id = cursor.lastrowid
@@ -178,6 +178,24 @@ def purchase_create(cursor, email, products, billing_info):
 	#cursor.executemany(q, products)
 
 	return nonce
+
+def purchase_get(cursor, nonce):
+	q = """
+		select
+			email,
+			reservation_id,
+			created_at,
+			queued,
+			business_name,
+			business_address,
+			business_vat
+		from
+			purchase
+		where
+			nonce=:nonce;
+		"""
+	cursor.execute(q, { 'nonce' : nonce })
+	return cursor.fetchone()
 
 def products_get(cursor):
 	q = """
@@ -245,10 +263,10 @@ def get_purchase_total(cursor, nonce, only_billable=False):
 	rs = cursor.fetchone()
 	return rs['total'] or 0
 
-def get_total_tickets(cursor):
+def tickets_actual_total(cursor):
 	"""
-	get total number of tickets currently ordered by everyone,
-	excluding removed orders
+	get the number of tickets we actually expect to attend, meaning
+	every ticket not removed or queued
 	"""
 	q = """
 		select
@@ -259,7 +277,8 @@ def get_total_tickets(cursor):
 			inner join purchase on purchase_items.purchase_id = purchase.id
 		where
 			product.name like 'ticket%' AND
-			purchase.removed = 0;
+			purchase.removed = 0 and
+			purchase.queued = 0;
 		"""
 	cursor.execute(q)
 	rs = cursor.fetchone()
@@ -286,13 +305,21 @@ def get_purchases(cursor, strip_removed=False):
 			pu.email as email,
 			pu.paid as paid,
 			pu.removed as removed,
+			pu.queued as queued,
 			sum(pui.n * (
 				case
 				when (pui.person_volunteers_during)
 				then pr.volunteering_price
 				else pr.price
 				end)
-			) - res.discount as total_price
+			) - res.discount as total_price,
+			sum(
+				case
+				when pr.name like 'ticket%'
+				then pui.n
+				else 0
+				end
+			) as n_tickets
 		from
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
@@ -364,12 +391,17 @@ def get_timeline_tshirts(cursor):
 	return get_timeline_something(cursor, 'tshirt')
 
 
-def purchase_mark_paid(cursor, purchase_id):
+def purchase_mark_paid(cursor, purchase_id, paid):
 	"""mark a purchase as being paid"""
-	q = "update purchase set paid = 1, paid_at = :now where id = :purchase_id;"
-	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })
+	q = "update purchase set paid = :paid, paid_at = :now where id = :purchase_id;"
+	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'paid' : paid })
 
-def purchase_remove(cursor, purchase_id):
+def purchase_mark_removed(cursor, purchase_id, removed):
 	"""mark a purchase as being removed"""
-	q = "update purchase set removed=1, removed_at=:now where id = :purchase_id;"
-	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })
+	q = "update purchase set removed=:removed, removed_at=:now where id = :purchase_id;"
+	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'removed' : removed })
+
+def purchase_mark_dequeued(cursor, purchase_id):
+	"""mark a purchase as being removed"""
+	q = "update purchase set queued=0 where id = :purchase_id;"
+	cursor.execute(q, { 'purchase_id' : purchase_id })

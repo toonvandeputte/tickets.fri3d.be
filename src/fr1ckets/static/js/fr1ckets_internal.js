@@ -1,6 +1,12 @@
 $(document).ready(function() {
-	load_chart_chartjs();
+	if (document.getElementById('chart_timeline')) {
+		load_chart_chartjs();
+	}
 });
+
+// =============================================================
+// overview page
+// =============================================================
 
 function newDate(d) {
 	return moment().add(d,'d').toDate();
@@ -44,6 +50,50 @@ function load_chart_chartjs() {
 			var chart_timeline = new Chart(ctx, config);
 		},
 		error : function(data) {
+		},
+	});
+}
+
+// =============================================================
+// payments page
+// =============================================================
+
+function purchase_mark_paid(id) {
+	var val = $('#switch_paid_'+id).prop('checked') ? 1 : 0;
+	$.ajax({
+		url: "/admin/api/purchase_mark_paid/" + id + '/' + val,
+		success: function(data) {
+			$('#mark_paid_' + id).html("great!");
+			$('#remove_' + id).html("great!");
+			window.location.reload(true);
+		},
+		error: function(data) {
+			$('#mark_paid_' + id).html('FAILED!');
+		},
+	});
+}
+function purchase_mark_removed(id) {
+	var val = $('#switch_removed_'+id).prop('checked') ? 1 : 0;
+	$.ajax({
+		url: "/admin/api/purchase_mark_removed/" + id + '/' + val,
+		success: function(data) {
+			$('#remove_' + id).html("great!");
+			window.location.reload(true);
+		},
+		error: function(data) {
+			$('#remove_' + id).html('FAILED!');
+		},
+	});
+}
+function purchase_mark_dequeued(id) {
+	$.ajax({
+		url: "/admin/api/purchase_mark_dequeued/" + id,
+		success: function(data) {
+			$('#remove_' + id).html("great!");
+			window.location.reload(true);
+		},
+		error: function(data) {
+			$('#remove_' + id).html('FAILED!');
 		},
 	});
 }

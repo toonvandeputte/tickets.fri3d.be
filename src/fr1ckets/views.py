@@ -217,19 +217,19 @@ def price_distribution_strategy(cursor, nonce):
 @req_auth_basic
 def tickets():
 	form = TicketForm()
-	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
+	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
 	return render_template('tickets.html', form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
 @req_auth_basic
 def ticket_register():
 	form = TicketForm()
-	tickets_available = app.config['TICKETS_MAX'] - model.get_total_tickets(g.db_cursor)
+	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
 
 	if not form.validate_on_submit():
 		return jsonify(
 			status='FAIL',
-			message=u"Het formulier is niet volledig!")
+			message=u"Het formulier is niet volledig! ({0})".format(", ".join(form.errors)))
 
 	# the static part of the form is OK, we can check how large the dynamic part is
 	# and build a validator accordingly
@@ -269,7 +269,8 @@ def ticket_register():
 	billing_info = extract_billing_info(business_form)
 
 	# create it all
-	nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info)
+	queued = True if tickets_available < n_tickets else False
+	nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info, queued)
 
 	# get the prices back (includes reservation discounts, volunteering discounts, ...)
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
@@ -304,18 +305,26 @@ def retry(reason=None):
 @req_auth_basic
 def confirm(nonce=None):
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
+	purchase = model.purchase_get(g.db_cursor, nonce)
 	return render_template('confirm.html',
+			queued=purchase['queued'],
 			price_total=price_normal + price_billable,
 			price_billable=price_billable,
 			days_max=app.config['DAYS_MAX'])
 
-@app.route('/payments', methods=[ 'GET' ])
+@app.route('/admin/payments', methods=[ 'GET' ])
 @req_auth_basic
 def payments():
 	now = datetime.datetime.utcnow()
 	time_delta = datetime.timedelta(days=app.config['DAYS_MAX'])
 
 	p = map(dict, model.get_purchases(g.db_cursor, strip_removed=False))
+	tickets_total = model.tickets_actual_total(g.db_cursor)
+	tickets_available = app.config['TICKETS_MAX'] - tickets_total
+	tickets_available_dequeueing = tickets_available
+	purchases_dequeueable = 0
+
+	considering_dequeue = True
 	for x in p:
 		created_at = datetime.datetime.strptime(x['created_at'], '%Y-%m-%d %H:%M:%S.%f')
 		if not x['paid'] and (created_at + time_delta) < now:
@@ -323,7 +332,20 @@ def payments():
 		else:
 			x['overtime'] = False
 
-	return render_template('payments.html', purchases=p, page_opts={ 'internal' : True })
+		x['can_dequeue'] = False
+		if considering_dequeue and x['queued'] and not x['removed']:
+			# encountered a queued one, can we show it as dequeue-able?
+			if x['n_tickets'] <= tickets_available_dequeueing:
+				x['can_dequeue'] = True
+				tickets_available_dequeueing -= x['n_tickets']
+				purchases_dequeueable += 1
+			else:
+				considering_dequeue = False
+
+	return render_template('payments.html',
+			tickets_total=tickets_total, tickets_available=tickets_available,
+			purchases_dequeueable=purchases_dequeueable,
+			purchases=p, page_opts={ 'internal' : True })
 
 @app.route('/admin/reservations')
 @req_auth_basic
@@ -450,19 +472,27 @@ def overview():
 			'charting' : True,
 			'internal' : True})
 
-@app.route('/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
+@app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
 @req_auth_basic
 def api_purchase_mark_paid(purchase_id, paid):
-	model.purchase_mark_paid(g.db_cursor, purchase_id)
+	model.purchase_mark_paid(g.db_cursor, purchase_id, paid)
 	g.db_commit = True
 	return "ok", 200
 
-@app.route('/api/purchase_remove/<int:purchase_id>', methods=[ 'GET' ])
+@app.route('/admin/api/purchase_mark_removed/<int:purchase_id>/<int:removed>', methods=[ 'GET' ])
 @req_auth_basic
-def api_purchase_remove(purchase_id):
-	model.purchase_remove(g.db_cursor, purchase_id)
+def api_purchase_mark_removed(purchase_id, removed):
+	model.purchase_mark_removed(g.db_cursor, purchase_id, removed)
 	g.db_commit = True
 	return "ok", 200
+
+@app.route('/admin/api/purchase_mark_dequeued/<int:purchase_id>', methods=[ 'GET' ])
+@req_auth_basic
+def api_purchase_mark_dequeued(purchase_id):
+	model.purchase_mark_dequeued(g.db_cursor, purchase_id)
+	g.db_commit = True
+	return "ok", 200
+
 
 @app.route('/api/get_products', methods=[ 'GET' ])
 @req_auth_basic
@@ -506,8 +536,6 @@ def api_get_purchase_total(nonce):
 	p = model.get_purchase_total(g.db_cursor, nonce)
 	b = model.get_purchase_total(g.db_cursor, nonce, True)
 	d = model.get_purchase_discount(g.db_cursor, nonce)
-	D("d={0}".format(d))
-	D("b={0}".format(b))
 	# prune what we need
 	return json.dumps({
 			'price' : p-d,
