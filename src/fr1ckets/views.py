@@ -285,9 +285,9 @@ def ticket_register():
 		mail.send_mail(
 			from_addr=app.config['MAIL_MY_ADDR'],
 			to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
-			subject=texts['MAIL_TICKETS_SUBJECT'],
-			msg_html=texts['MAIL_TICKETS_HTML'].format(**mail_data),
-			msg_text=texts['MAIL_TICKETS_TEXT'].format(**mail_data))
+			subject=texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'],
+			msg_html=texts['MAIL_TICKETS_ORDERED_OK_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_TICKETS_ORDERED_OK_TEXT'].format(**mail_data))
 
 	g.db_commit = True
 
