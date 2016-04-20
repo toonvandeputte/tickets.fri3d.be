@@ -39,7 +39,7 @@ class Form(object):
 	
 	def set_tshirt(self, which, n):
 		if which in self.tshirt_choices:
-			self.data['tshirt_'+which] = n
+			self.data[which] = n
 		else:
 			print "not a valid tshirt, this {0}".format(which)
 
@@ -94,6 +94,7 @@ class RandomForm(Form):
 			name = '{0} {1}'.format(ext, base)
 			dob = datetime.datetime.fromtimestamp(random.randrange(age_max, age_min))
 			self.add_ticket(name, dob, *( bool(random.randint(0, 1)) for _ in range(4) ))
+			self.set_tshirt(random.choice(self.tshirt_choices), 1)
 
 		if self.need_business_info():
 			self.set_business_info(
@@ -112,7 +113,7 @@ timing_page = time.time() - ts
 page = html.fromstring(r.text)
 csrf_token = page.forms[0].fields['csrf_token']
 r = RandomForm()
-r.fill(5, csrf_token)
+r.fill(random.randrange(1, 3), csrf_token)
 
 ts = time.time()
 o = s.post(url+'/api/tickets_register', auth=auth, data=r.data)
