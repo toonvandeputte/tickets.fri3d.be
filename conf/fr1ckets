@@ -1,7 +1,7 @@
 server {
 
-	listen 8080;
-	server_name fr.vps.cw.gs;
+	listen 80;
+	server_name vm-fr1ckets;
 
 	location / { try_files $uri @fr1ckets; }
 	location @fr1ckets {
@@ -9,4 +9,8 @@ server {
 		uwsgi_modifier1 30;
 		uwsgi_pass 127.0.0.1:3000;
 	}
+	location /static {
+		alias /usr/share/fr1ckets/src/fr1ckets/static;
+	}
+
 }
