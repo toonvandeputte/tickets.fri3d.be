@@ -282,12 +282,21 @@ def ticket_register():
 	}
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
-		mail.send_mail(
-			from_addr=app.config['MAIL_MY_ADDR'],
-			to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
-			subject=texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'],
-			msg_html=texts['MAIL_TICKETS_ORDERED_OK_HTML'].format(**mail_data),
-			msg_text=texts['MAIL_TICKETS_ORDERED_OK_TEXT'].format(**mail_data))
+		if not queued:
+			mail.send_mail(
+				from_addr=app.config['MAIL_MY_ADDR'],
+				to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+				subject=texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'],
+				msg_html=texts['MAIL_TICKETS_ORDERED_OK_HTML'].format(**mail_data),
+				msg_text=texts['MAIL_TICKETS_ORDERED_OK_TEXT'].format(**mail_data))
+		else:
+			mail.send_mail(
+				from_addr=app.config['MAIL_MY_ADDR'],
+				to_addrs=[ form.email.data, app.config['MAIL_CC_ADDR'] ],
+				subject=texts['MAIL_TICKETS_ORDERED_QUEUE_SUBJECT'],
+				msg_html=texts['MAIL_TICKETS_ORDERED_QUEUE_HTML'].format(**mail_data),
+				msg_text=texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'].format(**mail_data))
+
 
 	g.db_commit = True
 
@@ -300,7 +309,7 @@ def ticket_register():
 @req_auth_basic
 def confirm(nonce=None):
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
-	purchase = model.purchase_get(g.db_cursor, nonce)
+	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
 	return render_template('confirm.html',
 			queued=purchase['queued'],
 			price_total=price_normal + price_billable,
@@ -476,6 +485,20 @@ def overview():
 @req_auth_basic
 def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id, paid)
+	if not paid:
+		return "ok", 200
+
+	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
+	email = purchase['email']
+
+	if email[-len('.notreal'):] != '.notreal':
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_PAYMENT_RECEIVED_SUBJECT'],
+			msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'],
+			msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'])
+
 	g.db_commit = True
 	return "ok", 200
 
@@ -490,6 +513,26 @@ def api_purchase_mark_removed(purchase_id, removed):
 @req_auth_basic
 def api_purchase_mark_dequeued(purchase_id):
 	model.purchase_mark_dequeued(g.db_cursor, purchase_id)
+	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
+	email = purchase['email']
+
+	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
+	price_total = price_normal + price_billable
+
+	mail_data = {
+		'amount' : price_total,
+		'days_max' : app.config['DAYS_MAX'],
+		'email' : email,
+	}
+
+	if email[-len('.notreal'):] != '.notreal':
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_UNQUEUED_SUBJECT'],
+			msg_html=texts['MAIL_UNQUEUED_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_UNQUEUED_TEXT'].format(**mail_data))
+
 	g.db_commit = True
 	return "ok", 200
 
@@ -498,7 +541,6 @@ def api_purchase_mark_dequeued(purchase_id):
 @req_auth_basic
 def api_get_products():
 	products = map(dict, model.products_get(g.db_cursor))
-	D(repr(products))
 	for p in products:
 		if p['max_dob']:
 			p['max_dob'] = int(time.mktime(p['max_dob'].timetuple()))

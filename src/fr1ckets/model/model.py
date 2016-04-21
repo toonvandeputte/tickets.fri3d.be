@@ -1,11 +1,6 @@
-from flask import request, jsonify
 from fr1ckets import app
-import pprint
 import string
-import time
-import json
 import random
-import sqlite3
 import datetime
 import copy
 
@@ -179,7 +174,13 @@ def purchase_create(cursor, email, products, billing_info, queued):
 
 	return nonce
 
-def purchase_get(cursor, nonce):
+def purchase_get(cursor, nonce=None, id=None):
+	qf = []
+	if nonce:
+		qf.append("nonce=:nonce")
+	if id:
+		qf.append("id=:id")
+
 	q = """
 		select
 			email,
@@ -188,13 +189,14 @@ def purchase_get(cursor, nonce):
 			queued,
 			business_name,
 			business_address,
-			business_vat
+			business_vat,
+			nonce
 		from
 			purchase
 		where
-			nonce=:nonce;
+			""" + " AND ".join(qf) + """;
 		"""
-	cursor.execute(q, { 'nonce' : nonce })
+	cursor.execute(q, { 'nonce' : nonce, 'id' : id })
 	return cursor.fetchone()
 
 def products_get(cursor):
