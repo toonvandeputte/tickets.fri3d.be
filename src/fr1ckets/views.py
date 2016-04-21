@@ -320,6 +320,7 @@ def payments():
 	purchases_dequeueable = 0
 
 	considering_dequeue = True
+	tickets_queued = 0
 	for x in p:
 		created_at = datetime.datetime.strptime(x['created_at'], '%Y-%m-%d %H:%M:%S.%f')
 		if not x['paid'] and (created_at + time_delta) < now:
@@ -336,10 +337,12 @@ def payments():
 				purchases_dequeueable += 1
 			else:
 				considering_dequeue = False
+		if x['queued']:
+			tickets_queued += x['n_tickets']
 
 	return render_template('payments.html',
 			tickets_total=tickets_total, tickets_available=tickets_available,
-			purchases_dequeueable=purchases_dequeueable,
+			purchases_dequeueable=purchases_dequeueable, tickets_queued=tickets_queued,
 			purchases=p, page_opts={ 'internal' : True })
 
 @app.route('/admin/reservations')

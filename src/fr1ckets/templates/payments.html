@@ -2,18 +2,23 @@
 <!-- vim: set sw=2 ts=2: -->
 
 <div class="row">
-	<div class="col-xs-6 col-sm-4 text-center">
+	<div class="col-xs-6 col-sm-3 text-center">
 		<p>Actieve tickets</p>
 		<h2>{{ tickets_total }}</h2>
 	</div>
-	<div class="col-xs-6 col-sm-4 text-center">
+	<div class="col-xs-6 col-sm-3 text-center">
 		<p>Nog beschikbare tickets</p>
 		<h2>{{ tickets_available }}</h2>
 	</div>
-	<div class="col-xs-6 col-sm-4 text-center">
+	<div class="col-xs-6 col-sm-3 text-center">
 		<p>Bestellingen die uit wachtrij kunnen</p>
 		<h2>{{ purchases_dequeueable }}</h2>
 	</div>
+	<div class="col-xs-6 col-sm-3 text-center">
+		<p>Tickets in de wachtrij</p>
+		<h2>{{ tickets_queued }}</h2>
+	</div>
+</div>
 
 <div class="row">
 	<div class="col-xs-12">
