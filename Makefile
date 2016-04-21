@@ -1,7 +1,7 @@
 output = output
 version = $(shell git log -1 --format=%ct-%h)
 project = fr1ckets
-db = /var/tmp/fr1ckets.sqlite
+db = /var/lib/fr1ckets.sqlite
 
 all: populate
 
