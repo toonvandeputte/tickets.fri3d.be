@@ -2,8 +2,12 @@ var products = [];
 var discount = 0;
 
 $('#overview_order').on('click', function() {
+	var root = location.protocol + '//' + location.hostname;
+	if (location.port) {
+		root += ':' + location.port;
+	}
 	$.ajax({
-		url : "http://localhost:5000/api/tickets_register",
+		url : root + '/api/tickets_register',
 		type : 'post',
 		dataType : 'json',
 		data : $('form#ticket_form').serialize(),
