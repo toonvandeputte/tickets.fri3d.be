@@ -116,9 +116,12 @@ r = RandomForm()
 r.fill(random.randrange(1, 3), csrf_token)
 
 ts = time.time()
+x = s.get(url+'/api/get_reservation/' + r.data['email'], auth=auth)
+timing_email = time.time() - ts
+
+ts = time.time()
 o = s.post(url+'/api/tickets_register', auth=auth, data=r.data)
 timing_post = time.time() - ts
-D(o.text)
 import json
 do = json.loads(o.text)
 if 'redirect' in do:
@@ -126,4 +129,4 @@ if 'redirect' in do:
 	o = s.get(url+do['redirect'])
 	timing_confirm = time.time() - ts
 
-print "timing: page={0} post={1} confirm={2}".format(timing_page, timing_post, timing_confirm)
+print "timing: page={0} email={3} post={1} confirm={2} total={4}".format(timing_page, timing_post, timing_confirm, timing_email, timing_page+timing_post+timing_confirm+timing_email)
