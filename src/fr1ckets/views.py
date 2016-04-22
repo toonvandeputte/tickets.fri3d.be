@@ -119,7 +119,6 @@ def make_form_individual_tickets(n_tickets):
 		for field in [ '_volunteers_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
 			setattr(IndividualTicketForm, name, BooleanField(name, default=False))
-	D(IndividualTicketForm.__dict__)
 	return IndividualTicketForm
 
 def extract_billing_info(form_tickets):
@@ -144,12 +143,10 @@ def extract_products(cursor, form_general, form_tickets):
 
 	def find_knowns(known, form):
 		out = []
-		D("finding knowns in {0}".format(known))
 		for k_t in known:
 			n = getattr(form, k_t['name'], None)
 			if not (n and n.data):
 				continue
-			D("found {0}: {1}".format(k_t['name'], n.data))
 			out.append({
 				'product_id' : k_t['id'],
 				'n' : n.data,
@@ -177,7 +174,6 @@ def extract_products(cursor, form_general, form_tickets):
 				break
 		if billable:
 			seen_business_tickets = True
-		D("adding ticket: name={0} id={1}".format(relevant_ticket['name'], relevant_ticket['id']))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
@@ -564,10 +560,9 @@ def api_get_timeline_tickets():
 @app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
-	# prune what we need
 	return json.dumps({
 			'discount' : r['discount'],
-			'available_from' : int(time.mktime(r['available_from'].timetuple())),
+			'available_from' : r['available_from'],
 		})
 
 @app.route("/")

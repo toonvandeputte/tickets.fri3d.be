@@ -23,7 +23,7 @@ Version: $VERSION
 Section: misc
 Priority: optional
 Architecture: all
-Depends: nginx, uwsgi-plugin-python, python-flask, python-pysqlite2, sqlite3, python-flaskext.wtf
+Depends: nginx, uwsgi-plugin-python, python-flask, python-pysqlite2, sqlite3, python-flaskext.wtf, redis-server, python-redis, mysql-server, python-mysqldb
 Maintainer: Jef Van den broeck <jef@codewerken.be>
 Description: fr1ckets, the Fri3d Camp ticketing system
 REDHERRING

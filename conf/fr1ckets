@@ -1,7 +1,7 @@
 server {
 
-	listen 80;
-	server_name vm-fr1ckets;
+	listen 8080;
+	#server_name tickets.fri3d.be;
 
 	location / { try_files $uri @fr1ckets; }
 	location @fr1ckets {

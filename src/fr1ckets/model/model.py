@@ -18,13 +18,17 @@ def reservation_find(cursor, email):
 	"""
 	find any unclaimed reservation for this email, if none is found we return
 	the default reservation
+
+	the timezone stuff is ugly, but mysql happily returns 
 	"""
+	q = "SET @@session.time_zone='+00:00';"
+	cursor.execute(q)
 	q = """
 		select
 			id,
 			email,
 			discount,
-			available_from
+			unix_timestamp(available_from) as available_from
 		from
 			reservation
 		where
