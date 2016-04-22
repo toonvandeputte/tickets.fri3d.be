@@ -5,6 +5,7 @@ import datetime
 import copy
 
 D = app.logger.debug
+
 def random_string(length=32):
 	return ''.join(
 		[ random.SystemRandom().choice(
@@ -27,7 +28,7 @@ def reservation_find(cursor, email):
 		from
 			reservation
 		where
-			email = :email
+			email = %(email)s
 			and claimed = 0;
 		"""
 	qd = { 'email' : email }
@@ -50,11 +51,11 @@ def reservation_claim(cursor, email):
 			reservation
 		set
 			claimed = 1,
-			claimed_at = :now
+			claimed_at = %(now)s
 		where
-			email = :email
+			email = %(email)s
 			AND claimed = 0
-			AND available_from <= datetime('now');
+			AND available_from <= utc_timestamp();
 		"""
 	qd = {
 		'now' : datetime.datetime.utcnow(),
@@ -62,14 +63,13 @@ def reservation_claim(cursor, email):
 	}
 
 	cursor.execute(q, qd)
-	D("last_row_id={0}, rowcount={1}".format(cursor.lastrowid, cursor.rowcount))
 
 	return res
 
 def reservation_get(cursor, id=None):
 	f = ""
 	if id:
-		f = " where id=:id"
+		f = " where id=%(id)s"
 	q = """
 		select
 			id,
@@ -82,7 +82,6 @@ def reservation_get(cursor, id=None):
 		from
 			reservation
 		""" + f + ";"
-	app.logger.debug("q={0}".format(q))
 	cursor.execute(q, { 'id' : id })
 	return cursor.fetchall()
 
@@ -91,7 +90,7 @@ def reservation_delete(cursor, id):
 		delete from
 			reservation
 		where
-			id=:id;
+			id=%(id)s;
 		"""
 	cursor.execute(q, { 'id' : id })
 
@@ -100,14 +99,14 @@ def reservation_update(cursor, id, values):
 		update
 			reservation
 		set
-			email=:email,
-			discount=:discount,
-			available_from=:available_from,
-			claimed=:claimed,
-			claimed_at=:claimed_at,
-			comments=:comments
+			email=%(email)s,
+			discount=%(discount)s,
+			available_from=%(available_from)s,
+			claimed=%(claimed)s,
+			claimed_at=%(claimed_at)s,
+			comments=%(comments)s
 		where
-			id=:id;
+			id=%(id)s;
 		"""
 	qd = copy.deepcopy(values)
 	qd['id'] = id
@@ -125,12 +124,12 @@ def reservation_create(cursor, values):
 				comments
 			)
 		values (
-			:email,
-			:discount,
-			:available_from,
-			:claimed,
-			:claimed_at,
-			:comments
+			%(email)s,
+			%(discount)s,
+			%(available_from)s,
+			%(claimed)s,
+			%(claimed_at)s,
+			%(comments)s
 		);
 		"""
 	cursor.execute(q, values)
@@ -150,7 +149,7 @@ def purchase_create(cursor, email, products, billing_info, queued):
 			email, nonce, reservation_id, created_at, queued,
 			business_name, business_address, business_vat )
 		values
-			(?, ?, ?, ?, ?, ?, ?, ?);
+			(%s, %s, %s, %s, %s, %s, %s, %s);
 		"""
 	cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 		billing_info['name'], billing_info['address'], billing_info['vat']))
@@ -163,23 +162,23 @@ def purchase_create(cursor, email, products, billing_info, queued):
 			purchase_id, product_id, n, person_name, person_dob,
 			person_volunteers_during, person_volunteers_after, person_food_vegitarian)
 		values
-			(:purchase_id, :product_id, :n, :person_name, :person_dob,
-			:person_volunteers_during, :person_volunteers_after, :person_food_vegitarian);
+			(%(purchase_id)s, %(product_id)s, %(n)s, %(person_name)s, %(person_dob)s,
+			%(person_volunteers_during)s, %(person_volunteers_after)s, %(person_food_vegitarian)s);
 		"""
+	D(q)
 	for p in products:
 		p['purchase_id'] = purchase_id
-		D("p={0!r}".format(p))
+		D(p)
 		cursor.execute(q, p)
-	#cursor.executemany(q, products)
 
 	return nonce
 
 def purchase_get(cursor, nonce=None, id=None):
 	qf = []
 	if nonce:
-		qf.append("nonce=:nonce")
+		qf.append("nonce=%(nonce)s")
 	if id:
-		qf.append("id=:id")
+		qf.append("id=%(id)s")
 
 	q = """
 		select
@@ -223,7 +222,7 @@ def get_purchase_discount(cursor, nonce):
 			purchase
 			inner join reservation on purchase.reservation_id = reservation.id
 		where
-			purchase.nonce = :nonce;
+			purchase.nonce = %(nonce)s;
 		"""
 	qd = { 'nonce' : nonce }
 	cursor.execute(q, qd)
@@ -258,7 +257,7 @@ def get_purchase_total(cursor, nonce, only_billable=False):
 			inner join product on purchase_items.product_id = product.id
 			inner join purchase on purchase_items.purchase_id = purchase.id
 		where
-			purchase.nonce = :nonce {0};
+			purchase.nonce = %(nonce)s {0};
 		""".format(f)
 	qd = { 'nonce' : nonce }
 	cursor.execute(q, qd)
@@ -398,15 +397,15 @@ def get_timeline_tshirts(cursor):
 
 def purchase_mark_paid(cursor, purchase_id, paid):
 	"""mark a purchase as being paid"""
-	q = "update purchase set paid = :paid, paid_at = :now where id = :purchase_id;"
+	q = "update purchase set paid = %(paid)s, paid_at = %(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'paid' : paid })
 
 def purchase_mark_removed(cursor, purchase_id, removed):
 	"""mark a purchase as being removed"""
-	q = "update purchase set removed=:removed, removed_at=:now where id = :purchase_id;"
+	q = "update purchase set removed=%(removed)s, removed_at=%(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'removed' : removed })
 
 def purchase_mark_dequeued(cursor, purchase_id):
 	"""mark a purchase as being removed"""
-	q = "update purchase set queued=0 where id = :purchase_id;"
+	q = "update purchase set queued=0 where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id })

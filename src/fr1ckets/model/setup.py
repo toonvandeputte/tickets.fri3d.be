@@ -1,11 +1,14 @@
-import sqlite3
+import MySQLdb
+import MySQLdb.cursors
 from flask import g
 from fr1ckets import app
 
 @app.before_request
 def setup_db():
-	g.db_con = sqlite3.connect(app.config['DB_PATH'], detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
-	g.db_con.row_factory = sqlite3.Row
+	g.db_con = MySQLdb.connect(user=app.config['DB_USER'],
+			passwd=app.config['DB_PASS'],
+			db=app.config['DB_NAME'],
+			cursorclass=MySQLdb.cursors.DictCursor)
 	g.db_cursor = g.db_con.cursor()
 
 @app.teardown_request

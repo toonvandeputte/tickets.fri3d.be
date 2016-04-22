@@ -331,8 +331,7 @@ def payments():
 	considering_dequeue = True
 	tickets_queued = 0
 	for x in p:
-		created_at = datetime.datetime.strptime(x['created_at'], '%Y-%m-%d %H:%M:%S.%f')
-		if not x['paid'] and (created_at + time_delta) < now:
+		if not x['paid'] and (x['created_at'] + time_delta) < now:
 			x['overtime'] = True
 		else:
 			x['overtime'] = False
@@ -485,19 +484,18 @@ def overview():
 @req_auth_basic
 def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id, paid)
-	if not paid:
-		return "ok", 200
 
-	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
-	email = purchase['email']
+	if paid:
+		purchase = model.purchase_get(g.db_cursor, id=purchase_id)
+		email = purchase['email']
 
-	if email[-len('.notreal'):] != '.notreal':
-		mail.send_mail(
-			from_addr=app.config['MAIL_MY_ADDR'],
-			to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
-			subject=texts['MAIL_PAYMENT_RECEIVED_SUBJECT'],
-			msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'],
-			msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'])
+		if email[-len('.notreal'):] != '.notreal':
+			mail.send_mail(
+				from_addr=app.config['MAIL_MY_ADDR'],
+				to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+				subject=texts['MAIL_PAYMENT_RECEIVED_SUBJECT'],
+				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'],
+				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'])
 
 	g.db_commit = True
 	return "ok", 200
@@ -553,12 +551,10 @@ def api_get_timeline_tickets():
 
 	sum = 0
 	for t in timeline_tickets:
-		at = datetime.datetime.strptime(t['at'], '%Y-%m-%d %H:%M:%S.%f')
 		epoch = datetime.datetime(1970, 1, 1)
-		when = (at - epoch).total_seconds()
+		when = (t['at'] - epoch).total_seconds()
 		t['at'] = int(when)
-
-		sum += t['n']
+		sum += int(t['n'])
 		t['n'] = sum
 
 	return json.dumps({

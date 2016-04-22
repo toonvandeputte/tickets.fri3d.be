@@ -19,14 +19,20 @@ $(db):
 	@echo "couldn't find $(db), generating..."
 	sqlite3 $(db) < db/fr1ckets_db.sql
 
-test: $(db)
-	python src/wsgi.py
+test:
+	cp docker/fr1ckets /etc/nginx/sites-enabled
+	cp docker/fr1ckets.ini /etc/uwsgi/apps-enabled
+	/etc/init.d/nginx start
+	/etc/init.d/mysql start
+	-/etc/init.d/uwsgi start
+	mysql -u root --execute "\. /fr1ckets/db/fr1ckets_db.sql"
+	mysql -u root -Dfr1ckets --execute "update reservation set available_from=utc_timestamp();"
 
 deb: all
 	./mkdeb.sh $(project) $(version) $(output)
 
 docker:
-	docker run -it -p 5000:5000 -v $$PWD:/fr1ckets fr1ckets bash
+	docker run -it -p 8080:8080 -v $$PWD:/fr1ckets fr1ckets bash
 
 docker-build:
 	docker build -t fr1ckets docker/
@@ -35,4 +41,4 @@ clean:
 	rm -rf $(output) *.deb
 	find src/ -name '*.pyc' | xargs rm || true
 
-.PHONY: clean serve docker
+.PHONY: clean serve docker test

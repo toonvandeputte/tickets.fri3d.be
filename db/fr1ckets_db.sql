@@ -1,12 +1,21 @@
+-- drop user 'fr1ckets'@'localhost';
+create user 'fr1ckets'@'localhost' identified by 'flotilla';
+grant all on fr1ckets.* to 'fr1ckets'@'localhost';
+
+drop database if exists fr1ckets;
+create database fr1ckets;
+use fr1ckets;
+
 drop table if exists product;
 create table product (
-	id integer primary key autoincrement not null,
-	name text not null,
-	display text not null,
+	id integer auto_increment not null,
+	name varchar(64) not null,
+	display varchar(64) not null,
 	price float not null,
 	volunteering_price float not null,
-	max_dob timestamp not null,
-	billable integer not null
+	max_dob datetime not null,
+	billable integer not null,
+	primary key (id)
 );
 
 insert into product (name, display, price, volunteering_price, max_dob, billable) values
@@ -24,19 +33,20 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'tshirt_kid_m',    'kinder-tshirt middle',           20, 20, '', 0),
 	( 'tshirt_kid_l',    'kinder-tshirt large',            20, 20, '', 0),
 	( 'tshirt_kid_xl',   'kinder-tshirt extra large',      20, 20, '', 0),
-	( 'token',           'dranktoken',                    1.5, 20, '', 0);
+	( 'token',           'dranktoken',                    1.5, 1.5, '', 0);
 	
 drop table if exists reservation;
 create table reservation (
-	id integer primary key autoincrement not null,
-	email text not null,
+	id integer auto_increment not null,
+	email varchar(128) not null,
 	discount integer default 0,
-	available_from timestamp not null,
+	available_from datetime not null,
 	claimed integer default 0,
-	claimed_at text default '',
-	comments text default ''
+	claimed_at datetime default null,
+	comments text default null,
+	primary key (id),
+	index reservation_email_index (email asc)
 );
-create unique index if not exists index_reservation_email on reservation(email);
 
 insert into reservation (email, discount, available_from) values
 	('default',           0,  '2016-06-01 19:00:00.000000'),
@@ -44,44 +54,47 @@ insert into reservation (email, discount, available_from) values
 
 drop table if exists purchase;
 create table purchase (
-	id integer primary key autoincrement not null,
+	id integer auto_increment not null,
 	reservation_id integer,
-	email text not null,
-	nonce text not null,
+	email varchar(128) not null,
+	nonce varchar(128) not null,
 	queued integer default 0,
 	paid integer default 0,
 	removed integer default 0,
-	created_at text not null,
-	removed_at text default '',
-	paid_at text default '',
+	created_at datetime not null,
+	removed_at datetime default null,
+	paid_at datetime default null,
 	comments text default '',
 	business_name text default '',
 	business_address text default '',
 	business_vat text default '',
-	foreign key(reservation_id) references reservation(id)
+	primary key (id),
+	index purchase_nonce_index (nonce asc),
+	constraint purchase_reservation_id_fk foreign key (reservation_id) references reservation (id) on delete set null on update cascade
 );
-create unique index if not exists index_purchase_nonce on purchase(nonce);
 
 drop table if exists purchase_history;
 create table purchase_history (
-	id integer primary key autoincrement not null,
+	id integer auto_increment not null,
 	purchase_id integer,
-	created_at text not null,
+	created_at datetime not null,
 	event text,
-	foreign key(purchase_id) references purchase(id)
+	primary key (id),
+	constraint purchase_history_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update cascade
 );
 
 drop table if exists purchase_items;
 create table purchase_items (
-	id integer primary key autoincrement not null,
+	id integer auto_increment not null,
 	purchase_id integer,
 	product_id integer,
 	n integer not null,
 	person_name text not null,
-	person_dob integer not null,
+	person_dob date not null,
 	person_volunteers_during integer not null,
 	person_volunteers_after integer not null,
 	person_food_vegitarian integer not null,
-	foreign key(purchase_id) references purchase(id),
-	foreign key(product_id) references product(id)
+	primary key (id),
+	constraint purchase_items_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update cascade,
+	constraint purchase_items_product_id_fk foreign key (product_id) references product (id) on delete set null on update cascade
 );
