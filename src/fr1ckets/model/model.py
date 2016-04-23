@@ -28,7 +28,8 @@ def reservation_find(cursor, email):
 			id,
 			email,
 			discount,
-			unix_timestamp(available_from) as available_from
+			unix_timestamp(available_from) as available_from_unix,
+			available_from
 		from
 			reservation
 		where

@@ -562,7 +562,7 @@ def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({
 			'discount' : r['discount'],
-			'available_from' : r['available_from'],
+			'available_from' : r['available_from_unix'],
 		})
 
 @app.route("/")
