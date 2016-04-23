@@ -28,6 +28,7 @@ docker-test:
 	mkdir -p /var/log/celery/
 	@echo "=== restarting daemons ==="
 	/etc/init.d/nginx restart
+	/etc/init.d/redis-server restart
 	/etc/init.d/mysql restart
 	/etc/init.d/supervisor restart
 	-/etc/init.d/uwsgi restart
