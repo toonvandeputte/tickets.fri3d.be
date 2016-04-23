@@ -6,6 +6,7 @@ Ticket website for Fri3d Camp 2016
 A Python-flask app which generates and interprets both the ticket-ordering form and the administrative pages for the orga team. The pages themselves use bootstrap. Datastore is MySQL (was sqlite, again if possible), mail is sent out in the background to a Celery worker pool over Redis.
 
 To work on it, I propose to use docker. On Linux;
+
 1. *make docker-build* (this takes a while, only needed if the image changes)
 2. *make docker-run* (you'll become root within the docker instance)
 3. *make docker-test* (inside the docker instance)
@@ -15,6 +16,7 @@ To work on it, I propose to use docker. On Linux;
 6. ctrl+d ends the docker instance
 
 To roll out, there's a script to generate a .deb;
+
 1.  *make deb*
 2. scp it to a server
 3. *sudo dpkg -i debfile*
@@ -27,6 +29,7 @@ To roll out, there's a script to generate a .deb;
 6. create a *fr1ckets* MySQL database/user, load */usr/share/fr1ckets/db/fr1ckets_db.sql*
 
 A succinct walkthrough of the code in *$checkout/src/fr1ckets/*;
+
 * */views.py* generates all the views, *def tickets* dumps the form, *def ticket_register* parses the submit
 * */texts.py* contains snippets of user-viewable text used by the backend, at the moment all of the mails
 * */model/model.py* does all the database work
