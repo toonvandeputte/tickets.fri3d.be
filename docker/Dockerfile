@@ -8,7 +8,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y	\
 	sqlite3				\
 	python-celery		\
 	python-redis		\
-	python-redis		\
 	redis-server		\
 	mysql-server		\
 	uwsgi				\
@@ -16,8 +15,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y	\
 	uwsgi-plugin-python	\
 	python-mysqldb		\
 	nginx-full			\
+	supervisor			\
 	make
 
 EXPOSE 8080
 
-WORKDIR /fr1ckets
+WORKDIR /usr/share/fr1ckets
