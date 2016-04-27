@@ -508,6 +508,22 @@ def api_purchase_mark_paid(purchase_id, paid):
 @req_auth_basic
 def api_purchase_mark_removed(purchase_id, removed):
 	model.purchase_mark_removed(g.db_cursor, purchase_id, removed)
+
+	if removed:
+		purchase = model.purchase_get(g.db_cursor, id=purchase_id)
+		email = purchase['email']
+		mail_data = {
+			'days_max' : app.config['DAYS_MAX'],
+		}
+
+		if email[-len('.notreal'):] != '.notreal':
+			mail.send_mail(
+				from_addr=app.config['MAIL_MY_ADDR'],
+				to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+				subject=texts['MAIL_REMOVED_SUBJECT'],
+				msg_html=texts['MAIL_REMOVED_HTML'].format(**mail_data),
+				msg_text=texts['MAIL_REMOVED_TEXT'].format(**mail_data))
+
 	g.db_commit = True
 	return "ok", 200
 

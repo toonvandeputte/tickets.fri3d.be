@@ -106,3 +106,28 @@ Met vriendelijke groeten,
 de Fri3d orga.
 
 Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+
+# mail sent when payment has been removed
+texts['MAIL_REMOVED_SUBJECT'] = u"Uw Fri3dcamp 2016 bestelling is geschrapt"
+texts['MAIL_REMOVED_HTML'] = u"""<html>
+<body>
+<p>Beste,</p>
+<p>Daar we nog geen betaling mochten ontvangen binnen de eerder vermelde termijn van {days_max} dagen, hebben we je bestelling geschrapt. De door uw bestelde tickets, tshirts en tokens worden terug te koop aangeboden.</p>
+<p>Mocht deze mail uw betaling kruisen, dan zullen we deze terugstorten.</p>
+<p>Met vriendelijke groeten,</p>
+<p>de Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+</body>
+</html>"""
+
+texts['MAIL_REMOVED_TEXT'] = u"""Beste,
+
+Daar we nog geen betaling mochten ontvangen binnen de eerder vermelde termijn van {days_max} dagen, hebben we je bestelling geschrapt. De door uw bestelde tickets, tshirts en tokens worden terug te koop aangeboden.
+
+Mocht deze mail uw betaling kruisen, dan zullen we deze terugstorten.
+
+Met vriendelijke groeten,
+
+de Fri3d orga.
+
+Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
