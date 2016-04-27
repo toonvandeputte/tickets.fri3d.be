@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4:sw=4:noexpandtab
-from flask import request, jsonify, render_template, redirect, url_for, g, Response
+from flask import request, jsonify, render_template, redirect, url_for, g, Response, session
 from flask_wtf import Form
 from wtforms import StringField, validators
 from wtforms import BooleanField, IntegerField, TextAreaField
@@ -37,6 +37,9 @@ def generate_tshirt_names():
 		for size in [ 's', 'm', 'l', 'xl' ]:
 			out.append("tshirt_{0}_{1}".format(tshirt, size))
 	return out
+
+def prettify_purchase_code(code):
+	return "+++{0}/{1}/{2}+++".format(code[:3], code[3:7], code[7:])
 
 # WTForms is a very nice form generation/validation tool in which one
 # adds members to a Form class which provides oneliners for HTML generation
@@ -213,6 +216,7 @@ def price_distribution_strategy(cursor, nonce):
 def tickets():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
+	D(session)
 	return render_template('tickets.html', form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
@@ -265,7 +269,7 @@ def ticket_register():
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
-	nonce = model.purchase_create(g.db_cursor, form.email.data, products, billing_info, queued)
+	nonce, payment_code = model.purchase_create(g.db_cursor, form.email.data, products, billing_info, queued)
 
 	# get the prices back (includes reservation discounts, volunteering discounts, ...)
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
@@ -274,7 +278,9 @@ def ticket_register():
 	mail_data = {
 		'amount' : price_total,
 		'days_max' : app.config['DAYS_MAX'],
-		'email' : form.email.data
+		'email' : form.email.data,
+		'payment_code' : prettify_purchase_code(payment_code),
+		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
 	}
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
@@ -310,6 +316,8 @@ def confirm(nonce=None):
 			queued=purchase['queued'],
 			price_total=price_normal + price_billable,
 			price_billable=price_billable,
+			payment_code=prettify_purchase_code(purchase['payment_code']),
+			payment_account=app.config['OUR_BANK_ACCOUNT'],
 			days_max=app.config['DAYS_MAX'])
 
 @app.route('/admin/payments', methods=[ 'GET' ])
@@ -517,6 +525,8 @@ def api_purchase_mark_dequeued(purchase_id):
 		'amount' : price_total,
 		'days_max' : app.config['DAYS_MAX'],
 		'email' : email,
+		'payment_code' : prettify_purchase_code(purchase['payment_code']),
+		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
 	}
 
 	if email[-len('.notreal'):] != '.notreal':

@@ -45,7 +45,7 @@
 				<h1>Danku!</h1>
 				<h4>
 {% if not queued %}
-					<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer 111.22222.33 met als vermelding uw email address.</p>
+<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
 					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de bestelde items terug te koop aanbieden.</p>
 	{% if price_billable > 0 %}
 					<p>U hebt één of meerdere factureerbare tickets gekocht. We sturen u spoedig een factuur voor €{{ price_billable }}.</p>

@@ -139,6 +139,34 @@ def reservation_create(cursor, values):
 		"""
 	cursor.execute(q, values)
 
+def generate_payment_code(serial, date, pretty=False):
+	"""
+	generate a payment code "mDDxxxxHHMcc"
+		m = month % 10
+		xxxx = serial
+		DD = day
+		HH = hour
+		M = minutes / 10
+		cc = checksum
+	"gestructureerde mededeling"-compliant
+	"""
+	first = (date.month % 10) * 100
+	first += date.day
+	first *= 1000000000
+
+	middle = serial % 10000
+	middle *= 100000
+
+	last = date.hour * 10
+	last += date.minute / 10
+	last *= 100
+
+	total = first + middle + last
+	check = (total / 100) % 97
+	check = check if check else 97
+	total += check
+	return "{0:012d}".format(total)
+
 def purchase_create(cursor, email, products, billing_info, queued):
 	"""
 	"""
@@ -161,6 +189,15 @@ def purchase_create(cursor, email, products, billing_info, queued):
 
 	purchase_id = cursor.lastrowid
 
+	payment_code = generate_payment_code(purchase_id, now)
+	q = """
+		update purchase set
+			payment_code=%s
+		where
+			id=%s;
+		"""
+	cursor.execute(q, (payment_code, purchase_id))
+
 	# add the products
 	q = """
 		insert into purchase_items (
@@ -176,7 +213,7 @@ def purchase_create(cursor, email, products, billing_info, queued):
 		D(p)
 		cursor.execute(q, p)
 
-	return nonce
+	return nonce, payment_code
 
 def purchase_get(cursor, nonce=None, id=None):
 	qf = []
@@ -194,6 +231,7 @@ def purchase_get(cursor, nonce=None, id=None):
 			business_name,
 			business_address,
 			business_vat,
+			payment_code,
 			nonce
 		from
 			purchase
@@ -309,6 +347,7 @@ def get_purchases(cursor, strip_removed=False):
 			pu.nonce as nonce,
 			pu.created_at as created_at,
 			pu.email as email,
+			pu.payment_code as payment_code,
 			pu.paid as paid,
 			pu.removed as removed,
 			pu.queued as queued,

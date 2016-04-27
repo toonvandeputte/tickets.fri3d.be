@@ -58,6 +58,7 @@ create table purchase (
 	reservation_id integer,
 	email varchar(128) not null,
 	nonce varchar(128) not null,
+	payment_code varchar(128) not null unique,
 	queued integer default 0,
 	paid integer default 0,
 	removed integer default 0,

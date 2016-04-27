@@ -8,7 +8,7 @@ texts['MAIL_TICKETS_ORDERED_OK_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
 <p>Bedankt voor je aankoop op de Fri3dcamp 2016 ticket page!</p>
-<p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening BE 0123456789, met als vermelding "{email}".</p>
+<p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".</p>
 <p>We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
@@ -21,7 +21,7 @@ texts['MAIL_TICKETS_ORDERED_OK_TEXT'] = u"""Beste,
 
 Bedankt voor je aankoop op de Fri3dcamp 2016 ticket page!
 
-Gelieve binnen {days_max} dagen het bedrag van €{amount} over te maken op rekening BE 0123456789, met als vermelding "{email}".
+Gelieve binnen {days_max} dagen het bedrag van €{amount} over te maken op rekening {payment_account}, met als vermelding "{payment_code}".
 
 We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is. We zien je graag op het kamp!
 
@@ -62,7 +62,7 @@ texts['MAIL_UNQUEUED_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
 <p>Goed nieuws! Toen u recent een bestelling plaatste op de ticket-site van Fri3dcamp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er ondertussen terug plaatsen zijn vrijgekomen kan uw bestelling als nog doorgaan!</p>
-<p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening BE 0123456789, met als vermelding "{email}".</p>
+<p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".</p>
 <p>We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
@@ -75,7 +75,7 @@ texts['MAIL_UNQUEUED_TEXT'] = u"""Beste,
 
 Goed nieuws! Toen u recent een bestelling plaatste op de ticket-site van Fri3dcamp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er ondertussen terug plaatsen zijn vrijgekomen kan uw bestelling als nog doorgaan!
 
-Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening BE 0123456789, met als vermelding "{email}".
+Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".
 
 We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.
 
