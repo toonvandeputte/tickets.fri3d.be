@@ -207,13 +207,16 @@ def purchase_create(cursor, email, products, billing_info, queued):
 			(%(purchase_id)s, %(product_id)s, %(n)s, %(person_name)s, %(person_dob)s,
 			%(person_volunteers_during)s, %(person_volunteers_after)s, %(person_food_vegitarian)s);
 		"""
-	D(q)
 	for p in products:
 		p['purchase_id'] = purchase_id
-		D(p)
 		cursor.execute(q, p)
 
-	return nonce, payment_code
+	out = {}
+	out['nonce'] = nonce
+	out['payment_code'] = payment_code
+	out['id'] = purchase_id
+
+	return out
 
 def purchase_get(cursor, nonce=None, id=None):
 	qf = []
@@ -224,6 +227,7 @@ def purchase_get(cursor, nonce=None, id=None):
 
 	q = """
 		select
+			id,
 			email,
 			reservation_id,
 			created_at,
@@ -240,6 +244,79 @@ def purchase_get(cursor, nonce=None, id=None):
 		"""
 	cursor.execute(q, { 'nonce' : nonce, 'id' : id })
 	return cursor.fetchone()
+
+def purchase_items_get(cursor, id):
+	q = """
+		select
+			pr.display as product,
+			pr.billable as billable,
+			pui.n as n,
+			case
+				when
+					pui.person_volunteers_during
+				then
+					pr.volunteering_price
+				else
+					pr.price
+			end as price_single,
+			pui.n * (case
+				when
+					pui.person_volunteers_during
+				then
+					pr.volunteering_price
+				else
+					pr.price
+			end) as price_total,
+			pui.person_volunteers_during as volunteers_during,
+			pui.person_volunteers_after as volunteers_after,
+			pui.person_name as person_name,
+			pui.person_dob as person_dob,
+			pui.person_food_vegitarian as person_vegitarian
+		from
+			purchase_items pui
+			inner join product pr on pui.product_id = pr.id
+		where
+			pui.purchase_id = %s;
+		"""
+	cursor.execute(q, (id,))
+	return cursor.fetchall()
+
+def purchase_history_append(cursor, id, creator='SYSTEM', msg=None):
+	q = """
+		insert into purchase_history (
+			purchase_id,
+			created_at,
+			creator,
+			event
+		)
+		values (
+			%(purchase_id)s,
+			%(created_at)s,
+			%(creator)s,
+			%(event)s
+		);
+		"""
+	qd = {
+		'purchase_id' : id,
+		'created_at' : datetime.datetime.utcnow(),
+		'creator' : creator,
+		'event' : msg,
+	}
+	cursor.execute(q, qd)
+
+def purchase_history_get(cursor, id):
+	q = """
+		select
+			created_at,
+			creator,
+			event
+		from
+			purchase_history
+		where
+			purchase_id=%s;
+		"""
+	cursor.execute(q, (id,))
+	return cursor.fetchall()
 
 def products_get(cursor):
 	q = """
@@ -364,7 +441,14 @@ def get_purchases(cursor, strip_removed=False):
 				then pui.n
 				else 0
 				end
-			) as n_tickets
+			) as n_tickets,
+			sum(
+				case
+				when pr.billable
+				then 1
+				else 0
+				end
+			) as n_billable,
 		from
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id

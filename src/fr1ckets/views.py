@@ -216,7 +216,6 @@ def price_distribution_strategy(cursor, nonce):
 def tickets():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
-	D(session)
 	return render_template('tickets.html', form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
@@ -269,17 +268,20 @@ def ticket_register():
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
-	nonce, payment_code = model.purchase_create(g.db_cursor, form.email.data, products, billing_info, queued)
+	purchase = model.purchase_create(g.db_cursor, form.email.data, products, billing_info, queued)
 
 	# get the prices back (includes reservation discounts, volunteering discounts, ...)
-	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
+	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
 	price_total = price_normal + price_billable
+
+	model.purchase_history_append(g.db_cursor, purchase['id'],
+		msg='created purchase for={0} n_tickets={1} total={2}'.format(form.email.data, n_tickets, price_total))
 
 	mail_data = {
 		'amount' : price_total,
 		'days_max' : app.config['DAYS_MAX'],
 		'email' : form.email.data,
-		'payment_code' : prettify_purchase_code(payment_code),
+		'payment_code' : prettify_purchase_code(purchase['payment_code']),
 		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
 	}
 
@@ -291,6 +293,8 @@ def ticket_register():
 				subject=texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'],
 				msg_html=texts['MAIL_TICKETS_ORDERED_OK_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_TICKETS_ORDERED_OK_TEXT'].format(**mail_data))
+			model.purchase_history_append(g.db_cursor, purchase['id'],
+				msg='mailed ok-please-pay to {0}'.format(form.email.data))
 		else:
 			mail.send_mail(
 				from_addr=app.config['MAIL_MY_ADDR'],
@@ -298,20 +302,23 @@ def ticket_register():
 				subject=texts['MAIL_TICKETS_ORDERED_QUEUE_SUBJECT'],
 				msg_html=texts['MAIL_TICKETS_ORDERED_QUEUE_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'].format(**mail_data))
-
+			model.purchase_history_append(g.db_cursor, purchase['id'],
+				msg='mailed ok-queued to {0}'.format(form.email.data))
 
 	g.db_commit = True
 
 	# smashing!
 	return jsonify(
 		status='SUCCESS',
-		redirect=url_for('confirm', nonce=nonce))
+		redirect=url_for('confirm', nonce=purchase['nonce']))
 
 @app.route('/confirm/<nonce>', methods=[ 'GET' ])
 @req_auth_basic
 def confirm(nonce=None):
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
 	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
+	model.purchase_history_append(g.db_cursor, purchase['id'],
+			msg='confirmed to {0}'.format(purchase['email']))
 	return render_template('confirm.html',
 			queued=purchase['queued'],
 			price_total=price_normal + price_billable,
@@ -376,6 +383,7 @@ def reservation_delete(id):
 	delete a reservation based on id
 	"""
 	model.reservation_delete(g.db_cursor, id=id)
+	model.purchase_history_append(g.db_cursor, id, msg='marked as removed')
 	g.db_commit = True
 	return redirect(url_for('reservations'))
 
@@ -489,6 +497,8 @@ def overview():
 def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id, paid)
 
+	model.purchase_history_append(g.db_cursor, purchase_id, msg='set paid={0}'.format(paid))
+
 	if paid:
 		purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 		email = purchase['email']
@@ -500,6 +510,7 @@ def api_purchase_mark_paid(purchase_id, paid):
 				subject=texts['MAIL_PAYMENT_RECEIVED_SUBJECT'],
 				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'],
 				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'])
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-paid to {0}'.format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -508,6 +519,8 @@ def api_purchase_mark_paid(purchase_id, paid):
 @req_auth_basic
 def api_purchase_mark_removed(purchase_id, removed):
 	model.purchase_mark_removed(g.db_cursor, purchase_id, removed)
+
+	model.purchase_history_append(g.db_cursor, purchase_id, msg='set removed={0}'.format(removed))
 
 	if removed:
 		purchase = model.purchase_get(g.db_cursor, id=purchase_id)
@@ -523,9 +536,51 @@ def api_purchase_mark_removed(purchase_id, removed):
 				subject=texts['MAIL_REMOVED_SUBJECT'],
 				msg_html=texts['MAIL_REMOVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_REMOVED_TEXT'].format(**mail_data))
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-removed to {0}'.format(email))
 
 	g.db_commit = True
 	return "ok", 200
+
+class PurchaseHistoryForm(Form):
+	"""
+	reservation manipulation form
+	"""
+	who = StringField('Your name', validators=[
+		validators.Required(message="Need this"),
+		])
+	event = TextAreaField('Comment', validators=[
+		validators.Required(message="Need this"),
+		])
+
+@app.route('/admin/purchase_view/<int:purchase_id>', methods=[ 'GET', 'POST'])
+@req_auth_basic
+def purchase_view(purchase_id):
+	form = PurchaseHistoryForm()
+	if form.validate_on_submit():
+		model.purchase_history_append(g.db_cursor, purchase_id, creator=form.who.data,
+			msg=form.event.data)
+		g.db_commit = True
+	D(form.errors)
+	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
+	items = model.purchase_items_get(g.db_cursor, purchase_id)
+	reservation = model.reservation_get(g.db_cursor, purchase['reservation_id'])[0]
+	history = model.purchase_history_get(g.db_cursor, purchase_id)
+	purchase['payment_code'] = prettify_purchase_code(purchase['payment_code'])
+	purchase['created_at'] = purchase['created_at'].isoformat()
+	purchase['business_address'] = purchase['business_address'].splitlines()
+	D(reservation)
+	reservation['available_from'] = reservation['available_from'].isoformat()
+	n_billables = bool(sum([ i['billable'] for i in items ]))
+	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
+	price_total = price_normal + price_billable
+	return render_template('purchase_view.html', items=items, form=form,
+			purchase=purchase, reservation=reservation,
+			n_billables=n_billables, history=history,
+			price_normal=price_normal, price_billable=price_billable, price_total=price_total,
+			form_dest=url_for('purchase_view', purchase_id=purchase_id),
+			page_opts={
+				'internal' : True
+			})
 
 @app.route('/admin/api/purchase_mark_dequeued/<int:purchase_id>', methods=[ 'GET' ])
 @req_auth_basic
@@ -533,6 +588,8 @@ def api_purchase_mark_dequeued(purchase_id):
 	model.purchase_mark_dequeued(g.db_cursor, purchase_id)
 	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 	email = purchase['email']
+
+	model.purchase_history_append(g.db_cursor, purchase['id'], creator='HUMAN', msg='dequeued')
 
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
 	price_total = price_normal + price_billable
@@ -552,10 +609,10 @@ def api_purchase_mark_dequeued(purchase_id):
 			subject=texts['MAIL_UNQUEUED_SUBJECT'],
 			msg_html=texts['MAIL_UNQUEUED_HTML'].format(**mail_data),
 			msg_text=texts['MAIL_UNQUEUED_TEXT'].format(**mail_data))
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-dequeued to {0}'.format(email))
 
 	g.db_commit = True
 	return "ok", 200
-
 
 @app.route('/api/get_products', methods=[ 'GET' ])
 @req_auth_basic
@@ -584,6 +641,7 @@ def api_get_timeline_tickets():
 		'n' : [ t['n'] for t in timeline_tickets ]})
 
 @app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
+@req_auth_basic
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({

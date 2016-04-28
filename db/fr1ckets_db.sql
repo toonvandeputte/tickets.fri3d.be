@@ -79,9 +79,11 @@ create table purchase_history (
 	id integer auto_increment not null,
 	purchase_id integer,
 	created_at datetime not null,
+	creator varchar(128) not null,
 	event text,
 	primary key (id),
-	constraint purchase_history_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update cascade
+	index purchase_history_purchase_id_index (purchase_id asc),
+	constraint purchase_history_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update set null
 );
 
 drop table if exists purchase_items;
