@@ -55,7 +55,7 @@ class Form(object):
 		})
 		# yes, browers don't show these when not checked
 		if billable:
-			self.data[t+'options_billable'] = 'on'
+			self.data[t+'billable'] = 'on'
 		if volunteers_during:
 			self.data[t+'options_volunteers_during'] = 'on'
 		if volunteers_after:
@@ -93,7 +93,8 @@ class RandomForm(Form):
 			ext = ''.join([ random.choice(string.ascii_letters) for _ in range(4) ])
 			name = '{0} {1}'.format(ext, base)
 			dob = datetime.datetime.fromtimestamp(random.randrange(age_max, age_min))
-			self.add_ticket(name, dob, *( bool(random.randint(0, 1)) for _ in range(4) ))
+			self.add_ticket(name, dob, not bool(random.randint(0, 8)),
+				*(bool(random.randint(0, 1)) for _ in range(3) ))
 			self.set_tshirt(random.choice(self.tshirt_choices), 1)
 
 		if self.need_business_info():
@@ -113,7 +114,7 @@ timing_page = time.time() - ts
 page = html.fromstring(r.text)
 csrf_token = page.forms[0].fields['csrf_token']
 r = RandomForm()
-r.fill(random.randrange(1, 3), csrf_token)
+r.fill(random.randrange(1, 5), csrf_token)
 
 ts = time.time()
 x = s.get(url+'/api/get_reservation/' + r.data['email'], auth=auth)

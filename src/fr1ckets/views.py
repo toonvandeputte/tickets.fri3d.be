@@ -253,7 +253,8 @@ def ticket_register():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-
+	D("contains-billables:{0}".format(contains_billables))
+	D("products:{0}".format(products))
 	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
@@ -265,6 +266,7 @@ def ticket_register():
 				message=u"De zakelijke details zijn niet volledig!")
 
 	billing_info = extract_billing_info(business_form)
+	D("billing info:{0}".format(billing_info))
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
@@ -342,7 +344,8 @@ def payments():
 	considering_dequeue = True
 	tickets_queued = 0
 	for x in p:
-		if not x['paid'] and (x['created_at'] + time_delta) < now:
+		x['created_at'] = x['dequeued_at'] if x['dequeued_at'] else x['created_at']
+		if not x['paid'] and not x['removed'] and (x['created_at'] + time_delta) < now:
 			x['overtime'] = True
 		else:
 			x['overtime'] = False
@@ -358,6 +361,11 @@ def payments():
 				considering_dequeue = False
 		if x['queued']:
 			tickets_queued += x['n_tickets']
+
+		if x['can_dequeue'] or x['overtime'] or (x['n_billable'] > 0 and not x['billed']):
+			x['latent'] = False
+		else:
+			x['latent'] = True
 
 	return render_template('payments.html',
 			tickets_total=tickets_total, tickets_available=tickets_available,
@@ -537,6 +545,16 @@ def api_purchase_mark_removed(purchase_id, removed):
 				msg_html=texts['MAIL_REMOVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_REMOVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-removed to {0}'.format(email))
+
+	g.db_commit = True
+	return "ok", 200
+
+@app.route('/admin/api/purchase_mark_billed/<int:purchase_id>/<int:billed>', methods=[ 'GET' ])
+@req_auth_basic
+def api_purchase_mark_billed(purchase_id, billed):
+	model.purchase_mark_billed(g.db_cursor, purchase_id, billed)
+
+	model.purchase_history_append(g.db_cursor, purchase_id, msg='set billed={0}'.format(billed))
 
 	g.db_commit = True
 	return "ok", 200

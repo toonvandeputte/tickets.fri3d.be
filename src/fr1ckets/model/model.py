@@ -231,7 +231,10 @@ def purchase_get(cursor, nonce=None, id=None):
 			email,
 			reservation_id,
 			created_at,
+			dequeued_at,
+			billed_at,
 			queued,
+			once_queued,
 			business_name,
 			business_address,
 			business_vat,
@@ -428,6 +431,10 @@ def get_purchases(cursor, strip_removed=False):
 			pu.paid as paid,
 			pu.removed as removed,
 			pu.queued as queued,
+			pu.once_queued as once_queued,
+			pu.billed as billed,
+			pu.dequeued_at as dequeued_at,
+			pu.billed_at as billed_at,
 			sum(pui.n * (
 				case
 				when (pui.person_volunteers_during)
@@ -448,7 +455,7 @@ def get_purchases(cursor, strip_removed=False):
 				then 1
 				else 0
 				end
-			) as n_billable,
+			) as n_billable
 		from
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
@@ -528,6 +535,11 @@ def purchase_mark_paid(cursor, purchase_id, paid):
 	q = "update purchase set paid = %(paid)s, paid_at = %(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'paid' : paid })
 
+def purchase_mark_billed(cursor, purchase_id, billed):
+	"""mark a purchase as being billed"""
+	q = "update purchase set billed = %(billed)s, billed_at = %(now)s where id = %(purchase_id)s;"
+	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow(), 'billed' : billed })
+
 def purchase_mark_removed(cursor, purchase_id, removed):
 	"""mark a purchase as being removed"""
 	q = "update purchase set removed=%(removed)s, removed_at=%(now)s where id = %(purchase_id)s;"
@@ -535,5 +547,5 @@ def purchase_mark_removed(cursor, purchase_id, removed):
 
 def purchase_mark_dequeued(cursor, purchase_id):
 	"""mark a purchase as being removed"""
-	q = "update purchase set queued=0 where id = %(purchase_id)s;"
-	cursor.execute(q, { 'purchase_id' : purchase_id })
+	q = "update purchase set queued=0, once_queued=1, dequeued_at=%(now)s where id = %(purchase_id)s;"
+	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })

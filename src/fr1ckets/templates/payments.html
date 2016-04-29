@@ -20,9 +20,19 @@
 	</div>
 </div>
 
+{% for group in purchases|groupby('latent') %}
+<div class="row">
+	<div class="col-sm-12 text-center">
+{% if group.grouper %}
+		<h2>de rest</h2><p>(nog te betalen, al verwijderd)</p>
+{% else %}
+		<h2>actie vereist</h2><p>(factuur nodig, overtijd, kan uit wachtrij)
+{% endif %}
+	</div>
+</div>
 <div class="row">
 	<div class="col-xs-12">
-		<table class="table table-striped table-condensed">
+		<table class="table table-hover table-condensed">
 			<thead>
 				<tr>
 					<th data-field="date">Bestellingsdatum</th>
@@ -32,13 +42,15 @@
 					<th data-field="total_price">Totaalprijs</th>
 					<th data-field="n_tickets">Aantal ticketten</th>
 					<th data-field="paid?">Betaald</th>
-					<th data-field="removed?">Verwijdert</th>
+					<th data-field="removed?">Verwijderd</th>
+					<th data-field="removed?">Gefactureerd</th>
 					<th data-field="dequeue?">Wachtrij</th>
+					<th data-field="view">Details</th>
 				</tr>
 			</thead>
 			<tbody>
-{% for p in purchases %}
-				<tr id="row_{{ p.id }}">
+{% for p in group.list %}
+<tr id="row_{{ p.id }}" class="{% if p.n_billable > 0%}info{% elif p.paid%}success{%elif p.removed %}active{% elif p.can_dequeue%}warning{% elif p.overtime %}danger{% endif %}">
 	{% if p.overtime %}
 						<td><font color="red">{{ p.created_at }}</font></td>
 	{% else %}
@@ -52,17 +64,32 @@
 					<td>
 						<div class="switch">
 							<label>
-								<input type="checkbox" id="switch_paid_{{p.id}}" {% if p.paid %}checked{% endif %} onclick="purchase_mark_paid({{ p.id }});">
+								<input type="checkbox" id="switch_paid_{{p.id}}" {% if p.paid %}checked{% endif %} onclick="purchase_mark_paid({{ p.id }}, '{{ p.email }}', '{{ p.payment_code }}');">
 							</label>
 						</div>
 					</td>
 					<td>
+	{% if not p.paid %}
 						<div class="switch">
 							<label>
-								<input type="checkbox" id="switch_removed_{{p.id}}"  {% if p.removed %}checked{% endif %} onclick="purchase_mark_removed({{ p.id }});">
+								<input type="checkbox" id="switch_removed_{{p.id}}"  {% if p.removed %}checked{% endif %} onclick="purchase_mark_removed({{ p.id }}, '{{ p.email }}', '{{ p.payment_code }}');">
+							</label>
+						</div>
+	{% else %}
+					(betaald)
+	{% endif %}
+					</td>
+					<td>
+	{% if p.n_billable > 0 %}
+						<div class="switch">
+							<label>
+								<input type="checkbox" id="switch_billed_{{p.id}}"  {% if p.billed %}checked{% endif %} onclick="purchase_mark_billed({{ p.id }}, '{{ p.email }}', '{{ p.payment_code }}');">
 							</label>
 						</div>
 					</td>
+	{% else %}
+					(geen btw)
+	{% endif %}
 	{% if p.can_dequeue %}
 					<td>
 						<button type="button" class="btn btn-default" onclick="purchase_mark_dequeued({{ p.id }});">activeren</button>
@@ -74,11 +101,14 @@
 					<td>actief</td>
 		{% endif %}
 	{% endif %}
+	<td><a href="/admin/purchase_view/{{p.id}}"><span class="glyphicon glyphicon-zoom-in"></span></a></td>
 				</tr>
 {% endfor %}
 			</tbody>
 		</table>
 	</div>
 </div>
+
+{% endfor %}
 
 {% include "footer.html" %}
