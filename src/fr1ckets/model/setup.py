@@ -9,6 +9,7 @@ def setup_db():
 			passwd=app.config['DB_PASS'],
 			db=app.config['DB_NAME'],
 			cursorclass=MySQLdb.cursors.DictCursor)
+	g.db_con.begin()
 	g.db_cursor = g.db_con.cursor()
 
 @app.teardown_request

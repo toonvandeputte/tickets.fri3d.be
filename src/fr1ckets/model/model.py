@@ -3,6 +3,7 @@ import string
 import random
 import datetime
 import copy
+import MySQLdb
 
 D = app.logger.debug
 
@@ -141,12 +142,11 @@ def reservation_create(cursor, values):
 
 def generate_payment_code(serial, date, pretty=False):
 	"""
-	generate a payment code "mDDxxxxHHMcc"
+	generate a payment code "mDDxxxxxxxcc", prettyfied as
+	"+++mDD/xxxx/xxxcc+++", with;
 		m = month % 10
-		xxxx = serial
 		DD = day
-		HH = hour
-		M = minutes / 10
+		xxxxxxx = random
 		cc = checksum
 	"gestructureerde mededeling"-compliant
 	"""
@@ -154,14 +154,9 @@ def generate_payment_code(serial, date, pretty=False):
 	first += date.day
 	first *= 1000000000
 
-	middle = serial % 10000
-	middle *= 100000
-
-	last = date.hour * 10
-	last += date.minute / 10
-	last *= 100
-
-	total = first + middle + last
+	last = random.randint(0, 9999999) * 100
+	
+	total = first + last
 	check = (total / 100) % 97
 	check = check if check else 97
 	total += check
@@ -176,27 +171,39 @@ def purchase_create(cursor, email, products, billing_info, queued):
 	# get the reservation for this email
 	reservation = reservation_claim(cursor, email)
 
+	payment_code = generate_payment_code(random.randint(0, 1000), now)
+
 	# the purchase proper
 	q = """
 		insert into purchase (
 			email, nonce, reservation_id, created_at, queued,
-			business_name, business_address, business_vat )
+			business_name, business_address, business_vat,
+			payment_code)
 		values
-			(%s, %s, %s, %s, %s, %s, %s, %s);
+			(%s, %s, %s, %s, %s, %s, %s, %s, %s);
 		"""
-	cursor.execute(q, (email, nonce, reservation['id'], now, queued,
-		billing_info['name'], billing_info['address'], billing_info['vat']))
+	n_tries = 20
+	while True:
+		"""
+		we have randomness in the payment code, should it ever clash, retry
+		up to n_tries before finally bugging out (could be another issue)
+		"""
+		try:
+			payment_code = generate_payment_code(random.randint(0, 1000), now)
+			D("trying "+payment_code)
+			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
+				billing_info['name'], billing_info['address'], billing_info['vat'],
+				payment_code))
+		except MySQLdb.IntegrityError as e:
+			n_tries -= 1
+			if n_tries == 0:
+				raise e
+			else:
+				continue
+		finally:
+			break
 
 	purchase_id = cursor.lastrowid
-
-	payment_code = generate_payment_code(purchase_id, now)
-	q = """
-		update purchase set
-			payment_code=%s
-		where
-			id=%s;
-		"""
-	cursor.execute(q, (payment_code, purchase_id))
 
 	# add the products
 	q = """
