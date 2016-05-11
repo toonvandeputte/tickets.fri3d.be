@@ -9,11 +9,14 @@ output:
 	mkdir -p $(output)/src
 	mkdir -p $(output)/conf
 	mkdir -p $(output)/ssl
+	mkdir -p $(output)/db
 
 populate: output
 	cp -R src/* $(output)/src/
 	cp -R conf/* $(output)/conf/
 	#cp -R ssl/* $(output)/ssl/
+	cp -R db/* $(output)/db/
+	chmod -R a+r $(output)/src/fr1ckets/static
 
 deb: all
 	./mkdeb.sh $(project) $(version) $(output)
