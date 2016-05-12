@@ -151,7 +151,7 @@ function enumerate_choices() {
 		var month_src = src + '_dob_month';
 		var day_src = src + '_dob_day';
 		var name_src = src + '_name';
-		var volunteering_src = src + "_options_volunteers_during";
+		var not_volunteering_src = src + "_options_not_volunteering_during";
 		var cleanup_src = src + "_options_volunteers_after";
 		var billable_src = src + "_billable";
 
@@ -159,13 +159,12 @@ function enumerate_choices() {
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 		var ticket = find_ticket_by_dob(dob, billable);
 		var name = $('#' + name_src).val();
-		var volunteering_during = Boolean($('#'+volunteering_src).prop('checked'))
+		var volunteering_during = !Boolean($('#'+not_volunteering_src).prop('checked'))
 		var volunteering_after = Boolean($('#'+cleanup_src).prop('checked'));
-		var volunteering = volunteering_after || volunteering_during;
 		var ticket_price = ticket.volunteering_price;
 		var ticket_name = ticket.display + " voor " + name;
 		var can_volunteer = Boolean(dob < ticket_volunteering_cutoff);
-		if (can_volunteer && !billable && !volunteering) {
+		if (can_volunteer && !billable && !volunteering_during) {
 			ticket_price = ticket.price;
 			ticket_name = ticket_name + " (premium)";
 		}
@@ -335,16 +334,16 @@ function mk_cb_update_visitor_options(index) {
 			f += '  </div>';
 		}
 		if (can_volunteer) {
-			var volunteering_id = fmt + "_options_volunteers_during";
+			var volunteering_id = fmt + "_options_not_volunteering_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
-			if (billable) {
+			if (!billable) {
 				f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'">';
 			} else {
 				f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" checked="checked">';
 			}
-			f += '      Help graag mee tijdens kamp';
+			f += '      Kan niet meehelpen tijdens kamp.'
 			f += '    </label>';
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
@@ -359,27 +358,19 @@ function mk_cb_update_visitor_options(index) {
 		$('#'+options_id).html(f);
 		if (can_volunteer) {
 			if (!billable) {
-				var volunteering_id = fmt + "_options_volunteers_during";
+				var volunteering_id = fmt + "_options_not_volunteering_during";
 				var cleanup_id = fmt + "_options_volunteers_after";
 				$('#'+volunteering_id).on('change', function() {
 					var display_name = '';
 					var display_price = 0;
-					var is_volunteering = Boolean(this.checked);
-					if (!is_volunteering) {
+					var is_not_volunteering = Boolean(this.checked);
+					if (is_not_volunteering) {
 						display_name = ticket.display + ' (premium)';
 						display_price = ticket.price;
 					} else {
 						display_name = ticket.display;
 						display_price = ticket.volunteering_price;
 					}
-					/*
-					$('#'+ticket_name_id).fadeOut(100, function() {
-						$(this).text(display_name).fadeIn(100);
-					});
-					$('#'+ticket_price_id).fadeOut(100, function() {
-						$(this).text('€'+display_price).fadeIn(100);
-					});
-					*/
 					$('#'+ticket_name_id).text(display_name);
 					$('#'+ticket_price_id).text('€'+display_price);
 					update_price_total_display();

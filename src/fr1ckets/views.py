@@ -119,7 +119,7 @@ def make_form_individual_tickets(n_tickets):
 				]))
 
 		fmt += "_options"
-		for field in [ '_volunteers_during', '_volunteers_after', '_vegitarian' ]:
+		for field in [ '_not_volunteering_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
 			setattr(IndividualTicketForm, name, BooleanField(name, default=False))
 	return IndividualTicketForm
@@ -182,7 +182,7 @@ def extract_products(cursor, form_general, form_tickets):
 			'n' : 1,
 			'person_dob' : dob,
 			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_during' : getattr(form_tickets, fmt + '_options_volunteers_during').data,
+			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_not_volunteering_during').data,
 			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
 			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
 		})
@@ -253,8 +253,6 @@ def ticket_register():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-	D("contains-billables:{0}".format(contains_billables))
-	D("products:{0}".format(products))
 	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
@@ -266,7 +264,6 @@ def ticket_register():
 				message=u"De zakelijke details zijn niet volledig!")
 
 	billing_info = extract_billing_info(business_form)
-	D("billing info:{0}".format(billing_info))
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
@@ -578,7 +575,6 @@ def purchase_view(purchase_id):
 		model.purchase_history_append(g.db_cursor, purchase_id, creator=form.who.data,
 			msg=form.event.data)
 		g.db_commit = True
-	D(form.errors)
 	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 	items = model.purchase_items_get(g.db_cursor, purchase_id)
 	reservation = model.reservation_get(g.db_cursor, purchase['reservation_id'])[0]
@@ -586,7 +582,6 @@ def purchase_view(purchase_id):
 	purchase['payment_code'] = prettify_purchase_code(purchase['payment_code'])
 	purchase['created_at'] = purchase['created_at'].isoformat()
 	purchase['business_address'] = purchase['business_address'].splitlines()
-	D(reservation)
 	reservation['available_from'] = reservation['available_from'].isoformat()
 	n_billables = bool(sum([ i['billable'] for i in items ]))
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
