@@ -333,8 +333,14 @@ function mk_cb_update_visitor_options(index) {
 			f += '      Vegetarisch';
 			f += '    </label>';
 			f += '  </div>';
+		} else {
+			f += '<div class="row">';
+			f += '  <div class="col-sm-8 col-sm-offset-4">';
+			f += '    <p>Ongeldige datum!</p>';
+			f += '  </div>';
+			f += '</div>';
 		}
-		if (can_volunteer) {
+		if (ticket && can_volunteer) {
 			var volunteering_id = fmt + "_options_not_volunteering_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
@@ -420,7 +426,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1">Geboortedag</label>';
 		f += '  <div class="col-sm-4">';
-		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="[0-9]{4}" required aria-required="true" placeholder="YYYY">';
+		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="(19|20|21)[0-9]{2}" required aria-required="true" placeholder="YYYY">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
 		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="MM">';
