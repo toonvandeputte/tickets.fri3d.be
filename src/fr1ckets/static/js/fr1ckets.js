@@ -315,6 +315,7 @@ function mk_cb_update_visitor_options(index) {
 		var vegitarian_id = fmt + "_options_vegitarian";
 
 		var f = '';
+		var ef = '';
 		// this part needs to be shown for every ticket
 		if (ticket) {
 			f += '<div class="row">';
@@ -338,24 +339,24 @@ function mk_cb_update_visitor_options(index) {
 			var cleanup_id = fmt + "_options_volunteers_after";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
-			if (!billable) {
-				f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'">';
-			} else {
-				f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" checked="checked">';
+			if (billable) {
+				ef = 'checked="checked"';
 			}
-			f += '      Kan niet meehelpen tijdens kamp.'
+			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Om het kamp te doen lukken, hopen we dat iedereen vanaf 16 jaar een volunteer-shift van een drietal uurtjes kan bijdragen. Als dit niet voor je lukt, kan je dit aanvinken, je betaalt dan wel iets meer.">';
+			f += '      Kan géén vrijwilligers-shift doen.';
 			f += '    </label>';
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'">';
-			f += '      Help opkuisen de dag er na (pizza voorzien!)';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 2016-08-16 helpen opruimen. Pizza en karma voorzien!">';
+			f += '      Help opkuisen de dag er na';
 			f += '    </label>';
 			f += '  </div>';
 		}
 		f += '</div>';
 		// throw it into the DOM so we can add events to it
 		$('#'+options_id).html(f);
+		$('[data-toggle="popover"]').popover();
 		if (can_volunteer) {
 			if (!billable) {
 				var volunteering_id = fmt + "_options_not_volunteering_during";
@@ -412,7 +413,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
 		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true">';
+		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Voor de terrein-uitbater hebben we van iedereen de naam en geboortedatum nodig. We berekenen ondertussen het voordeligste ticket.">';
 		f += '  </div>';
 		f += '</div>';
 		// dob box
@@ -432,7 +433,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€256+BTW)</label>';
 		f += '  <div class="col-sm-8">';
-		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'">'
+		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kan dit ticket laten factureren. We sturen je kortelings manueel een factuur.">'
 		f += '  </div>';
 		f += '</div>';
 		// collapse for options depending on input above
@@ -443,6 +444,7 @@ $('#n_tickets').on('change', function() {
 
 	// push it into the DOM so we can hook event listeners on it
 	$("#tickets").html(f);
+	$('[data-toggle="popover"]').popover();
 
 	// for each ticket, add relevant event handlers
 	for (var i = 0; i < val; i++) {

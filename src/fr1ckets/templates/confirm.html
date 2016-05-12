@@ -48,13 +48,13 @@
 <p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
 					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de bestelde items terug te koop aanbieden.</p>
 	{% if price_billable > 0 %}
-					<p>U hebt één of meerdere factureerbare tickets gekocht. We sturen u spoedig een factuur voor €{{ price_billable }}.</p>
+				<p>U hebt één of meerdere factureerbare tickets gekocht, voor €{{ price_billable }}. We sturen je spoedig manueel een factuur.</p>
 	{% endif %}
 {% else %}
 				<p>Er zijn niet genoeg ticketten beschikbaar voor uw bestelling. We hebben je bestelling op de wachtrij gezet, als er voldoende plaatsen vrijkomen laten we je zeker iets weten.</p>
 {% endif %}
 				<p>Bij verdere vragen, gelieven ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
-					<p>(We hebben je ook een mailtje gestuurt met dit alles!)</p>
+					<p>(We hebben je ook een mailtje gestuurd met dit alles!)</p>
 				</h4>
 			</div>
 		</div>
