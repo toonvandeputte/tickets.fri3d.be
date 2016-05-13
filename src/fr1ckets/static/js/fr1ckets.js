@@ -40,21 +40,24 @@ function update_overview() {
 	f += '  <thead>';
 	f += '    <tr>';
 	f += '      <th>Wat</th>';
+	f += '      <th>Eenheidsprijs</th>';
 	f += '      <th>Hoeveel</th>';
-	f += '      <th>Prijs</th>';
+	f += '      <th>Totale prijs</th>';
 	f += '    </tr>';
 	f += '  </thead>';
 	f += '  <tbody>';
 	for (var i = 0; i < choices.length; i++) {
 		f += '    <tr>';
 		f += '      <td>'+choices[i].name+'</td>';
-		f += '      <td>'+choices[i].n+'</td>';
 		f += '      <td>'+choices[i].price+'</td>';
+		f += '      <td>'+choices[i].n+'</td>';
+		f += '      <td>'+(choices[i].price*choices[i].n)+'</td>';
 		f += '    </tr>';
 	}
 	if (discount) {
 		f += '    <tr class="success">';
 		f += '      <td>Korting</td>';
+		f += '      <td></td>';
 		f += '      <td></td>';
 		f += '      <td>€'+discount+'</td>';
 		f += '    </tr>';
@@ -62,10 +65,18 @@ function update_overview() {
 	f += '    <tr>';
 	f += '      <td><strong>Totaal</strong></td>';
 	f += '      <td></td>';
+	f += '      <td></td>';
 	f += '      <td><strong>€'+calculate_total()+'</strong></td>';
 	f += '    </tr>';
 	f += '  </tbody>';
 	f += '</table>';
+	if (get_n_tickets() == 0) {
+		f += '<div class="alert alert-warning" role="alert">';
+		f += '  <p>';
+		f += '    Je hebt geen tickets besteld, als je in een andere order nog tickets bestelt leggen we alles klaar voor je op het kamp, anders kan je deze bestelling afhalen op de Open Garage te Borsbeek.</p>';
+		f += '  </p>';
+		f += '</div>';
+	}
 
 	return f;
 
@@ -121,6 +132,10 @@ function find_ticket_by_dob(dob, billable) {
 	}
 	return ticket;
 
+}
+
+function get_n_tickets() {
+	return parseInt($('#n_tickets').val());
 }
 
 function enumerate_choices() {
