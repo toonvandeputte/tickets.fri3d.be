@@ -665,4 +665,4 @@ def api_get_reservation(email):
 @app.route("/")
 @req_auth_basic
 def index():
-	return render_template("index.html")
+	return redirect(url_for('tickets'))
