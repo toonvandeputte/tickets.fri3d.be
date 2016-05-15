@@ -42,19 +42,19 @@
 	<div class="row">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
 			<div class="well">
-				<h1>Danku!</h1>
+				<h1>Bedankt!</h1>
 				<h4>
 {% if not queued %}
-<p>Uw bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
-					<p>Mochten we na {{ days_max }} dagen niets ontvangen hebben, zullen we de bestelde items terug te koop aanbieden.</p>
+				<p>Je bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
+				<p>Als we je betaling niet binnen {{ days_max }} dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.</p>
 	{% if price_billable > 0 %}
-				<p>U hebt één of meerdere factureerbare tickets gekocht, voor €{{ price_billable }}. We sturen je spoedig manueel een factuur.</p>
+				<p>Je hebt één of meerdere factureerbare tickets gekocht, voor €{{ price_billable }}. Je ontvangt daarvoor spoedig een factuur.</p>
 	{% endif %}
 {% else %}
-				<p>Er zijn niet genoeg ticketten beschikbaar voor uw bestelling. We hebben je bestelling op de wachtrij gezet, als er voldoende plaatsen vrijkomen laten we je zeker iets weten.</p>
+				<p>Er zijn niet genoeg tickets beschikbaar voor je bestelling. We hebben je bestelling in de wachtrij gezet. Als er voldoende plaatsen vrijkomen, word je per mail verwittigd op {{ email }}.</p>
 {% endif %}
-				<p>Bij verdere vragen, gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a></p>
-					<p>(We hebben je ook een mailtje gestuurd met dit alles!)</p>
+				<p>Nog vragen? Mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+				<p>Je ontvangt de gegevens van je bestelling ook nog per mail op {{ email }}.</p>
 				</h4>
 			</div>
 		</div>

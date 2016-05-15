@@ -282,6 +282,7 @@ def ticket_register():
 		'email' : form.email.data,
 		'payment_code' : prettify_purchase_code(purchase['payment_code']),
 		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
+		'email' : form.email.data,
 	}
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
@@ -323,6 +324,7 @@ def confirm(nonce=None):
 			price_total=price_normal + price_billable,
 			price_billable=price_billable,
 			payment_code=prettify_purchase_code(purchase['payment_code']),
+			email=purchase['email'],
 			payment_account=app.config['OUR_BANK_ACCOUNT'],
 			days_max=app.config['DAYS_MAX'])
 
@@ -508,13 +510,14 @@ def api_purchase_mark_paid(purchase_id, paid):
 		purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 		email = purchase['email']
 
+		mail_data = { 'email' : email }
 		if email[-len('.notreal'):] != '.notreal':
 			mail.send_mail(
 				from_addr=app.config['MAIL_MY_ADDR'],
 				to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
 				subject=texts['MAIL_PAYMENT_RECEIVED_SUBJECT'],
-				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'],
-				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'])
+				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'].format(**mail_data),
+				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-paid to {0}'.format(email))
 
 	g.db_commit = True
@@ -532,6 +535,7 @@ def api_purchase_mark_removed(purchase_id, removed):
 		email = purchase['email']
 		mail_data = {
 			'days_max' : app.config['DAYS_MAX'],
+			'email' : email,
 		}
 
 		if email[-len('.notreal'):] != '.notreal':
