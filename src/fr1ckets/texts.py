@@ -3,131 +3,145 @@
 texts = {}
 
 # mail sent when visitor makes a purchase, and it's OK
-texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'] = u"Fri3dcamp 2016 order ontvangen!"
+texts['MAIL_TICKETS_ORDERED_OK_SUBJECT'] = u"Fri3d Camp 2016 bestelling ontvangen!"
 texts['MAIL_TICKETS_ORDERED_OK_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
-<p>Bedankt voor je aankoop op de Fri3dcamp 2016 ticket page!</p>
+<p>Bedankt voor je aankoop op de Fri3d Camp 2016 ticket page!</p>
 <p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".</p>
-<p>We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.</p>
+<p>We sturen je een bevestigingsmailtje op {email} als de betaling ontvangen is.</p>
+<p>Als we je betaling niet binnen 14 dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
-<p>de Fri3d orga.</p>
-<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+<p>Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
 
 texts['MAIL_TICKETS_ORDERED_OK_TEXT'] = u"""Beste,
 
-Bedankt voor je aankoop op de Fri3dcamp 2016 ticket page!
+Bedankt voor je aankoop op de Fri3d Camp 2016 ticket page!
 
 Gelieve binnen {days_max} dagen het bedrag van €{amount} over te maken op rekening {payment_account}, met als vermelding "{payment_code}".
 
-We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is. We zien je graag op het kamp!
+We sturen je een bevestigingsmailtje op {email} als de betaling ontvangen is.
+
+Als we je betaling niet binnen 14 dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.
+
+We zien je graag op het kamp!
 
 Met vriendelijke groeten,
 
-de Fri3d orga.
+Fri3d orga.
 
-Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
 # mail sent when visitor makes a purchase, but it's queued
-texts['MAIL_TICKETS_ORDERED_QUEUE_SUBJECT'] = u"Fri3dcamp 2016 registratie ontvangen!"
+texts['MAIL_TICKETS_ORDERED_QUEUE_SUBJECT'] = u"Fri3d Camp 2016 registratie ontvangen!"
 texts['MAIL_TICKETS_ORDERED_QUEUE_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
-<p>Bedankt voor je registratie op de Fri3dcamp 2016 ticket page!</p>
-<p>Helaas zijn alle beschikbare plaatsen volzet. We hebben je bestelling onthouden en contacteren je ééns er genoeg plaatsen zijn vrijgekomen, ook hierin hanteren we een first-come first-served principe.</p>
+<p>Bedankt voor je registratie op de Fri3d Camp 2016 ticket page!</p>
+<p>Helaas zijn alle beschikbare plaatsen volzet. Je bestelling is dus niet kunnen doorgaan. We hebben je bestelling onthouden en contacteren je wanneer er genoeg plaatsen zijn vrijgekomen. We hanteren een first-come first-served principe.</p>
+<p>Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>. Zo maak je anderen die op tickets zitten te wachten erg blij!</p>
 <p>Met vriendelijke groeten,</p>
-<p>de Fri3d orga.</p>
-<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+<p>Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
 
 texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'] = u"""Beste,
 
-Bedankt voor je aankoop op de Fri3dcamp 2016 ticket page!
+Bedankt voor je aankoop op de Fri3d Camp 2016 ticket page!
 
-Helaas zijn alle beschikbare plaatsen volzet. We hebben je bestelling onthouden en contacteren je ééns er genoeg plaatsen zijn vrijgekomen, ook hierin hanteren we een first-come first-served principe.
+Helaas zijn alle beschikbare plaatsen volzet. Je bestelling is dus niet kunnen doorgaan. We hebben je bestelling onthouden en contacteren je wanneer er genoeg plaatsen zijn vrijgekomen. We hanteren een first-come first-served principe.
+
+Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via tickets@fri3d.be. Zo maak je anderen die op tickets zitten te wachten erg blij!
 
 Met vriendelijke groeten,
 
-de Fri3d orga.
+Fri3d orga.
 
-Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
 # mail sent when purchase has been unqueued
-texts['MAIL_UNQUEUED_SUBJECT'] = u"Fri3dcamp 2016 plaatsen vrijgekomen!"
+texts['MAIL_UNQUEUED_SUBJECT'] = u"Fri3d Camp 2016 plaatsen vrijgekomen!"
 texts['MAIL_UNQUEUED_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
-<p>Goed nieuws! Toen u recent een bestelling plaatste op de ticket-site van Fri3dcamp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er ondertussen terug plaatsen zijn vrijgekomen kan uw bestelling als nog doorgaan!</p>
+<p>Goed nieuws! Er zijn nieuwe plaatsen vrijgekomen voor Fri3d Camp 2016. Toen je recent een bestelling plaatste op de ticketsite van Fri3d Camp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er opnieuw plaatsen zijn, kan je bestelling alsnog doorgaan!</p>
 <p>Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".</p>
 <p>We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.</p>
+<p>Als we je betaling niet binnen 14 dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.</p>
+<p>Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>. Zo maak je anderen die op tickets zitten te wachten erg blij!</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
-<p>de Fri3d orga.</p>
-<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+<p>Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
 
 texts['MAIL_UNQUEUED_TEXT'] = u"""Beste,
 
-Goed nieuws! Toen u recent een bestelling plaatste op de ticket-site van Fri3dcamp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er ondertussen terug plaatsen zijn vrijgekomen kan uw bestelling als nog doorgaan!
+Goed nieuws! Er zijn nieuwe plaatsen vrijgekomen voor Fri3d Camp 2016. Toen je recent een bestelling plaatste op de ticketsite van Fri3d Camp 2016 waren er niet genoeg vrije plaatsen meer. Maar omdat er opnieuw plaatsen zijn, kan je bestelling alsnog doorgaan!
 
 Gelieve binnen {days_max} dagen het bedrag van <b>€{amount}</b> over te maken op rekening {payment_account}, met als vermelding "{payment_code}".
 
 We sturen je een bevestigingsmailtje op dit adres als de betaling ontvangen is.
 
+Als we je betaling niet binnen 14 dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.
+
+Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via tickets@fri3d.be. Zo maak je anderen die op tickets zitten te wachten erg blij!
+
 Met vriendelijke groeten,
 
-de Fri3d orga.
+Fri3d orga.
 
-Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
 # mail sent when payment has been received
-texts['MAIL_PAYMENT_RECEIVED_SUBJECT'] = u"Uw Fri3dcamp 2016 betaling is binnen!"
+texts['MAIL_PAYMENT_RECEIVED_SUBJECT'] = u"Uw Fri3d Camp 2016 betaling is binnen!"
 texts['MAIL_PAYMENT_RECEIVED_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
-<p>Uw betaling is binnengekomen, alles zal klaarliggen op het kamp. Tot dan!</p>
+<p>Je betaling is binnengekomen! Je hoeft verder niets meer te doen. Je tickets en je eventuele extra's, zullen klaarliggen op het kamp. Hou <a href="http://www.fri3d.be">www.fri3d.be</a> in het oog voor updates. Tot dan!</p>
 <p>Met vriendelijke groeten,</p>
-<p>de Fri3d orga.</p>
-<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+<p>Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
 
 texts['MAIL_PAYMENT_RECEIVED_TEXT'] = u"""Beste,
 
-Uw betaling is binnengekomen, alles zal klaarliggen op het kamp. Tot dan!
+Je betaling is binnengekomen! Je hoeft verder niets meer te doen. Je tickets en je eventuele extra's, zullen klaarliggen op het kamp. Hou www.fri3d.be in het oog voor updates. Tot dan!
 
 Met vriendelijke groeten,
 
-de Fri3d orga.
+Fri3d orga.
 
-Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
 # mail sent when payment has been removed
-texts['MAIL_REMOVED_SUBJECT'] = u"Uw Fri3dcamp 2016 bestelling is geschrapt"
+texts['MAIL_REMOVED_SUBJECT'] = u"Uw Fri3d Camp 2016 bestelling is geschrapt"
 texts['MAIL_REMOVED_HTML'] = u"""<html>
 <body>
 <p>Beste,</p>
-<p>Daar we nog geen betaling mochten ontvangen binnen de eerder vermelde termijn van {days_max} dagen, hebben we je bestelling geschrapt. De door uw bestelde tickets, tshirts en tokens worden terug te koop aangeboden.</p>
-<p>Mocht deze mail uw betaling kruisen, dan zullen we deze terugstorten.</p>
+<p>We hebben de betaling van je tickets helaas niet binnen de 14 dagen ontvangen. Je bestelling is dan ook geschrapt, en je bestelde tickets en eventuele extra's zijn opnieuw vrijgegeven voor verkoop.</p>
+<p>Mocht deze mail je betaling kruisen, dan zullen we het bedrag terugstorten.</p>
 <p>Met vriendelijke groeten,</p>
-<p>de Fri3d orga.</p>
-<p><small>Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+<p>Fri3d orga.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
 
 texts['MAIL_REMOVED_TEXT'] = u"""Beste,
 
-Daar we nog geen betaling mochten ontvangen binnen de eerder vermelde termijn van {days_max} dagen, hebben we je bestelling geschrapt. De door uw bestelde tickets, tshirts en tokens worden terug te koop aangeboden.
+We hebben de betaling van je tickets helaas niet binnen de 14 dagen ontvangen. Je bestelling is dan ook geschrapt, en je bestelde tickets en eventuele extra's zijn opnieuw vrijgegeven voor verkoop.
 
-Mocht deze mail uw betaling kruisen, dan zullen we deze terugstorten.
+Mocht deze mail je betaling kruisen, dan zullen we het bedrag terugstorten.
 
 Met vriendelijke groeten,
 
-de Fri3d orga.
+Fri3d orga.
 
-Dit is een automatische mail. Bij vragen of opmerkingen, gelieve te mailen naar tickets@fri3d.be."""
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
