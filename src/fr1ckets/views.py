@@ -33,7 +33,7 @@ def req_auth_basic(f):
 
 def generate_tshirt_names():
 	out = []
-	for tshirt in [ 'adult' ]:
+	for tshirt in [ 'kid', 'adult_f', 'adult_m' ]:
 		for size in [ 's', 'm', 'l', 'xl' ]:
 			out.append("tshirt_{0}_{1}".format(tshirt, size))
 	return out
