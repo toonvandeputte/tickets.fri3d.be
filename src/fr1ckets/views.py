@@ -666,6 +666,11 @@ def api_get_reservation(email):
 			'available_from' : r['available_from_unix'],
 		})
 
+@app.route("/admin")
+@req_auth_basic
+def admin():
+	return render_template('index.html')
+
 @app.route("/")
 @req_auth_basic
 def index():
