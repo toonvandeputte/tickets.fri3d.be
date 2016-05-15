@@ -15,10 +15,13 @@ auth=('hello', 'world')
 url=sys.argv[1]
 
 class Form(object):
-	tshirt_choices = [ 'tshirt_adult_' + size for size in [ 's', 'm', 'l', 'xl' ] ]
+	tshirt_choices = [ 'tshirt_adult_m_' + size for size in [ 's', 'm', 'l', 'xl' ] ]
+	tshirt_choices.extend([ 'tshirt_adult_f_' + size for size in [ 's', 'm', 'l', 'xl' ] ])
+	tshirt_choices.extend([ 'tshirt_kid_' + size for size in [ 's', 'm', 'l', 'xl' ] ])
 	token_choices = [ 0, 5, 10, 15, 20, 30, 40, 50, 100 ]
 
 	def __init__(self):
+		print self.tshirt_choices
 		self.data = {}
 		self.n_tickets = 0
 		for k in [ 'payment', 'supervision', 'excellent' ]:
@@ -129,5 +132,7 @@ if 'redirect' in do:
 	ts = time.time()
 	o = s.get(url+do['redirect'])
 	timing_confirm = time.time() - ts
+else:
+	timing_confirm = 0
 
 print "timing: page={0} email={3} post={1} confirm={2} total={4}".format(timing_page, timing_post, timing_confirm, timing_email, timing_page+timing_post+timing_confirm+timing_email)
