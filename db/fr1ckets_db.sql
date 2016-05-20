@@ -31,18 +31,17 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'tshirt_adult_m_l',  'volwassenen mannen tshirt L',       20, 20, '', 0),
 	( 'tshirt_adult_m_xl', 'volwassenen mannen tshirt XL', 20, 20, '', 0),
 	( 'tshirt_adult_m_xxl', 'volwassenen mannen tshirt XXL', 20, 20, '', 0),
-	( 'tshirt_adult_m_xxxl', 'volwassenen mannen tshirt XXXL', 20, 20, '', 0),
 	( 'tshirt_adult_f_xs',  'volwassenen vrouwen tshirt XS',       20, 20, '', 0),
 	( 'tshirt_adult_f_s',  'volwassenen vrouwen tshirt S',       20, 20, '', 0),
 	( 'tshirt_adult_f_m',  'volwassenen vrouwen tshirt M',      20, 20, '', 0),
 	( 'tshirt_adult_f_l',  'volwassenen vrouwen tshirt L',       20, 20, '', 0),
 	( 'tshirt_adult_f_xl', 'volwassenen vrouwen tshirt XL', 20, 20, '', 0),
 	( 'tshirt_adult_f_xxl', 'volwassenen vrouwen tshirt XXL', 20, 20, '', 0),
-	( 'tshirt_adult_f_xxxl', 'volwassenen vrouwen tshirt XXXL', 20, 20, '', 0),
-	( 'tshirt_kid_s',    'kinder-tshirt small',            20, 20, '', 0),
-	( 'tshirt_kid_m',    'kinder-tshirt middle',           20, 20, '', 0),
-	( 'tshirt_kid_l',    'kinder-tshirt large',            20, 20, '', 0),
-	( 'tshirt_kid_xl',   'kinder-tshirt extra large',      20, 20, '', 0),
+	( 'tshirt_kid_xs', 'kinderen 3-4 jaar tshirt', 20, 20, '', 0),
+	( 'tshirt_kid_s', 'kinderen 5-6 jaar tshirt', 20, 20, '', 0),
+	( 'tshirt_kid_m', 'kinderen 7-8 jaar tshirt', 20, 20, '', 0),
+	( 'tshirt_kid_l', 'kinderen 9-11 jaar tshirt', 20, 20, '', 0),
+	( 'tshirt_kid_xl', 'kinderen 12-14 jaar tshirt', 20, 20, '', 0),
 	( 'token',           'dranktoken',                    1.5, 1.5, '', 0);
 	
 drop table if exists reservation;

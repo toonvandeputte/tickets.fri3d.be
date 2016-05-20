@@ -15,9 +15,9 @@ auth=('hello', 'world')
 url=sys.argv[1]
 
 class Form(object):
-	tshirt_choices = [ 'tshirt_adult_m_' + size for size in [ 's', 'm', 'l', 'xl' ] ]
-	tshirt_choices.extend([ 'tshirt_adult_f_' + size for size in [ 's', 'm', 'l', 'xl' ] ])
-	tshirt_choices.extend([ 'tshirt_kid_' + size for size in [ 's', 'm', 'l', 'xl' ] ])
+	tshirt_choices = [ 'tshirt_adult_m_' + size for size in [ 'xs', 's', 'm', 'l', 'xl', 'xxl' ] ]
+	tshirt_choices.extend([ 'tshirt_adult_f_' + size for size in [ 'xs', 's', 'm', 'l', 'xl', 'xxl' ] ])
+	tshirt_choices.extend([ 'tshirt_kid_' + size for size in [ 'xs', 's', 'm', 'l', 'xl' ] ])
 	token_choices = [ 0, 5, 10, 15, 20, 30, 40, 50, 100 ]
 
 	def __init__(self):
@@ -130,7 +130,7 @@ import json
 do = json.loads(o.text)
 if 'redirect' in do:
 	ts = time.time()
-	o = s.get(url+do['redirect'])
+	o = s.get(url+do['redirect'], auth=auth)
 	timing_confirm = time.time() - ts
 else:
 	timing_confirm = 0
