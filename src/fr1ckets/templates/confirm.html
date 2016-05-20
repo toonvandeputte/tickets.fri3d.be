@@ -45,8 +45,8 @@
 				<h1>Bedankt!</h1>
 				<h4>
 {% if not queued %}
-				<p>Je bestelling is goed ontvangen. Gelieve binnen {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
-				<p>Als we je betaling niet binnen {{ days_max }} dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.</p>
+				<p>Je bestelling is goed ontvangen. Gelieve binnen de {{ days_max }} dagen het bedrag van €{{ price_total }} over te schrijven naar rekeningnummer <b>{{ payment_account }}</b>  met als vermelding <b>{{ payment_code }}</b>.</p>
+				<p>Als we je betaling niet binnen de {{ days_max }} dagen ontvangen hebben, worden je tickets opnieuw vrijgegeven voor verkoop.</p>
 	{% if price_billable > 0 %}
 				<p>Je hebt één of meerdere factureerbare tickets gekocht, voor €{{ price_billable }}. Je ontvangt daarvoor spoedig een factuur.</p>
 	{% endif %}

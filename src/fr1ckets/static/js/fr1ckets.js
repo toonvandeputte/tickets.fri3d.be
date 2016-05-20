@@ -369,8 +369,8 @@ function mk_cb_update_visitor_options(index) {
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 2016-08-16 helpen opruimen. Pizza en karma voorzien!">';
-			f += '      Help opkuisen de dag er na';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 16 augustus 2016 helpen opruimen. Pizza en karma voorzien!">';
+			f += '      Helpt opkuisen op 16 augustus';
 			f += '    </label>';
 			f += '  </div>';
 		}
@@ -454,7 +454,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€256+BTW)</label>';
 		f += '  <div class="col-sm-8">';
-		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kan dit ticket laten factureren. We sturen je kortelings manueel een factuur.">'
+		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op.">'
 		f += '  </div>';
 		f += '</div>';
 		// collapse for options depending on input above
