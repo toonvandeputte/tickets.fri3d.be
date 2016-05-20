@@ -30,15 +30,18 @@ $('#ticket_form').submit(function(e) {
 	$('#overview_content').html(update_overview());
 	$('#overview_modal').modal('show');
 });
-$('#show_tshirt_sizes_k').on('click', function() {
+$('#show_tshirt_sizes_k').on('click', function(e) {
+	e.preventDefault();
 	$('#tshirt_sizes').attr('src', '/static/img/maattabel_k.png');
 	$('#sizes_modal').modal('show');
 });
-$('#show_tshirt_sizes_f').on('click', function() {
+$('#show_tshirt_sizes_f').on('click', function(e) {
+	e.preventDefault();
 	$('#tshirt_sizes').attr('src', '/static/img/maattabel_f.png');
 	$('#sizes_modal').modal('show');
 });
-$('#show_tshirt_sizes_m').on('click', function() {
+$('#show_tshirt_sizes_m').on('click', function(e) {
+	e.preventDefault();
 	$('#tshirt_sizes').attr('src', '/static/img/maattabel_m.png');
 	$('#sizes_modal').modal('show');
 });
