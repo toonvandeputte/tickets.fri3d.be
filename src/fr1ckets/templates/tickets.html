@@ -116,10 +116,11 @@
 		<div class="row">
 			<div class="col-xs-12 col-sm-4 col-sm-offset-2">
 				<div class="thumbnail">
-					<img src="/static/img/tshirt_kid.jpg" class="img-circle">
+					<img src="/static/img/tshirt_k.png" class="img-rounded">
 					<div class="caption text-right">
 						<h3>T-shirts kinderen</h3>
 						<p>Alle tshirts kosten 20€.</p>
+						<p><small><a id="show_tshirt_sizes_k">Maten<sup>popup</sup></a></small></p>
 					</div>
 				</div>
 			</div>
@@ -200,10 +201,12 @@
 		<div class="row">
 			<div class="col-xs-12 col-sm-4 col-sm-offset-2">
 				<div class="thumbnail">
-					<img src="/static/img/tshirt_adult_f.jpg" class="img-circle">
+					<img src="/static/img/tshirt_f.png" class="img-rounded">
 					<div class="caption text-right">
 						<h3>T-shirts vrouwen</h3>
 						<p>Alle tshirts kosten 20€.</p>
+						<!--			<p><small><a data-toggle="modal" data-target="#sizes_f_modal">Popup maten.</a></small></p>-->
+						<p><small><a id="show_tshirt_sizes_f">Maten<sup>popup</sup></a></small></p>
 					</div>
 				</div>
 			</div>
@@ -332,10 +335,11 @@
 		<div class="row">
 			<div class="col-xs-12 col-sm-4 col-sm-offset-2">
 				<div class="thumbnail">
-					<img src="/static/img/tshirt_adult_m.jpg" class="img-circle">
+					<img src="/static/img/tshirt_m.png" class="img-rounded">
 					<div class="caption text-right">
 						<h3>T-shirts mannen</h3>
 						<p>Alle tshirts kosten 20€.</p>
+						<p><a id="show_tshirt_sizes_m">Maten</a><sup>(popup)</sup></p>
 					</div>
 				</div>
 			</div>
@@ -568,5 +572,27 @@
 		</div>
 	</div>
 	<!-- END REGISTRATION OUTCOME MODAL -->
+
+	<!-- TSHIRT SIZES MODAL -->
+	<div class="modal fade" id="sizes_modal" tabindex="-1" role="dialog" arial-labelledby="outcome_modal_label">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<!--
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Sluiten">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				-->
+				<div class="modal-body">
+					<img src="/static/img/tshirt_sizes.jpg" class="img-rounded" id="tshirt_sizes" style="width: 100%;">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END TSHIRT SIZES MODAL -->
 
 {% include "footer.html" %}
