@@ -23,6 +23,16 @@ $('#overview_order').on('click', function() {
 				}
 			}
 		},
+		error : function(resp) {
+			$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
+			$('#outcome_modal').modal('show');
+		},
+		statusCode : {
+			502 : function() {
+				$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
+				$('#outcome_modal').modal('show');
+			},
+		},
 	});
 });
 $('#ticket_form').submit(function(e) {

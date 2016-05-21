@@ -140,21 +140,19 @@ def reservation_create(cursor, values):
 		"""
 	cursor.execute(q, values)
 
-def generate_payment_code(serial, date, pretty=False):
+def generate_payment_code(date):
 	"""
 	generate a payment code "mDDxxxxxxxcc", prettyfied as
-	"+++mDD/xxxx/xxxcc+++", with;
-		m = month % 10
-		DD = day
-		xxxxxxx = random
+	"+++WWx/xxxx/xxxcc+++", with;
+		WW = week in year
+		xxxxxxxx = random
 		cc = checksum
 	"gestructureerde mededeling"-compliant
 	"""
-	first = (date.month % 10) * 100
-	first += date.day
+	first = date.isocalendar()[1] * 10
 	first *= 1000000000
 
-	last = random.randint(0, 9999999) * 100
+	last = random.randint(0, 99999999) * 100
 	
 	total = first + last
 	check = (total / 100) % 97
@@ -171,7 +169,7 @@ def purchase_create(cursor, email, products, billing_info, queued):
 	# get the reservation for this email
 	reservation = reservation_claim(cursor, email)
 
-	payment_code = generate_payment_code(random.randint(0, 1000), now)
+	payment_code = generate_payment_code(now)
 
 	# the purchase proper
 	q = """
@@ -189,7 +187,7 @@ def purchase_create(cursor, email, products, billing_info, queued):
 		up to n_tries before finally bugging out (could be another issue)
 		"""
 		try:
-			payment_code = generate_payment_code(random.randint(0, 1000), now)
+			payment_code = generate_payment_code(now)
 			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
 				payment_code))
