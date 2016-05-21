@@ -47,6 +47,6 @@ docker-build:
 
 clean:
 	rm -rf $(output) *.deb
-	find src/ -name '*.pyc' | xargs rm || true
+	-find src/ -name '*.pyc' | xargs rm || true
 
 .PHONY: clean serve docker docker-test
