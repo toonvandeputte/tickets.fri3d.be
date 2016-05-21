@@ -6,8 +6,6 @@ from fr1ckets.background.tasks import mail
 def send_mail(from_addr, to_addrs, subject, msg_html, msg_text):
 	app.logger.debug(mail)
 	app.logger.debug(mail.name)
-	app.logger.debug("shipping task")
 	mail.delay(from_addr, to_addrs, subject, msg_html, msg_text,
 			(app.config['SMTP_USERNAME'], app.config['SMTP_PASSWORD']),
 			(app.config['SMTP_SERVER'], app.config['SMTP_PORT']))
-	app.logger.debug("shipped task")

@@ -16,18 +16,31 @@ import datetime
 
 D = app.logger.debug
 
-def check_auth_basic(u, p):
-	return u == app.config['TEMP_SHIELDING_USERNAME'] and p == app.config['TEMP_SHIELDING_PASSWORD']
+def check_auth_admin(u, p):
+	return u == app.config['ADMIN_USERNAME'] and p == app.config['ADMIN_PASSWORD']
+
+def check_auth_public(u, p):
+	return u == app.config['PUBLIC_USERNAME'] and p == app.config['PUBLIC_PASSWORD']
 
 def auth_basic():
 	return Response('No', 401, { 'WWW-Authenticate' : 'Basic realm="Login Required"' })
 
-def req_auth_basic(f):
+def req_auth_admin(f):
 	@wraps(f)
 	def fn(*args, **kwargs):
 		auth = request.authorization
-		if not auth or not check_auth_basic(auth.username, auth.password):
+		if not auth or not check_auth_admin(auth.username, auth.password):
 			return auth_basic()
+		return f(*args, **kwargs)
+	return fn
+
+def req_auth_public(f):
+	@wraps(f)
+	def fn(*args, **kwargs):
+		if not app.config['PUBLIC']:
+			auth = request.authorization
+			if not auth or not check_auth_public(auth.username, auth.password):
+				return auth_basic()
 		return f(*args, **kwargs)
 	return fn
 
@@ -216,14 +229,14 @@ def price_distribution_strategy(cursor, nonce):
 
 
 @app.route('/tickets', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_public
 def tickets():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
 	return render_template('tickets.html', form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
-@req_auth_basic
+@req_auth_public
 def ticket_register():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
@@ -317,7 +330,7 @@ def ticket_register():
 		redirect=url_for('confirm', nonce=purchase['nonce']))
 
 @app.route('/confirm/<nonce>', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_public
 def confirm(nonce=None):
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, nonce)
 	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
@@ -333,7 +346,7 @@ def confirm(nonce=None):
 			days_max=app.config['DAYS_MAX'])
 
 @app.route('/admin/payments', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def payments():
 	now = datetime.datetime.utcnow()
 	time_delta = datetime.timedelta(days=app.config['DAYS_MAX'])
@@ -376,7 +389,7 @@ def payments():
 			purchases=p, page_opts={ 'internal' : True })
 
 @app.route('/admin/reservations')
-@req_auth_basic
+@req_auth_admin
 def reservations():
 	"""
 	build a list of reservations, return
@@ -388,7 +401,7 @@ def reservations():
 			})
 
 @app.route('/admin/reservation_delete/<int:id>')
-@req_auth_basic
+@req_auth_admin
 def reservation_delete(id):
 	"""
 	delete a reservation based on id
@@ -420,7 +433,7 @@ class ReservationForm(Form):
 		])
 
 @app.route('/admin/reservation_edit/<int:id>', methods=[ 'GET', 'POST'])
-@req_auth_basic
+@req_auth_admin
 def reservation_edit(id):
 	"""
 	overwrite reservation by id
@@ -452,7 +465,7 @@ def reservation_edit(id):
 			form_dest=url_for('reservation_edit', id=id))
 
 @app.route('/admin/reservation_add', methods=[ 'GET', 'POST'])
-@req_auth_basic
+@req_auth_admin
 def reservation_add():
 	"""
 	add a reservation
@@ -490,7 +503,7 @@ def reservation_add():
 			form_dest=url_for('reservation_add', id=id))
 
 @app.route('/admin/overview', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def overview():
 	overview_tickets = model.get_overview_tickets(g.db_cursor)
 	overview_tshirts = model.get_overview_tshirts(g.db_cursor)
@@ -504,7 +517,7 @@ def overview():
 			'internal' : True})
 
 @app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def api_purchase_mark_paid(purchase_id, paid):
 	model.purchase_mark_paid(g.db_cursor, purchase_id, paid)
 
@@ -528,7 +541,7 @@ def api_purchase_mark_paid(purchase_id, paid):
 	return "ok", 200
 
 @app.route('/admin/api/purchase_mark_removed/<int:purchase_id>/<int:removed>', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def api_purchase_mark_removed(purchase_id, removed):
 	model.purchase_mark_removed(g.db_cursor, purchase_id, removed)
 
@@ -555,7 +568,7 @@ def api_purchase_mark_removed(purchase_id, removed):
 	return "ok", 200
 
 @app.route('/admin/api/purchase_mark_billed/<int:purchase_id>/<int:billed>', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def api_purchase_mark_billed(purchase_id, billed):
 	model.purchase_mark_billed(g.db_cursor, purchase_id, billed)
 
@@ -576,7 +589,7 @@ class PurchaseHistoryForm(Form):
 		])
 
 @app.route('/admin/purchase_view/<int:purchase_id>', methods=[ 'GET', 'POST'])
-@req_auth_basic
+@req_auth_admin
 def purchase_view(purchase_id):
 	form = PurchaseHistoryForm()
 	if form.validate_on_submit():
@@ -604,7 +617,7 @@ def purchase_view(purchase_id):
 			})
 
 @app.route('/admin/api/purchase_mark_dequeued/<int:purchase_id>', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_admin
 def api_purchase_mark_dequeued(purchase_id):
 	model.purchase_mark_dequeued(g.db_cursor, purchase_id)
 	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
@@ -636,7 +649,7 @@ def api_purchase_mark_dequeued(purchase_id):
 	return "ok", 200
 
 @app.route('/api/get_products', methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_public
 def api_get_products():
 	products = map(dict, model.products_get(g.db_cursor))
 	for p in products:
@@ -645,7 +658,7 @@ def api_get_products():
 	return json.dumps(products), 200
 
 @app.route('/admin/api/get_timeline_tickets')
-@req_auth_basic
+@req_auth_admin
 def api_get_timeline_tickets():
 	timeline_tickets = map(dict, model.get_timeline_tickets(g.db_cursor))
 
@@ -662,7 +675,7 @@ def api_get_timeline_tickets():
 		'n' : [ t['n'] for t in timeline_tickets ]})
 
 @app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
-@req_auth_basic
+@req_auth_public
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({
@@ -671,11 +684,11 @@ def api_get_reservation(email):
 		})
 
 @app.route("/admin")
-@req_auth_basic
+@req_auth_admin
 def admin():
 	return render_template('index.html')
 
 @app.route("/")
-@req_auth_basic
+@req_auth_public
 def index():
 	return redirect(url_for('tickets'))
