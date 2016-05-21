@@ -24,16 +24,18 @@ with app.app_context():
 	setup.setup_db()
 	with open(sys.argv[1], 'rb') as csvfile:
 		r = csv.DictReader(csvfile, fieldnames=[ 'email',
-			'discount', 'available_from'])
+			'discount', 'available_from', 'comments'])
 		statics = {
 			'claimed' : False,
 			'claimed_at' : None,
-			'comments' : 'set by {0} on {1}'.format(os.path.basename(sys.argv[0])
-				, datetime.datetime.today().isoformat()),
 		}
+		static_comment = 'set by {0} on {1}'.format(os.path.basename(sys.argv[0])
+				, datetime.datetime.today().isoformat())
+
 		all_reservations = { res['email'] : res for res in model.reservation_get(g.db_cursor) }
 		for row in r:
 			row['discount'] = int(row['discount'])
+			row['comments'] = '{0} ({1})'.format(row['comments'] if row['comments'] else '', static_comment)
 			row.update(statics)
 			if row['email'] in all_reservations:
 				print "updating %(email)s to discount=%(discount)d av_from=%(available_from)s" % row
