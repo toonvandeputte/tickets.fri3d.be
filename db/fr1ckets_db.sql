@@ -47,7 +47,7 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 drop table if exists reservation;
 create table reservation (
 	id integer auto_increment not null,
-	email varchar(128) not null,
+	email varchar(128) not null unique,
 	discount integer default 0,
 	available_from datetime not null,
 	claimed integer default 0,
@@ -58,8 +58,7 @@ create table reservation (
 );
 
 insert into reservation (email, discount, available_from) values
-	('default',           0,  '2016-06-01 19:00:00.000000'),
-	('jef.vdb@gmail.com', 10, '2015-06-01 19:00:00.000000');
+	('default',           0,  '2016-06-01 19:00:00.000000');
 
 drop table if exists purchase;
 create table purchase (
