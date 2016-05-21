@@ -190,7 +190,6 @@ def purchase_create(cursor, email, products, billing_info, queued):
 		"""
 		try:
 			payment_code = generate_payment_code(random.randint(0, 1000), now)
-			D("trying "+payment_code)
 			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
 				payment_code))
