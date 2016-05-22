@@ -239,7 +239,8 @@ def tickets():
 @req_auth_public
 def ticket_register():
 	form = TicketForm()
-	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
+	tickets_total_sold = model.tickets_actual_total(g.db_cursor)
+	tickets_available = app.config['TICKETS_MAX'] - tickets_total_sold
 
 	if not form.validate_on_submit():
 		return jsonify(
@@ -321,6 +322,7 @@ def ticket_register():
 				msg_text=texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'].format(**mail_data))
 			model.purchase_history_append(g.db_cursor, purchase['id'],
 				msg='mailed ok-queued to {0}'.format(form.email.data))
+		mail.send_notif("new registration: {0} bought {1} tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
 	g.db_commit = True
 

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4:sw=4:noexpandtab
 import smtplib
+import json
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from celery import Celery
@@ -34,3 +36,17 @@ def mail(self, from_addr, to_addrs, subject, msg_html, msg_text, smtp_auth, smtp
 		server.sendmail(from_addr, to_addrs, msg.as_string())
 	except Exception as e:
 		self.retry(exc=e, countdown=3)
+
+
+@app.task(name='fr1ckets.background.tasks.notif', bind=True)
+def notif(self, url, msg):
+	l.info("sending notif")
+
+	payload = {
+		'text' : msg,
+		'username' : 'ticketshop',
+		'icon_emoji' : ':space_invader:'
+	}
+
+	r = requests.post(url, data=json.dumps(payload))
+	l.info("sending notif ret={0}".format(r.text))
