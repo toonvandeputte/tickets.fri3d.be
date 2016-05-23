@@ -1,6 +1,12 @@
 {% include "header.html" %}
 <!-- vim: set sw=2 ts=2: -->
 
+	<div class="row" id="no_js_warning">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center alert alert-danger no_js_warning" id="no_js_warning">
+			<p>Deze pagina vereist Javascript! Gelieve Javascript op te zetten voor deze site.</p>
+		</div>
+	</div>
+
 <div class="row">
 	<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
 		<div class="center-block" id="mainlogo">
@@ -22,7 +28,6 @@
 		</div>
 	</div>
 </div>
-
 
 	<div class="row">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
@@ -47,7 +52,7 @@
 		</div>
 	</div>
 
-	<form action="tickets_register" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" id="ticket_form">
+	<form action="api/tickets_register" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" id="ticket_form">
 		{{ form.csrf_token }}
 
 		<!-- BEGIN EMAIL -->

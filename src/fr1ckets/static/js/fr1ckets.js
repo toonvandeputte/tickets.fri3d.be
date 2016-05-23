@@ -1,6 +1,8 @@
 var products = [];
 var discount = 0;
 
+$('.no_js_warning').hide();
+
 $('#overview_order').on('click', function() {
 	var root = location.protocol + '//' + location.hostname;
 	if (location.port) {
