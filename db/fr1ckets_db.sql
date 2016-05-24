@@ -24,7 +24,7 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'ticket_5bit',     '5bit 6-12 jaar',                 32, 32, '2004-08-15 02:00:00', 0),
 	( 'ticket_6bit',     '6bit 12-24 jaar',                64, 56, '1992-08-15 02:00:00', 0),
 	( 'ticket_7bit',     '7bit +24 jaar',                  128, 112, '1900-01-01 00:00:00', 0),
-	( 'ticket_8bit',     '8bit zakelijk',                  256, 256, '1900-01-01 00:00:00', 1),
+	( 'ticket_8bit',     '8bit zakelijk',                  309.76, 309.76, '1900-01-01 00:00:00', 1),
 	( 'tshirt_adult_m_xs',  'volwassenen mannen tshirt XS',       20, 20, '', 0),
 	( 'tshirt_adult_m_s',  'volwassenen mannen tshirt S',       20, 20, '', 0),
 	( 'tshirt_adult_m_m',  'volwassenen mannen tshirt M',      20, 20, '', 0),

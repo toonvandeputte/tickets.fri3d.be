@@ -8,7 +8,8 @@ def setup_db():
 	g.db_con = MySQLdb.connect(user=app.config['DB_USER'],
 			passwd=app.config['DB_PASS'],
 			db=app.config['DB_NAME'],
-			cursorclass=MySQLdb.cursors.DictCursor)
+			cursorclass=MySQLdb.cursors.DictCursor,
+			charset='utf8')
 	g.db_con.begin()
 	g.db_cursor = g.db_con.cursor()
 

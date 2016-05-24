@@ -369,7 +369,7 @@ def get_purchase_total(cursor, nonce, only_billable=False):
 
 	q = """
 		select
-			sum(purchase_items.n * (case
+			truncate(sum(purchase_items.n * (case
 				when
 					purchase_items.person_volunteers_during
 				then
@@ -377,7 +377,7 @@ def get_purchase_total(cursor, nonce, only_billable=False):
 				else
 					product.price
 				end)
-			)
+			), 2)
 			as total
 		from
 			purchase_items
