@@ -322,7 +322,10 @@ def ticket_register():
 				msg_text=texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'].format(**mail_data))
 			model.purchase_history_append(g.db_cursor, purchase['id'],
 				msg='mailed ok-queued to {0}'.format(form.email.data))
-		mail.send_notif("new registration: {0} bought {1} tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
+		if not queued:
+			mail.send_notif("new registration: {0} bought {1} tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
+		else:
+			mail.send_notif("new registration: {0} bought {1} QUEUED tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
 	g.db_commit = True
 
@@ -538,6 +541,7 @@ def api_purchase_mark_paid(purchase_id, paid):
 				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-paid to {0}'.format(email))
+		mail.send_notif("payment received for registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -565,6 +569,7 @@ def api_purchase_mark_removed(purchase_id, removed):
 				msg_html=texts['MAIL_REMOVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_REMOVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-removed to {0}'.format(email))
+		mail.send_notif("removed registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -646,6 +651,7 @@ def api_purchase_mark_dequeued(purchase_id):
 			msg_html=texts['MAIL_UNQUEUED_HTML'].format(**mail_data),
 			msg_text=texts['MAIL_UNQUEUED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-dequeued to {0}'.format(email))
+		mail.send_notif("dequeued registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
