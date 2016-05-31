@@ -37,15 +37,15 @@
 					{% if tickets_available > 10 %}
 					<p>Welkom op de ticketshop voor Fri3d Camp 2016!</p>
 					<p>Er zijn nog <b>{{ tickets_available }}</b> tickets beschikbaar!</p>
-					<p>Bij vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					<p>Nog vragen? Check de <a href="http://fri3d.be/faq/">FAQ</a>, of mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% elif tickets_available > 0 %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Er zijn nog maar <b>{{ tickets_available }}</b> tickets beschikbaar! Je kan er meer bestellen, maar dan komt je bestelling in de wachtrij tot er terug plaatsen vrij zijn, we laten je dan iets weten.</p>
-					<p>Nog vragen? Mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					<p>Nog vragen? Check de <a href="http://fri3d.be/faq/">FAQ</a>, of mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% else %}
 					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
 					<p>Alle beschikbare tickets zijn weg! Je kan zeker nog een bestelling plaatsen, deze komt in de wachtrij en we laten je iets weten als er terug plaats is.</p>
-					<p>Nog vragen? Mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
+					<p>Nog vragen? Check de <a href="http://fri3d.be/faq/">FAQ</a>, of mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 					{% endif %}
 				</h4>
 			</div>
@@ -100,10 +100,10 @@
 			</div>
 			<div class="col-xs-12 col-sm-6">
 				<ul>
-					<li>Toegang tot Fri3d Camp 2016 van vrijdag 12 augustus tot en met maandag 15 augustus.</li>
+					<li>Toegang tot Fri3d Camp 2016 van vrijdag 12 augustus tot en met maandag 15 augustus. Elk ticket bevat twee warme maaltijden.</li>
 					<li>Minstens één volunteer-shift (enkele uren drank tappen, infobalie bemannen, etc.) voor wie 16 jaar of ouder is bij de start van het kamp.</li>
 					<li>Wil je geen volunteer-shift meedraaien, vink dan de optie <em>premium</em> aan. Je ticket wordt dan wel duurder.</li>
-					<li>In de prijs van één ticket zitten twee warme maaltijden inbegrepen.</li>
+					<li>Selecteer het aantal tickets om de per-ticket opties te zien.</li>
 			</ul>
 			</div>
 		</div>
@@ -536,6 +536,28 @@
 		</div>
 	</div>
 	<!-- END ORDER OVERVIEW MODAL -->
+
+	<!-- ORDER VALIDATION MODAL -->
+	<div class="modal fade" id="validation_modal" tabindex="-1" role="dialog" arial-labelledby="validation_modal_label">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Sluiten">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="validation_modal_label">Enkele foutjes</h4>
+				</div>
+				<div class="modal-body">
+					<div id="validation_content">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Terug</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END ORDER VALIDATION MODAL -->
 
 	<!-- REGISTRATION OUTCOME MODAL -->
 	<div class="modal fade" id="outcome_modal" tabindex="-1" role="dialog" arial-labelledby="outcome_modal_label">
