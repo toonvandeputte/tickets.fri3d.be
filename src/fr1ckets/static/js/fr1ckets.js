@@ -354,7 +354,7 @@ $(document).ready(function() {
 	update_price_total_display();
 });
 
-var ticket_volunteering_cutoff = Date.now() - 16 * 3600*24*356*1000;
+var ticket_volunteering_cutoff = new Date(2000, 8, 13).getTime();
 
 var showing_business_info = false;
 function display_business_info() {
