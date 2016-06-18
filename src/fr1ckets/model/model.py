@@ -553,3 +553,74 @@ def purchase_mark_dequeued(cursor, purchase_id):
 	"""mark a purchase as being removed"""
 	q = "update purchase set queued=0, once_queued=1, dequeued_at=%(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })
+
+def get_volunteering_times(cursor):
+	out = {}
+
+	q = """
+		select
+			id,
+			description as name
+		from
+			shift_time
+		order by id;
+		"""
+
+	cursor.execute(q)
+	for r in cursor.fetchall():
+		out[r['id']] = r['name']
+	return out
+
+def get_volunteering_posts(cursor):
+	out = {}
+
+	q = """
+		select
+			id,
+			what as name
+		from
+			shift_post
+		order by id;
+		"""
+
+	cursor.execute(q)
+	for r in cursor.fetchall():
+		out[r['id']] = r['name']
+	return out
+
+
+def get_volunteering_schedule(cursor):
+	"""return the full volunteering schedule, with the number of needed persons per shift"""
+	out = {}
+
+	q = """
+		select
+			s.id as shift_id,
+			st.id as shift_time_id,
+			sp.id as shift_post_id,
+			sp.what as what,
+			(s.persons - count(sv.id)) as people_needed
+		from
+			shift s
+			inner join shift_time st on s.shift_time_id = st.id
+			inner join shift_post sp on s.shift_post_id = sp.id
+			left outer join shift_volunteer sv on sv.shift_id = s.id
+		group by st.id, sp.id
+		order by st.id, sp.id;
+		"""
+
+	cursor.execute(q)
+	ret = cursor.fetchall()
+
+	for r in ret:
+		st_id = r['shift_time_id']
+		sp_id = r['shift_post_id']
+
+		if st_id not in out:
+			out[st_id] = {}
+		out[st_id][sp_id] = {
+			'people_needed' : r['people_needed'],
+			'shift_id' : r['shift_id'],
+		}
+
+	return out

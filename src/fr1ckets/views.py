@@ -700,3 +700,38 @@ def admin():
 @req_auth_public
 def index():
 	return redirect(url_for('tickets'))
+
+@app.route("/api/set_volunteering_data", methods=[ 'GET', 'POST' ])
+def api_set_volunteering_data():
+	for k, v in request.form.iteritems():
+		D("k={0} v={1}".format(k, v))
+	return "ok"
+
+@app.route("/api/get_volunteering_data", methods=[ 'GET' ])
+def api_get_volunteering_data():
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers = {
+			1 : 'jef van den broeck',
+			2 : 'jozefien peeters',
+	}
+	return json.dumps({
+		'times' : when,
+		'posts' : what,
+		'sched' : sched,
+		'volunteers' : volunteers,
+	})
+
+@app.route("/shifts")
+def shifts():
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers = {
+			1 : 'jef van den broeck',
+			2 : 'jozefien peeters',
+	}
+	return render_template('shifts.html', times=when, posts=what,
+			sched=sched, volunteers=volunteers, page_opts={ 'shift' : True})
+
