@@ -16,6 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y	\
 	python-mysqldb		\
 	nginx-full			\
 	supervisor			\
+	python-requests		\
 	make
 
 EXPOSE 8080
