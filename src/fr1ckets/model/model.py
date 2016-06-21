@@ -455,6 +455,20 @@ def get_purchases(cursor, strip_removed=False):
 			) as n_tickets,
 			sum(
 				case
+				when pr.name like 'token%'
+				then pui.n
+				else 0
+				end
+			) as n_tokens,
+			sum(
+				case
+				when pr.name like 'tshirt%'
+				then pui.n
+				else 0
+				end
+			) as n_tshirts,
+			sum(
+				case
 				when pr.billable
 				then 1
 				else 0
@@ -553,3 +567,70 @@ def purchase_mark_dequeued(cursor, purchase_id):
 	"""mark a purchase as being removed"""
 	q = "update purchase set queued=0, once_queued=1, dequeued_at=%(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })
+
+def get_stats_tickets(cursor, removed=0, queued=0):
+	q = """
+		select
+			pr.name as type,
+			sum(pui.n) as n_total,
+			sum(case
+				when pui.person_dob >= %(cutoff)s
+				then 0
+				else pui.person_volunteers_during
+				end
+			) as n_volunteers_during,
+			sum(case
+				when pui.person_dob >= %(cutoff)s
+				then 0
+				else pui.person_volunteers_after
+				end
+			) as n_volunteers_after,
+			sum(case
+				when pui.person_food_vegitarian
+				then 1
+				else 0
+				end
+			) as n_vegetarian
+		from
+			purchase_items pui
+			inner join purchase pu on pui.purchase_id = pu.id
+			inner join product pr on pui.product_id = pr.id
+		where
+			pr.name like 'ticket%%'
+			and pu.removed = %(removed)s
+			and pu.queued = %(queued)s
+		group by
+			pr.name;
+		"""
+	qd = {
+		'removed' : removed,
+		'queued' : queued,
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
+
+	cursor.execute(q, qd)
+	return cursor.fetchall()
+
+def get_stats_tshirts(cursor, removed=0, queued=0):
+	q = """
+		select
+			pr.name as type,
+			sum(pui.n) as n_total
+		from
+			purchase_items pui
+			inner join purchase pu on pui.purchase_id = pu.id
+			inner join product pr on pui.product_id = pr.id
+		where
+			pr.name like 'tshirt%%'
+			and pu.removed = %(removed)s
+			and pu.queued = %(queued)s
+		group by
+			pr.name;
+		"""
+	qd = {
+		'removed' : removed,
+		'queued' : queued,
+	}
+
+	cursor.execute(q, qd)
+	return cursor.fetchall()

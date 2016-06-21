@@ -510,13 +510,116 @@ def reservation_add():
 @app.route('/admin/overview', methods=[ 'GET' ])
 @req_auth_admin
 def overview():
-	overview_tickets = model.get_overview_tickets(g.db_cursor)
-	overview_tshirts = model.get_overview_tshirts(g.db_cursor)
-	overview_tokens = model.get_overview_tokens(g.db_cursor)
+	purchases = map(dict, model.get_purchases(g.db_cursor, strip_removed=False))
+	tickets_active = map(dict, model.get_stats_tickets(g.db_cursor))
+	tickets_queued = map(dict, model.get_stats_tickets(g.db_cursor, queued=1))
+	tshirts_active = map(dict, model.get_stats_tshirts(g.db_cursor))
+	tshirts_queued = map(dict, model.get_stats_tshirts(g.db_cursor, queued=1))
+
+	stats_purchases = { t :
+		{
+			'orders' : 0,
+			'tickets' : 0,
+			'tshirts' : 0,
+			'tokens' : 0,
+			'money' : 0,
+		} for t in [ 'active_paid', 'active_unpaid', 'active_total', 'queued', 'total' ]
+	}
+
+	for det in purchases:
+		dests = [ 'total' ]
+		if det['removed']:
+			continue
+		if not det['queued']:
+			dests.append('active_paid' if det['paid'] else 'active_unpaid')
+			dests.append('active_total')
+		else:
+			dests.append('queued')
+		for dest in dests:
+			stats_purchases[dest]['tickets'] += det['n_tickets']
+			stats_purchases[dest]['tshirts'] += det['n_tshirts']
+			stats_purchases[dest]['tokens'] += det['n_tokens']
+			stats_purchases[dest]['money'] += det['total_price']
+			stats_purchases[dest]['orders'] += 1
+	
+	for t in stats_purchases:
+		for k in stats_purchases[t]:
+			stats_purchases[t][k] = int(stats_purchases[t][k])
+
+	tickets_active_total = {}
+	tickets_active_total['type'] = 'total active'
+	tickets_queued_total = {}
+	tickets_queued_total['type'] = 'total queued'
+	tickets_total = {}
+	tickets_total['type'] = 'total'
+	for t in tickets_active:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tickets_active_total:
+					tickets_active_total[k] = 0
+				if k not in tickets_total:
+					tickets_total[k] = 0
+				tickets_active_total[k] += t[k]
+				tickets_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' active'
+	tickets_active.append(tickets_active_total)
+	for t in tickets_queued:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tickets_queued_total:
+					tickets_queued_total[k] = 0
+				if k not in tickets_total:
+					tickets_total[k] = 0
+				tickets_queued_total[k] += t[k]
+				tickets_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' queued'
+	tickets_queued.append(tickets_queued_total)
+	tickets = []
+	tickets.extend(tickets_active)
+	tickets.extend(tickets_queued)
+	tickets.append(tickets_total)
+
+	tshirts_active_total = {}
+	tshirts_active_total['type'] = 'total active'
+	tshirts_queued_total = {}
+	tshirts_queued_total['type'] = 'total queued'
+	tshirts_total = {}
+	tshirts_total['type'] = 'total'
+	for t in tshirts_active:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tshirts_active_total:
+					tshirts_active_total[k] = 0
+				if k not in tshirts_total:
+					tshirts_total[k] = 0
+				tshirts_active_total[k] += t[k]
+				tshirts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' active'
+	tshirts_active.append(tshirts_active_total)
+	for t in tshirts_queued:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tshirts_queued_total:
+					tshirts_queued_total[k] = 0
+				if k not in tshirts_total:
+					tshirts_total[k] = 0
+				tshirts_queued_total[k] += t[k]
+				tshirts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' queued'
+	tshirts_queued.append(tshirts_queued_total)
+	tshirts = []
+	tshirts.extend(tshirts_active)
+	tshirts.extend(tshirts_queued)
+	tshirts.append(tshirts_total)
+
 	return render_template('overview.html',
-		overview_tickets=overview_tickets,
-		overview_tshirts=overview_tshirts,
-		overview_tokens=overview_tokens,
+		purchases=stats_purchases,
+		tickets=tickets,
+		tshirts=tshirts,
 		page_opts={
 			'charting' : True,
 			'internal' : True})

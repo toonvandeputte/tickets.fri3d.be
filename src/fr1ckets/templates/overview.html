@@ -3,48 +3,96 @@
 
 <div class="row">
 	<div class="col-xs-12 col-sm-9 col-sm-offset-2">
-		<canvas id="chart_timeline" width="600" height="400"></canvas>
+		<canvas id="chart_timeline" width="600" height="200"></canvas>
 	</div>
 </div>
 
 <div class="row">
-	<div class="col-xs-12 col-sm-3 col-sm-offset-2">
-		<table class="table table-striped table-condensed">
+	<div class="col-sm-12">
+		<table class="table table-condensed table-striped table-bordered">
+			<caption>Breakdown verkoop</caption>
+			<thead>
+				<th></th>
+		{% for k in purchases['active_paid'] %}
+				<td>{{ k }}</td>
+		{% endfor %}
+			</thead>
 			<tbody>
-{% for o in overview_tickets %}
 				<tr>
-					<td>{{ o.name }}</td>
-					<td>{{ o.n }}</td>
+					<td>Actief al ontvangen</td>
+			{% for k in purchases['active_paid'] %}
+					<td>{{ purchases['active_paid'][k] }}</td>
+			{% endfor %}
 				</tr>
-{% endfor %}
+				<tr>
+					<td>Actief nog te ontvangen</td>
+			{% for k in purchases['active_unpaid'] %}
+					<td>{{ purchases['active_unpaid'][k] }}</td>
+			{% endfor %}
+				</tr>
+				<tr>
+					<td>Totaal actief</td>
+			{% for k in purchases['active_total'] %}
+					<td>{{ purchases['active_total'][k] }}</td>
+			{% endfor %}
+				</tr>
+				<tr>
+					<td>Totaal queue</td>
+			{% for k in purchases['queued'] %}
+					<td>{{ purchases['queued'][k] }}</td>
+			{% endfor %}
+				</tr>
+				<tr class="success">
+					<td>Totaal actief en queue</td>
+			{% for k in purchases['total'] %}
+					<td>{{ purchases['total'][k] }}</td>
+			{% endfor %}
+				</tr>
 			</tbody>
 		</table>
-	</div>
-	<div class="col-xs-12 col-sm-3">
-		<table class="table table-striped table-condensed">
+	</div><!-- col-sm-6 -->
+	<div class="col-sm-6 col-xs-12">
+		<table class="table table-condensed table-striped table-bordered">
+			<caption>Breakdown tickets</caption>
+			<thead>
+				<th></th>
+				<th>Totaal</th>
+				<th>Vrijwilliger tijdens</th>
+				<th>Vrijwilliger opkuis</th>
+				<th>Vegitariër</th>
+			</thead>
 			<tbody>
-{% for o in overview_tshirts %}
-				<tr>
-					<td>{{ o.name }}</td>
-					<td>{{ o.n }}</td>
+	{% for t in tickets %}
+			{% if 'total' in t.type %}<tr class="success">{% else %}<tr>{% endif %}
+					<td>{{ t.type }}</td>
+					<td>{{ t.n_total}}</td>
+					<td>{{ t.n_volunteers_during }}</td>
+					<td>{{ t.n_volunteers_after }}</td>
+					<td>{{ t.n_vegetarian }}</td>
 				</tr>
-{% endfor %}
+	{% endfor %}
 			</tbody>
 		</table>
-	</div>
-	<div class="col-xs-12 col-sm-3">
-		<table class="table table-striped table-condensed">
+	</div><!-- col-sm-6 -->
+	<div class="col-sm-6 col-xs-12">
+		<table class="table table-condensed table-striped table-bordered">
+			<caption>Breakdown tshirts</caption>
+			<thead>
+				<th></th>
+				<th>Totaal</th>
+			</thead>
 			<tbody>
-{% for o in overview_tokens %}
-				<tr>
-					<td>{{ o.name }}</td>
-					<td>{{ o.n }}</td>
+	{% for t in tshirts %}
+			{% if 'total' in t.type %}<tr class="success">{% else %}<tr>{% endif %}
+					<td>{{ t.type }}</td>
+					<td>{{ t.n_total}}</td>
 				</tr>
-{% endfor %}
+	{% endfor %}
 			</tbody>
 		</table>
-	</div>
 
+	</div><!-- col-sm-6 -->
 </div>
+
 
 {% include "footer.html" %}
