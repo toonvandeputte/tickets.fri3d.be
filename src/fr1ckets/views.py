@@ -233,7 +233,9 @@ def price_distribution_strategy(cursor, nonce):
 def tickets():
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
-	return render_template('tickets.html', form=form, tickets_available=tickets_available)
+	return render_template('tickets.html',
+			selling_inhibited=app.config['INHIBIT_SELLING'],
+			form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
 @req_auth_public
