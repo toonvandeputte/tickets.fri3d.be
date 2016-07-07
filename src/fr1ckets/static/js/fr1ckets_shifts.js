@@ -7,20 +7,24 @@ var choice = new Object();
 var min_shifts = 2;
 
 $(document).ready(function() {
-	$.ajax({
-		url : '/api/get_volunteering_data',
-		success : function(data) {
-			d = JSON.parse(data);
-			posts = d.posts;
-			times = d.times;
-			sched = d.sched;
-			volunteers = d.volunteers;
-			for (var v in volunteers) {
-				choice[v] = new Array();
+	$('#email').on('change', function() {
+		var email = $('#email').val();
+		$.ajax({
+			url : '/api/get_volunteering_data/'+email,
+			success : function(data) {
+				d = JSON.parse(data);
+				posts = d.posts;
+				times = d.times;
+				sched = d.sched;
+				volunteers = d.volunteers;
+				console.log(d.volunteers);
+				for (var v in volunteers) {
+					choice[v] = new Array();
+				}
+				volunteering_form_setup();
+				recalc_totals();
 			}
-			volunteering_form_setup();
-			recalc_totals();
-		}
+		});
 	});
 });
 

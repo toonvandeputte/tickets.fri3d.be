@@ -704,3 +704,7 @@ def get_stats_tshirts(cursor, removed=0, queued=0):
 
 	cursor.execute(q, qd)
 	return cursor.fetchall()
+
+def get_volunteers(cursor, email):
+	"""return all volunteering tickets bought by this email"""
+

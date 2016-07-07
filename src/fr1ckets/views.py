@@ -812,8 +812,8 @@ def api_set_volunteering_data():
 		D("k={0} v={1}".format(k, v))
 	return "ok"
 
-@app.route("/api/get_volunteering_data", methods=[ 'GET' ])
-def api_get_volunteering_data():
+@app.route("/api/get_volunteering_data/<email>", methods=[ 'GET' ])
+def api_get_volunteering_data(email):
 	when = model.get_volunteering_times(g.db_cursor)
 	what = model.get_volunteering_posts(g.db_cursor)
 	sched = model.get_volunteering_schedule(g.db_cursor)
