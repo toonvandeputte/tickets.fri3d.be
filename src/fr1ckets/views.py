@@ -231,6 +231,8 @@ def price_distribution_strategy(cursor, nonce):
 @app.route('/tickets', methods=[ 'GET' ])
 @req_auth_public
 def tickets():
+	if app.config['CLOSED']:
+		return render_template('closed.html')
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
 	return render_template('tickets.html',
