@@ -12,7 +12,7 @@ var volunteers = undefined;
 // }
 var choices = new Object();
 
-var min_shifts = 2;
+var min_shifts = 1;
 
 $(document).ready(function() {
 	$('#submit_email').click(function(e) {
@@ -21,7 +21,6 @@ $(document).ready(function() {
 			url : '/api/get_volunteering_data/'+email,
 			success : function(data) {
 				d = JSON.parse(data);
-				console.dir(d);
 				if (d.status == 'OK') {
 					posts = d.posts;
 					times = d.times;
@@ -35,7 +34,6 @@ $(document).ready(function() {
 					$('#email_entry_wrong').collapse('hide');
 					$('#form_entry').collapse('show');
 				} else if (d.status == 'FAIL') {
-					console.log("wrong");
 					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
 					$('#email_entry_wrong').collapse('show');
 					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
@@ -134,6 +132,15 @@ function volunteer_totals_init()
 	}
 
 	$('#volunteer_list').html(f);
+
+	f = '';
+	f + '<ul>';
+	for (var p in posts) {
+		f += '<li><b>'+'+posts[p]['what']+'</li>';
+	}
+	f += '</ul>';
+
+	$('#volunteer_info').html(f);
 
 }
 

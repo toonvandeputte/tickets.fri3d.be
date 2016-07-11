@@ -591,7 +591,8 @@ def get_volunteering_posts(cursor):
 	q = """
 		select
 			id,
-			what as name
+			what as name,
+			description,
 		from
 			shift_post
 		order by id;
@@ -600,6 +601,7 @@ def get_volunteering_posts(cursor):
 	cursor.execute(q)
 	for r in cursor.fetchall():
 		out[r['id']] = r['name']
+		FOOR
 	return out
 
 def get_volunteering_schedule(cursor):
@@ -639,7 +641,7 @@ def get_volunteering_schedule(cursor):
 				'people_needed' : r['people_needed'],
 				'people_present' : 0,
 				'people_list' : [],
-				'shift_id' : r['shift_id'],
+				'shift_id' : r['shift_id']
 			}
 		if r['people_present']:
 			out[st_id][sp_id]['people_list'].append(r['people_present'])
