@@ -811,9 +811,6 @@ def api_set_volunteering_data(email):
 	updates_str = json.loads(request.form.keys()[0])
 	sched = model.get_volunteering_schedule(g.db_cursor)
 	volunteers = model.get_volunteers(g.db_cursor, email_filter=email)
-	print "sched={0}".format(sched)
-	print "volunteers={0}".format(volunteers)
-	print "updates_str={0}".format(updates_str)
 	all_shifts = {}
 	for time_id in sched:
 		for post_id in sched[time_id]:
@@ -846,7 +843,7 @@ def api_set_volunteering_data(email):
 	model.set_volunteering_schedule(g.db_cursor, updates)
 
 	g.db_commit = True
-	return "ok"
+	return json.dumps({ 'status' : 'OK' })
 
 @app.route("/api/get_volunteering_data/<email>", methods=[ 'GET' ])
 def api_get_volunteering_data(email):
@@ -860,6 +857,9 @@ def api_get_volunteering_data(email):
 		'mine' : volunteers_mine.keys()
 	}
 
+	if not len(volunteers_mine):
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+
 	def anonymize(name):
 		t = name.strip().split(' ')
 		print t
@@ -871,7 +871,7 @@ def api_get_volunteering_data(email):
 		if v not in volunteers_mine:
 			volunteers_all[v] = anonymize(volunteers_all[v])
 
-	return json.dumps({
+	return json.dumps({ 'status': 'OK',
 		'times' : when,
 		'posts' : what,
 		'sched' : sched,

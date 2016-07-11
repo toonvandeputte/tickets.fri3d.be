@@ -1,23 +1,95 @@
-{% include "header.html" %}
+<!DOCTYPE html>
+<html lang="en">
 <!-- vim: set sw=2 ts=2: -->
+	<head>
+		<meta charset="utf-8">
+		<title>Fri3d Camp 2016</title>
+		<link rel="stylesheet" href="/static/css/app.css">
+		<link rel="stylesheet" href="/static/css/tickets.css">
+		<link rel="stylesheet" href="/static/css/shifts.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="apple-touch-icon" sizes="57x57" href="//static/img/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="//static/img/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="//static/img/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="//static/img/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="//static/img/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="//static/img/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="//static/img/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="//static/img/apple-icon-152x152.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/static/img/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+		<link rel="manifest" href="/static/img/manifest.json">
+	</head>
+	<body>
+<!-- vim: set sw=2 ts=2: -->
+<div class="container-fluid"
 <div class="row">
-	<div class="col-sm-12">
-		<label for="email" class="control-label col-sm-3">Email</label>
-		<div class="col-sm-9">
-			<input type="email" id="email" name="email" class="form-control col-sm-9">
+	<div class="col-sm-3">
+		<div class="sidebar ffix" id="sidebar">
+			<div class="collapse" id="email_entry">
+				<p>Hier kan je je vrijwilligers-shiften selecteren. Eéns je hieronder je email adres in geeft, krijg je de tabel in beeld. Let wel;</p>
+				<ul>
+					<li>Je dient voor al je vrijwilligers twee shiften te selecteren éér je kan bevestigen.</li>
+					<li>Bevestigen doe je onderaan de tabel.</li>
+					<li>TODO We sturen je een overzichtje per email.</li>
+					<li>Je kan altijd terugkomen naar deze pagina om je shiften aan te passen.</li>
+				</ul>
+				<label for="email" class="control-label">Email</label>
+				<input type="email" id="email" name="email" class="form-control">
+				<button id="submit_email" class="col-sm-12">Starten!</button>
+			</div>
+			<div class="row" id="volunteer_list">
+			</div>
+		</div>
+	</div>
+	<div class="col-sm-9">
+		<div class="collapse" id="email_entry_wrong">
+		</div>
+		<div class="collapse" id="form_entry">
+			<form action="api/set_volunteering_data" method="POST" id="shift_form">
+				<div class="col-xs-12" id="table_dest">
+				</div>
+				<div class="form-group text-right">
+					<button type="submit" class="btn btn-default">Klaar</button>
+				</div>
+			</form>
 		</div>
 	</div>
 </div>
 
-<div class="row" id="volunteer_list">
-</div>
-<div class="row">
-	<form action="api/set_volunteering_data" method="POST" id="shift_form">
-		<div class="col-xs-12" id="table_dest">
+<div class="modal fade" id="confirm_modal" tabindex="-1" role="dialog" aria-labelledby="confirm_modal_title">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Sluiten">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id=confirm_modal_title">In orde!</h4>
+			</div>
+			<div class="modal-body">
+				<p>Bedankt voor je ingave, we hebben het opgeslagen. Mocht je ze willen veranderen, kan je altijd terug naar deze pagina komen.</p>
+
+			</div>
+			</div>
 		</div>
-		<div class="form-group">
-			<button type="submit" class="btn btn-default">Klaar</button>
-		</div>
-	</form>
+	</div>
 </div>
-{% include "footer.html" %}
+
+</div>
+		<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		{% if page_opts and page_opts['charting'] %}
+		<script src="/static/js/moment.js"></script>
+		<script src="/static/js/Chart.js"></script>
+		{% endif %}
+		{% if page_opts and page_opts['internal'] %}
+		<script src="/static/js/fr1ckets_internal.js"></script>
+		{% endif %}
+		{% if page_opts and page_opts['shift'] %}
+		<script src="/static/js/fr1ckets_shifts.js"></script>
+		{% endif %}
+		<script src="/static/js/fr1ckets.js"></script>
+	</body>
+</html>

@@ -15,23 +15,36 @@ var choices = new Object();
 var min_shifts = 2;
 
 $(document).ready(function() {
-	$('#email').on('change', function() {
+	$('#submit_email').click(function(e) {
 		var email = $('#email').val();
 		$.ajax({
 			url : '/api/get_volunteering_data/'+email,
 			success : function(data) {
 				d = JSON.parse(data);
-				posts = d.posts;
-				times = d.times;
-				sched = d.sched;
-				volunteers = d.volunteers;
-				volunteer_choice_init();
-				volunteer_totals_init();
-				volunteer_totals_recalc();
-				schedule_render();
+				console.dir(d);
+				if (d.status == 'OK') {
+					posts = d.posts;
+					times = d.times;
+					sched = d.sched;
+					volunteers = d.volunteers;
+					volunteer_choice_init();
+					volunteer_totals_init();
+					volunteer_totals_recalc();
+					schedule_render();
+					$('#email_entry').collapse('hide');
+					$('#email_entry_wrong').collapse('hide');
+					$('#form_entry').collapse('show');
+				} else if (d.status == 'FAIL') {
+					console.log("wrong");
+					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
+					$('#email_entry_wrong').collapse('show');
+					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
+				}
 			}
 		});
 	});
+	$('#email_entry').collapse('show');
+	$('#form_entry').collapse('hide');
 });
 
 // called when server hands us scheduling info which might contain previous
@@ -114,7 +127,7 @@ function volunteer_totals_init()
 	for (var v_id in volunteers['mine']) {
 		var v = volunteers['mine'][v_id];
 		var name = volunteers['all'][v];
-		f += '<div class="col-sm-2 col-xs-6 text-center">';
+		f += '<div class="col-sm-12 text-center">';
 		f += '  <p>' + name + '</p>';
 		f += '  <h2 id="counter_' + v + '"></h2>';
 		f += '</div>';
@@ -302,7 +315,15 @@ function schedule_render()
 			}
 		}
 		var email = $('#email').val();
-		$.post('api/set_volunteering_data/'+email, JSON.stringify(payload));
+		$.post('api/set_volunteering_data/'+email, JSON.stringify(payload)).done(function(data) {
+			d = JSON.parse(data);
+			console.dir(d);
+			if (d.status == 'OK') {
+				$('#confirm_modal').modal();
+			}
+		});
+
+
 	});
 
 
