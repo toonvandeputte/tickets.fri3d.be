@@ -9,13 +9,7 @@
 	</div>
 </div>
 
-<div class="row">
-{% for v in volunteers %}
-	<div class="col-sm-2 col-xs-6 text-center">
-		<p>{{ volunteers[v] }}</p>
-		<h2 id="counter_{{v}}"></h2>
-	</div>
-{% endfor %}
+<div class="row" id="volunteer_list">
 </div>
 <div class="row">
 	<form action="api/set_volunteering_data" method="POST" id="shift_form">

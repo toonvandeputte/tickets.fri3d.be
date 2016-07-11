@@ -2,7 +2,15 @@ var posts = undefined;
 var times = undefined;
 var sched = undefined;
 var volunteers = undefined;
-var choice = new Object();
+// choices = {
+// 	person (by number) : [
+// 		{
+// 			'time' : time,
+// 			'shift' : shift,
+// 		}
+// 	]
+// }
+var choices = new Object();
 
 var min_shifts = 2;
 
@@ -17,24 +25,125 @@ $(document).ready(function() {
 				times = d.times;
 				sched = d.sched;
 				volunteers = d.volunteers;
-				console.log(d.volunteers);
-				for (var v in volunteers) {
-					choice[v] = new Array();
-				}
-				volunteering_form_setup();
-				recalc_totals();
+				volunteer_choice_init();
+				volunteer_totals_init();
+				volunteer_totals_recalc();
+				schedule_render();
 			}
 		});
 	});
 });
 
-function check_totals()
+// called when server hands us scheduling info which might contain previous
+// choices, extract them
+function volunteer_choice_init()
 {
 
-	for (var v in volunteers) {
-		var target = '#counter_' + v;
-		var count = choice[v].length;
-		if (count < min_shifts) {
+	// clear previous
+	choices = new Object();
+
+	// init choices
+	for (var p_id in volunteers['mine']) {
+		choices[volunteers['mine'][p_id]] = new Array();
+	}
+
+	// check if our people need choice updates
+	for (var t in sched) {
+		for (var p in sched[t]) {
+			var s = sched[t][p];
+			for (var p_id in s['people_list']) {
+				// fancy smancy javascript, lofty ideas
+				// but 90% is writing C loops and indexing
+				var person = s['people_list'][p_id];
+				if (volunteers['mine'].indexOf(person) >= 0) {
+					volunteer_choice_make(t, s['shift_id'], person);
+				}
+			}
+		}
+	}
+
+}
+
+// user selected a volunteer in a slot somewhere, see if it's allowed
+// and if the previous occupant needs to be booted
+function volunteer_choice_make(time, shift, person, previous_person)
+{
+
+	console.log('volunteer_choice_make(time='+time+' shift='+shift+' person='+person+' previous_person='+previous_person+')');
+
+	// check for timing clash for this person
+	if (person != "none") {
+		for (var c in choices[person]) {
+			if (choices[person][c]['time'] == time) {
+				// this person already has a shift at this time
+				return false;
+			}
+		}
+	}
+
+	// check if we need to boot the previous out
+	if (previous_person) {
+		var found = undefined;
+		for (var c in choices[previous_person]) {
+			if (choices[previous_person][c]['shift'] == shift) {
+				// found it
+				found = c;
+			}
+		}
+		// don't splice in flight
+		if (found) {
+			choices[previous_person].splice(found, 1);
+		}
+	}
+
+	// save
+	if (person != "none") {
+		choices[person].push({ 'time' : time, 'shift' : shift });
+	}
+
+	return true;
+
+}
+
+// setup the per-volunteer count
+function volunteer_totals_init()
+{
+
+	var f = '';
+
+	for (var v_id in volunteers['mine']) {
+		var v = volunteers['mine'][v_id];
+		var name = volunteers['all'][v];
+		f += '<div class="col-sm-2 col-xs-6 text-center">';
+		f += '  <p>' + name + '</p>';
+		f += '  <h2 id="counter_' + v + '"></h2>';
+		f += '</div>';
+	}
+
+	$('#volunteer_list').html(f);
+
+}
+
+// recalc and display volunteer totals
+function volunteer_totals_recalc()
+{
+
+	for (var v_id in volunteers['mine']) {
+		var v = volunteers['mine'][v_id];
+		var target = '#counter_'+v;
+		var color = (choices[v].length < min_shifts ? "red" : "green");
+		$(target).html('<font color="'+color+'">'+choices[v].length+'</font>');
+	}
+
+}
+
+// check that each volunteer has at least min_shifts
+function volunteer_totals_check()
+{
+
+	for (var v_id in volunteers['mine']) {
+		var v = volunteers['mine'][v_id];
+		if (choices[v].length < min_shifts) {
 			return false;
 		}
 	}
@@ -43,66 +152,30 @@ function check_totals()
 
 }
 
-function recalc_totals()
+// util, find a shift in the schedule
+function schedule_find_shift(shift)
 {
 
-	for (var v in volunteers) {
-		var target = '#counter_' + v;
-		var count = choice[v].length;
-		var color = (count < min_shifts ? "red" : "green" );
-		$(target).html('<font color="'+color+'">'+count+'</font>');
-	}
-
-}
-
-function volunteer_choice(time_id, post_id, sched_id, person_id, previous_person_id)
-{
-
-	// check that this person may sign up for this schedule, reasons
-	// why she/he shouldn't are;
-	// 	- person already booked for this timeslot
-	// 	- person overbooked
-
-	console.log("entry time_id="+time_id + " post_id="+post_id+" sched_id="+sched_id+" person_id="+person_id+" previous_person_id="+previous_person_id);
-
-	var timeslot_clash = false;
-	var others_within_slot = new Array();
-
-	// has this person already signed up for this shift?
-	if (person_id != "none") {
-		for (var c in choice[person_id]) {
-			if (choice[person_id][c]['time_id'] == time_id) {
-				console.log("clash");
-				return false;
+	for (var t in sched) {
+		for (var p in sched[t]) {
+			if (sched[t][p]['shift'] == shift) {
+				return sched[t][p];
 			}
 		}
 	}
 
-	// if someone previously occupied this slot, boot that person out
-	if (previous_person_id != undefined) {
-		var previous = undefined;
-		for (var c in choice[previous_person_id]) {
-			if (choice[previous_person_id][c]['sched_id'] == sched_id) {
-				previous = c;
-			}
-		}
-		// don't want to splice midflight
-		if (c) {
-			choice[previous_person_id].splice(c, 1);
-		}
-	}
-
-	if (person_id != "none") {
-		choice[person_id].push({ 'time_id' : time_id, 'sched_id' : sched_id, 'post_id' : post_id });
-	}
-
-	return true;
+	return undefined;
 
 }
 
-function volunteering_form_setup() {
+// write out the whole scheduling table
+function schedule_render()
+{
 
 	var f = '';
+	var select_count = 0;
+	var selects = new Array();
+	var fill_previous = new Object();
 
 	f += '<table class="table table-hover table-condensed">';
 	f += '  <thead>';
@@ -114,24 +187,65 @@ function volunteering_form_setup() {
 	f += '    </tr>';
 	f += '  </thead>';
 	f += '  <tbody>';
+
 	for (var t in times) {
 		f += '    <tr>';
 		f += '      <td>' + times[t] + '</td>';
 		for (var p in posts) {
 			f += '      <td>';
-			if (t in sched && p in sched[t] && sched[t][p]['people_needed'] > 0) {
-				var s = sched[t][p];
-				for (var i = 0; i < s['people_needed']; i++) {
-					var name = t + '_' + p + '_' + s['shift_id'] + '_' + i;
-					f += '      <select class="form-control" data-time="'+t+'" data-post="'+p+'" data-shift="'+s['shift_id']+'" data-slot="'+i+'" id="'+name+'">';
-					f += '<option value="none"></option>';
-					for (var v in volunteers) {
-						f += '<option value="'+v+'">'+volunteers[v]+'</option>';
+			if (!(t in sched && p in sched[t])) {
+				// no shifts at this time/post
+				f += '        &nbsp;';
+				continue;
+			}
+			var s = sched[t][p];
+
+			// first display the people already signed up for this shift,
+			// if they're ours we can show them in a select (the right person preselected)
+			for (var person_id in s['people_list']) {
+				var person = s['people_list'][person_id];
+				if (volunteers['mine'].indexOf(person) >= 0) {
+					// it's one of ours, figure out a unique id for the select and save it for callbacks
+					var name = t + '_' + p + '_' + s['shift_id'] + '_' + select_count++;
+					selects.push(name);
+
+					// store the time/post/shift data in data fields so we can read them from the callbacks
+					f += '<select class="form-control" data-time="'+t+'" data-post="'+p+'"';
+					f += '  data-shift="'+s['shift_id']+'" id="'+name+'">';
+					f += '    <option value="none"></option>';
+					for (var my_person_id in volunteers['mine']) {
+						var my_person = volunteers['mine'][my_person_id];
+						var selected = '';
+						if (my_person == person) {
+							// preselect the correct person
+							console.log("selecting "+my_person+" as "+person+" for shift "+s['shift_id']);
+							selected = 'selected data-pre="'+my_person+'"';
+							// special item, we need to set the 'pre' datafield
+							fill_previous[name] = my_person;
+						}
+						f += '    <option value="'+my_person+'" '+selected+'>'+volunteers['all'][my_person]+'</option>';
 					}
-					f += '      </select>';
+					f += '</select>';
+				} else {
+					// not one of ours, just show the person
+					f += '<div class="alert alert-success" role="alert">';
+					f += volunteers['all'][person] ? volunteers['all'][person] : 'John D';
+					f += '</div>';
 				}
-			} else {
-				f += '      &nbsp;';
+			}
+
+			// then display the rest of them
+			for (var i = 0; i < (s['people_needed'] - s['people_list'].length); i++) {
+				var name = t + '_' + p + '_' + s['shift_id'] + '_' + select_count++;
+				selects.push(name);
+				f += '<select class="form-control" data-time="'+t+'" data-post="'+p+'"';
+				f += '  data-shift="'+s['shift_id']+'" id="'+name+'">';
+				f += '    <option value="none" selected></option>';
+				for (var my_person_id in volunteers['mine']) {
+					var my_person = volunteers['mine'][my_person_id];
+					f += '    <option value="'+my_person+'">'+volunteers['all'][my_person]+'</option>';
+				}
+				f += '</select>';
 			}
 			f += '      </td>';
 		}
@@ -142,49 +256,54 @@ function volunteering_form_setup() {
 
 	$("#table_dest").html(f);
 
-	for (var t in times) {
-		for (var p in posts) {
-			if (t in sched && p in sched[t] && sched[t][p]['people_needed'] > 0) {
-				var s = sched[t][p];
-				for (var i = 0; i < s['people_needed']; i++) {
-					var name = t + '_' + p + '_' + s['shift_id'] + '_' + i;
-					$("#"+name).on('change', function(src) {
-						var person_id = $('#' + src.target.id + ' option:selected').val();
-						var time_id = src.target.dataset.time;
-						var post_id = src.target.dataset.post;
-						var shift_id = src.target.dataset.shift;
-						var slot_id = src.target.dataset.slot;
-						var previous_person_id = $('#' + src.target.id).data('pre');
-						if (volunteer_choice(time_id, post_id, shift_id, person_id, previous_person_id)) {
-							$('#' + src.target.id).data('pre', person_id);
-						} else {
-							alert("Can't let you do that, Dave. Persoon heeft al een shift op dat tijdstip.");
-							$('#' + src.target.id).val(previous_person_id);
-						}
-						recalc_totals();
-					});
-				}
-			}
-		}
+	// some selects are pre-filled with specific persons, we need to
+	// provide these in the 'pre' datafield, see below how it works
+	for (var select in fill_previous) {
+		$('#'+select).data('pre', fill_previous[select]);
 	}
 
-	$('#shift_formFOO').submit(function(e) {
-		/*
+	// wire in callbacks for all the selects
+	for (var s in selects) {
+		var select = selects[s];
+		$('#'+select).on('change', function(src) {
+			var person = $('#' + src.target.id + ' option:selected').val();
+			var time = src.target.dataset.time;
+			var post = src.target.dataset.post;
+			var shift = src.target.dataset.shift;
+			// the 'pre' field contains the previous selected value, so we
+			// can re-instate it when the new value is no good
+			var previous_person = $('#' + src.target.id).data('pre');
+			if (volunteer_choice_make(time, shift, person, previous_person)) {
+				$('#' + src.target.id).data('pre', person);
+				volunteer_totals_recalc();
+			} else {
+				alert('Deze persoon heeft al een shift op dit tijdsstip.');
+				$('#' + src.target.id).val(previous_person);
+			}
+			console.log(src.target.id);
+		});
+
+	}
+
+	$('#shift_form').submit(function(e) {
 		e.preventDefault();
-		if (!check_totals()) {
-			alert("Er zijn nog personen zonder "+min_shifts+" shiften, gelieve te verbeteren.");
+		if (!volunteer_totals_check()) {
+			alert('Niet al uw personen hebben minstens '+min_shifts+' shiften, gelieve te verbeteren');
 			return;
 		}
-		*/
-	   e.preventDefault();
-		var posting = {};
-		for (var c in choice) {
-			posting[c] = choice[c]['shift_id'];
-		}
-		console.log(posting);
-		$.post("api/set_volunteering_data", posting);
-	});
 
+		var payload = new Object();
+		for (var c in choices) {
+			if (!(c in payload)) {
+				payload[c] = new Array();
+			}
+			for (var s in choices[c]) {
+				payload[c].push(choices[c][s]['shift']);
+			}
+		}
+		var email = $('#email').val();
+		$.post('api/set_volunteering_data/'+email, JSON.stringify(payload));
+	});
 
 
 }

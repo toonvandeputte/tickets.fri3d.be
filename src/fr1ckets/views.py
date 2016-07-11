@@ -806,10 +806,46 @@ def admin():
 def index():
 	return redirect(url_for('tickets'))
 
-@app.route("/api/set_volunteering_data", methods=[ 'GET', 'POST' ])
-def api_set_volunteering_data():
-	for k, v in request.form.iteritems():
-		D("k={0} v={1}".format(k, v))
+@app.route("/api/set_volunteering_data/<email>", methods=[ 'GET', 'POST' ])
+def api_set_volunteering_data(email):
+	updates_str = json.loads(request.form.keys()[0])
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers = model.get_volunteers(g.db_cursor, email_filter=email)
+	print "sched={0}".format(sched)
+	print "volunteers={0}".format(volunteers)
+	print "updates_str={0}".format(updates_str)
+	all_shifts = {}
+	for time_id in sched:
+		for post_id in sched[time_id]:
+			s = sched[time_id][post_id]
+			all_shifts[s['shift_id']] = s['people_needed']
+
+	updates = {}
+	for k in updates_str:
+		updates[int(k)] = [ int(x) for x in updates_str[k] ]
+
+	for person, shifts in updates.iteritems():
+		if person not in volunteers:
+			D('person {0} not in volunteers for email {1}'.format(person, email))
+			return jsonify(status='FAIL', msg='one or more persons not reachable')
+		for shift in shifts:
+			if shift not in all_shifts:
+				D('shift {0} not known for email {1}'.format(shift, email))
+				return jsonify(status='FAIL', msg='unknown shift referenced')
+			all_shifts[shift] -= 1
+			if all_shifts[shift] < 0:
+				D('overcommited on shift {0} by email {1}'.format(shift, email))
+				return jsonify(status='FAIL', msg='overcommited on shift')
+
+	for person in volunteers:
+		if person not in updates or len(updates[person]) < app.config['VOLUNTEERING_MIN_SHIFTS']:
+			D('undercommited for person {0} by email {1}'.format(person, email))
+			return jsonify(status='FAIL', msg='not enough shifts entered')
+
+	model.clear_volunteering_schedule(g.db_cursor, email)
+	model.set_volunteering_schedule(g.db_cursor, updates)
+
+	g.db_commit = True
 	return "ok"
 
 @app.route("/api/get_volunteering_data/<email>", methods=[ 'GET' ])
@@ -817,10 +853,24 @@ def api_get_volunteering_data(email):
 	when = model.get_volunteering_times(g.db_cursor)
 	what = model.get_volunteering_posts(g.db_cursor)
 	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers_all = model.get_volunteers(g.db_cursor)
+	volunteers_mine = model.get_volunteers(g.db_cursor, email_filter=email)
 	volunteers = {
-			1 : 'jef van den broeck',
-			2 : 'jozefien peeters',
+		'all' : volunteers_all,
+		'mine' : volunteers_mine.keys()
 	}
+
+	def anonymize(name):
+		t = name.strip().split(' ')
+		print t
+		if len(t) > 1:
+			return "{0} {1}".format(t[0], ''.join([ i[0] for i in t[1:] ]))
+		else:
+			return name
+	for v in volunteers_all:
+		if v not in volunteers_mine:
+			volunteers_all[v] = anonymize(volunteers_all[v])
+
 	return json.dumps({
 		'times' : when,
 		'posts' : what,
@@ -830,13 +880,5 @@ def api_get_volunteering_data(email):
 
 @app.route("/shifts")
 def shifts():
-	when = model.get_volunteering_times(g.db_cursor)
-	what = model.get_volunteering_posts(g.db_cursor)
-	sched = model.get_volunteering_schedule(g.db_cursor)
-	volunteers = {
-			1 : 'jef van den broeck',
-			2 : 'jozefien peeters',
-	}
-	return render_template('shifts.html', times=when, posts=what,
-			sched=sched, volunteers=volunteers, page_opts={ 'shift' : True})
+	return render_template('shifts.html', page_opts={ 'shift' : True})
 
