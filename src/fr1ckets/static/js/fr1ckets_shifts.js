@@ -14,7 +14,7 @@ var choices = new Object();
 
 var min_shifts = 1;
 
-$(document).ready(function() {
+$(document).ready(function() {/*
 	$('#submit_email').click(function(e) {
 		var email = $('#email').val();
 		$.ajax({
@@ -40,8 +40,32 @@ $(document).ready(function() {
 				}
 			}
 		});
+	});*/
+	var url = window.location.href;
+	var nonce = url.substr(url.lastIndexOf('/') + 1);
+	$.ajax({
+		url : '/api/get_volunteering_data/'+nonce,
+		success : function(data) {
+			d = JSON.parse(data);
+			if (d.status == 'OK') {
+				posts = d.posts;
+				times = d.times;
+				sched = d.sched;
+				volunteers = d.volunteers;
+				volunteer_choice_init();
+				volunteer_totals_init();
+				volunteer_totals_recalc();
+				schedule_render();
+				$('#email_entry_wrong').collapse('hide');
+				$('#form_entry').collapse('show');
+			} else if (d.status == 'FAIL') {
+				$('#email_entry_wrong').collapse('show');
+				$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
+			}
+		}
 	});
-	$('#email_entry').collapse('show');
+
+	$('#global_info').collapse('show');
 	$('#form_entry').collapse('hide');
 });
 
@@ -133,10 +157,10 @@ function volunteer_totals_init()
 
 	$('#volunteer_list').html(f);
 
-	f = '';
+	f = '<p>Legende:</p>';
 	f + '<ul>';
 	for (var p in posts) {
-		f += '<li><b>'+'+posts[p]['what']+'</li>';
+		f += '<li><b>'+posts[p]['name']+'</b>: '+posts[p]['desc']+'</li>';
 	}
 	f += '</ul>';
 
@@ -202,12 +226,19 @@ function schedule_render()
 	f += '    <tr>';
 	f += '      <th>Shift</th>';
 	for (var p in posts) {
-		f += '        <th>' + posts[p] + '</th>';
+		f += '        <th>' + posts[p]['name'] + '</th>';
 	}
 	f += '    </tr>';
 	f += '  </thead>';
 	f += '  <tbody>';
-
+	/*
+	f += '    <tr>';
+	f += '      <td>&nbsp</td>';
+	for (var p in posts) {
+		f += '        <td>'+posts[p]['desc']+'</td>';
+	}
+	f += '    </tr>';
+	*/
 	for (var t in times) {
 		f += '    <tr>';
 		f += '      <td>' + times[t] + '</td>';

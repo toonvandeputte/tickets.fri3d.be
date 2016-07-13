@@ -845,8 +845,12 @@ def api_set_volunteering_data(email):
 	g.db_commit = True
 	return json.dumps({ 'status' : 'OK' })
 
-@app.route("/api/get_volunteering_data/<email>", methods=[ 'GET' ])
-def api_get_volunteering_data(email):
+@app.route("/api/get_volunteering_data/<nonce>", methods=[ 'GET' ])
+def api_get_volunteering_data(nonce):
+	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
+	if not purchase:
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+	email = purchase['email']
 	when = model.get_volunteering_times(g.db_cursor)
 	what = model.get_volunteering_posts(g.db_cursor)
 	sched = model.get_volunteering_schedule(g.db_cursor)
@@ -878,7 +882,7 @@ def api_get_volunteering_data(email):
 		'volunteers' : volunteers,
 	})
 
-@app.route("/shifts")
-def shifts():
+@app.route("/shifts/<nonce>")
+def shifts(nonce=None):
 	return render_template('shifts.html', page_opts={ 'shift' : True})
 

@@ -592,7 +592,7 @@ def get_volunteering_posts(cursor):
 		select
 			id,
 			what as name,
-			description,
+			description as `desc`
 		from
 			shift_post
 		order by id;
@@ -600,8 +600,7 @@ def get_volunteering_posts(cursor):
 
 	cursor.execute(q)
 	for r in cursor.fetchall():
-		out[r['id']] = r['name']
-		FOOR
+		out[r['id']] = { 'name' : r['name'], 'desc' : r['desc'] }
 	return out
 
 def get_volunteering_schedule(cursor):
