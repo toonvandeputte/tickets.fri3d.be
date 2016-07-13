@@ -806,8 +806,12 @@ def admin():
 def index():
 	return redirect(url_for('tickets'))
 
-@app.route("/api/set_volunteering_data/<email>", methods=[ 'GET', 'POST' ])
-def api_set_volunteering_data(email):
+@app.route("/api/set_volunteering_data/<nonce>", methods=[ 'GET', 'POST' ])
+def api_set_volunteering_data(nonce):
+	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
+	if not purchase:
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+	email = purchase['email']
 	updates_str = json.loads(request.form.keys()[0])
 	sched = model.get_volunteering_schedule(g.db_cursor)
 	volunteers = model.get_volunteers(g.db_cursor, email_filter=email)

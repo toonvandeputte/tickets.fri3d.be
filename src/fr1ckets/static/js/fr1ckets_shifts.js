@@ -11,38 +11,13 @@ var volunteers = undefined;
 // 	]
 // }
 var choices = new Object();
+var nonce = undefined;
 
 var min_shifts = 1;
 
-$(document).ready(function() {/*
-	$('#submit_email').click(function(e) {
-		var email = $('#email').val();
-		$.ajax({
-			url : '/api/get_volunteering_data/'+email,
-			success : function(data) {
-				d = JSON.parse(data);
-				if (d.status == 'OK') {
-					posts = d.posts;
-					times = d.times;
-					sched = d.sched;
-					volunteers = d.volunteers;
-					volunteer_choice_init();
-					volunteer_totals_init();
-					volunteer_totals_recalc();
-					schedule_render();
-					$('#email_entry').collapse('hide');
-					$('#email_entry_wrong').collapse('hide');
-					$('#form_entry').collapse('show');
-				} else if (d.status == 'FAIL') {
-					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
-					$('#email_entry_wrong').collapse('show');
-					$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
-				}
-			}
-		});
-	});*/
+$(document).ready(function() {
 	var url = window.location.href;
-	var nonce = url.substr(url.lastIndexOf('/') + 1);
+	nonce = url.substr(url.lastIndexOf('/') + 1);
 	$.ajax({
 		url : '/api/get_volunteering_data/'+nonce,
 		success : function(data) {
@@ -58,6 +33,7 @@ $(document).ready(function() {/*
 				schedule_render();
 				$('#email_entry_wrong').collapse('hide');
 				$('#form_entry').collapse('show');
+				$('#volunteer_info').collapse('show');
 			} else if (d.status == 'FAIL') {
 				$('#email_entry_wrong').collapse('show');
 				$('#email_entry_wrong').html('<div class="alert alert-danger" role="alert">'+d.msg+'</div>');
@@ -145,11 +121,12 @@ function volunteer_totals_init()
 {
 
 	var f = '';
+	var width = Math.max(12 / Object.keys(volunteers['mine']).length, 2);
 
 	for (var v_id in volunteers['mine']) {
 		var v = volunteers['mine'][v_id];
 		var name = volunteers['all'][v];
-		f += '<div class="col-sm-12 text-center">';
+		f += '<div class="col-xs-' + width + ' text-center">';
 		f += '  <p>' + name + '</p>';
 		f += '  <h2 id="counter_' + v + '"></h2>';
 		f += '</div>';
@@ -336,7 +313,7 @@ function schedule_render()
 
 	}
 
-	$('#shift_form').submit(function(e) {
+	$('#submit').on('click', function(e) {
 		e.preventDefault();
 		if (!volunteer_totals_check()) {
 			alert('Niet al uw personen hebben minstens '+min_shifts+' shiften, gelieve te verbeteren');
@@ -352,8 +329,7 @@ function schedule_render()
 				payload[c].push(choices[c][s]['shift']);
 			}
 		}
-		var email = $('#email').val();
-		$.post('api/set_volunteering_data/'+email, JSON.stringify(payload)).done(function(data) {
+		$.post('/api/set_volunteering_data/'+nonce, JSON.stringify(payload)).done(function(data) {
 			d = JSON.parse(data);
 			console.dir(d);
 			if (d.status == 'OK') {

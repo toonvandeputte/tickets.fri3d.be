@@ -1,93 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
+{% include "header.html" %}
 <!-- vim: set sw=2 ts=2: -->
-	<head>
-		<meta charset="utf-8">
-		<title>Fri3d Camp 2016</title>
-		<link rel="stylesheet" href="/static/css/app.css">
-		<link rel="stylesheet" href="/static/css/tickets.css">
-		<link rel="stylesheet" href="/static/css/shifts.css">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="apple-touch-icon" sizes="57x57" href="//static/img/apple-icon-57x57.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="//static/img/apple-icon-60x60.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="//static/img/apple-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="//static/img/apple-icon-76x76.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="//static/img/apple-icon-114x114.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="//static/img/apple-icon-120x120.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="//static/img/apple-icon-144x144.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="//static/img/apple-icon-152x152.png">
-		<link rel="icon" type="image/png" sizes="192x192"  href="/static/img/android-icon-192x192.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon-96x96.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
-		<link rel="manifest" href="/static/img/manifest.json">
-	</head>
-	<body>
-<!-- vim: set sw=2 ts=2: -->
-<div class="container-fluid">
-<div class="row">
+	<div class="row">
 
-	<!-- fixed sidebar -->
-	<div class="col-sm-3">
-		<div class="sidebar ffix" id="sidebar">
-			<div class="row">
-				<div class="col-sm-12" id="volunteer_list">
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- main pane -->
-	<div class="col-sm-9">
-		<div class="row">
-			<div class="text-center col-sm-6">
-				<div class="center-block" id="mainlogo">
-					<svg version="1.1" class="logo-fox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-							 width="260px" height="2300px" viewBox="0 0 260 230" enable-background="new 0 0 260 230" xml:space="preserve">
+		<div class="text-center col-sm-6 col-xs-6">
+			<div class="center-block" id="mainlogo">
+				<svg version="1.1" class="logo-fox" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="260px" height="2300px" viewBox="0 0 260 230" enable-background="new 0 0 260 230" xml:space="preserve">
+					<g>
 						<g>
-							<g>
-								<path class="logoline-A" fill="#DD7222" d="M227.1,17.2l-98.5,197L17.8,103.4L227.1,17.2 M237.6,7.5L9,101.6l121,121L237.6,7.5L237.6,7.5z"/>
-							</g>
-							<g>
-								<path class="logoline-B" fill="#0E98AF" d="M32.9,17.2l209.3,86.2L131.4,214.2L32.9,17.2 M22.4,7.5L130,222.6l121-121L22.4,7.5L22.4,7.5z"/>
-							</g>
-							<line class="logoline-A" fill="none" stroke="#DD7222" stroke-width="5" stroke-linecap="round" stroke-miterlimit="10" x1="93" y1="70.3" x2="32.8" y2="95"/>
+							<path class="logoline-A" fill="#DD7222" d="M227.1,17.2l-98.5,197L17.8,103.4L227.1,17.2 M237.6,7.5L9,101.6l121,121L237.6,7.5L237.6,7.5z"/>
 						</g>
-					</svg>
-					<div class="logo-name">Fri3d<br>Camp</div><div class="logo-year">2016</div>
-				</div>
-			</div>
-			<div class="col-sm-6" id="global_info">
-				<div class="well">
-				<p>Bij je ticketaankoop voor Fri3d Camp gaf je aan dat je ook vrijwilligersshifts wilde opnemen. Hier kan je, per deelnemer, kiezen welke shifts je wil meedraaien.</p>
-				<ul>
-					<li>Voor elk ticket moet je minstens één shift selecteren, voor je kan bevestigen.</li>
-					<li>Bevestigen doe je onderaan de tabel.</li>
-					<li>TODO We sturen je een overzichtje van je shifts per email.</li>
-					<li>Je kan altijd terugkeren naar deze pagina om je shiften aan te passen.</li>
-				</ul>
-				</div>
-			</div>
-
-			<div class="collapse" id="email_entry_wrong">
-			</div>
-			<div class="col-sm-12">
-				<div class="well" id="volunteer_info">
-				</div>
+						<g>
+							<path class="logoline-B" fill="#0E98AF" d="M32.9,17.2l209.3,86.2L131.4,214.2L32.9,17.2 M22.4,7.5L130,222.6l121-121L22.4,7.5L22.4,7.5z"/>
+						</g>
+						<line class="logoline-A" fill="none" stroke="#DD7222" stroke-width="5" stroke-linecap="round" stroke-miterlimit="10" x1="93" y1="70.3" x2="32.8" y2="95"/>
+					</g>
+				</svg>
+				<div class="logo-name">Fri3d<br>Camp</div><div class="logo-year">2016</div>
 			</div>
 		</div>
 
-		<div class="collapse" id="form_entry">
+		<div class="col-sm-6 col-xs-12" id="global_info">
+			<div class="well">
+			<p>Bij je ticketaankoop voor Fri3d Camp gaf je aan dat je ook vrijwilligersshifts wilde opnemen. Hier kan je, per deelnemer, kiezen welke shifts je wil meedraaien.</p>
+			<ul>
+				<li>Voor elk ticket moet je minstens één shift selecteren, voor je kan bevestigen.</li>
+				<li>Bevestigen doe je onderaan de tabel.</li>
+				<li>TODO We sturen je een overzichtje van je shifts per email.</li>
+				<li>Je kan altijd terugkeren naar deze pagina om je shiften aan te passen.</li>
+			</ul>
+			</div>
+		</div>
+
+	</div>
+	<div class="row">
+
+		<div class="collapse col-sm-12" id="email_entry_wrong">
+		</div>
+
+	</div>
+	<div class="row">
+
+		<div class="collapse well col-sm-12" id="volunteer_info">
+		</div>
+
+	</div>
+	<div class="row">
+
+		<div class="collapse col-xs-12" id="form_entry">
 			<form action="api/set_volunteering_data" method="POST" id="shift_form">
 				<div class="col-xs-12" id="table_dest">
 				</div>
+				<div class="row" id="volunteer_list">
+				</div>
 				<div class="form-group text-right">
-					<button type="submit" class="btn btn-default">Klaar</button>
+					<p><a class="btn btn-primary btn-lg" href="#" role="button" id="submit">Doorsturen</a></p>
 				</div>
 			</form>
 		</div>
+
 	</div>
-</div>
 
 <div class="modal fade" id="confirm_modal" tabindex="-1" role="dialog" aria-labelledby="confirm_modal_title">
 	<div class="modal-dialog" role="document">
@@ -106,20 +77,4 @@
 		</div>
 	</div>
 </div>
-
-</div>
-		<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-		{% if page_opts and page_opts['charting'] %}
-		<script src="/static/js/moment.js"></script>
-		<script src="/static/js/Chart.js"></script>
-		{% endif %}
-		{% if page_opts and page_opts['internal'] %}
-		<script src="/static/js/fr1ckets_internal.js"></script>
-		{% endif %}
-		{% if page_opts and page_opts['shift'] %}
-		<script src="/static/js/fr1ckets_shifts.js"></script>
-		{% endif %}
-		<script src="/static/js/fr1ckets.js"></script>
-	</body>
-</html>
+{% include "footer.html" %}
