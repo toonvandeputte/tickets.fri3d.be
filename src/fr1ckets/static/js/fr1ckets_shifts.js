@@ -125,7 +125,7 @@ function volunteer_totals_init()
 
 	for (var v_id in volunteers['mine']) {
 		var v = volunteers['mine'][v_id];
-		var name = volunteers['all'][v];
+		var name = volunteers['all'][v]['name'];
 		f += '<div class="col-xs-' + width + ' text-center">';
 		f += '  <p>' + name + '</p>';
 		f += '  <h2 id="counter_' + v + '"></h2>';
@@ -246,18 +246,17 @@ function schedule_render()
 						var selected = '';
 						if (my_person == person) {
 							// preselect the correct person
-							console.log("selecting "+my_person+" as "+person+" for shift "+s['shift_id']);
 							selected = 'selected data-pre="'+my_person+'"';
 							// special item, we need to set the 'pre' datafield
 							fill_previous[name] = my_person;
 						}
-						f += '    <option value="'+my_person+'" '+selected+'>'+volunteers['all'][my_person]+'</option>';
+						f += '    <option value="'+my_person+'" '+selected+'>'+volunteers['all'][my_person]['name']+'</option>';
 					}
 					f += '</select>';
 				} else {
 					// not one of ours, just show the person
 					f += '<div class="alert alert-success" role="alert">';
-					f += volunteers['all'][person] ? volunteers['all'][person] : 'John D';
+					f += volunteers['all'][person]['name'] ? volunteers['all'][person]['name'] : 'John D';
 					f += '</div>';
 				}
 			}
@@ -271,7 +270,7 @@ function schedule_render()
 				f += '    <option value="none" selected></option>';
 				for (var my_person_id in volunteers['mine']) {
 					var my_person = volunteers['mine'][my_person_id];
-					f += '    <option value="'+my_person+'">'+volunteers['all'][my_person]+'</option>';
+					f += '    <option value="'+my_person+'">'+volunteers['all'][my_person]['name']+'</option>';
 				}
 				f += '</select>';
 			}

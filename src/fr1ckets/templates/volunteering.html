@@ -1,0 +1,72 @@
+{% include "header.html" %}
+<!-- vim: set sw=2 ts=2: -->
+
+</div>
+<div class="container-fluid">
+
+<div class="col-md-4 col-xs-12">
+	<table class="table table-hover table-condensed">
+		<caption>Ticketholders met volunteering tickets.</caption>
+		<thead>
+			<tr>
+				<th>Email</th>
+				<th>Shifts in te vullen</th>
+				<th>Shifts ingevult</th>
+			</tr>
+		</thead>
+		<tbody>
+{% for p in purchases %}
+{% if p.n_volunteers > p.shifts_booked %}
+			<tr class="danger">
+{% elif p.n_volunteers < p.shifts_booked %}
+			<tr class="success">
+{% else %}
+			<tr>
+{% endif %}
+				<td>{{ p.email }}</td>
+				<td>{{ p.n_volunteers }}</td>
+				<td>{{ p.shifts_booked }}</td>
+			</tr>
+{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="col-md-8 col-xs-12">
+	<table class="table table-hover table-condensed">
+		<caption>Volledig schema</caption>
+		<thead>
+			<tr>
+				<th>Shift</th>
+{% for p in what %}
+				<th>{{ what[p]['name'] }}</th>
+{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+{% for t in when %}
+			<tr>
+				<td>{{ when[t] }}</td>
+{% for p in what %}
+				<td>
+{% if t in sched and p in sched[t] %}
+{% for i in sched[t][p]['people_list'] %}
+<div class="alert alert-success" role="alert"><a href="mailto:{{ volunteers[i]['email'] }}">{{ volunteers[i]['name'] }}</a></div>
+{% endfor %}
+{% for i in range(sched[t][p]['people_needed'] - sched[t][p]['people_present']) %}
+<div class="alert alert-danger">:-(</div>
+{% endfor %}
+{% else %}
+					&nbsp;
+{% endif %}
+				</td>
+{% endfor %}
+			</tr>
+{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+
+
+{% include "footer.html" %}

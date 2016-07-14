@@ -778,6 +778,39 @@ def get_volunteers(cursor, email_filter=None):
 	cursor.execute(q, qd)
 
 	for row in cursor.fetchall():
-		out[row['volunteer_id']] = row['volunteer_name']
+		out[row['volunteer_id']] = {
+			'name' : row['volunteer_name'],
+			'email' : row['email'],
+		}
 
 	return out
+
+def get_volunteer_purchases(cursor):
+	"""
+	return an overview of users who bought volunteering tickets, and how
+	many shifts they booked
+	"""
+	q = """
+		select
+			pu.email as email,
+			count(distinct sv.shift_id) as shifts_booked,
+			count(distinct pui.id) as n_volunteers
+		from
+			purchase pu
+			inner join purchase_items pui on pu.id = pui.purchase_id
+			inner join product pr on pui.product_id = pr.id
+			left outer join shift_volunteer sv on pui.id = sv.purchase_item_id
+		where
+			pu.removed = 0
+			and pu.queued = 0
+			and pui.person_volunteers_during = 1
+			and pui.person_dob <= %(cutoff)s
+			and pr.name like 'ticket%%'
+		group by
+			pu.email;
+		"""
+	qd = {
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
+	cursor.execute(q, qd)
+	return cursor.fetchall()

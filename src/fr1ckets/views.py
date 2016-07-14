@@ -626,6 +626,18 @@ def overview():
 			'charting' : True,
 			'internal' : True})
 
+@app.route('/admin/volunteering', methods=[ 'GET' ])
+@req_auth_admin
+def volunteering():
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+	volunteers = model.get_volunteers(g.db_cursor)
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	purchases = model.get_volunteer_purchases(g.db_cursor)
+	return render_template('volunteering.html', page_opts={ 'internal' : True},
+		volunteers=volunteers, sched=sched, purchases=purchases, when=when,
+		what=what)
+
 @app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
 @req_auth_admin
 def api_purchase_mark_paid(purchase_id, paid):
@@ -870,14 +882,14 @@ def api_get_volunteering_data(nonce):
 
 	def anonymize(name):
 		t = name.strip().split(' ')
-		print t
 		if len(t) > 1:
 			return "{0} {1}".format(t[0], ''.join([ i[0] for i in t[1:] ]))
 		else:
 			return name
 	for v in volunteers_all:
 		if v not in volunteers_mine:
-			volunteers_all[v] = anonymize(volunteers_all[v])
+			volunteers_all[v]['name'] = anonymize(volunteers_all[v]['name'])
+			del volunteers_all[v]['email']
 
 	return json.dumps({ 'status': 'OK',
 		'times' : when,
