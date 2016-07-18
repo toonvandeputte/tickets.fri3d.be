@@ -258,9 +258,9 @@ function schedule_render()
 					f += '</select>';
 				} else {
 					// not one of ours, just show the person
-					f += '<div class="alert alert-success" role="alert">';
-					f += volunteers['all'][person]['name'] ? volunteers['all'][person]['name'] : 'John D';
-					f += '</div>';
+					f += '<select class="form-control alert-success" disabled="disabled">';
+					f += '  <option value="none" selected>' + (volunteers['all'][person]['name'] ? volunteers['all'][person]['name'] : 'John D') + '</option>';
+					f += '</select>';
 				}
 			}
 
@@ -284,7 +284,9 @@ function schedule_render()
 	f += '  </tbody>';
 	f += '  </table>';
 
-	$("#table_dest").html(f);
+	$('#table_dest').html(f);
+
+	$('[disabled="disabled"]').css({ 'color' : '#3c763d', 'background-color' : '#dff0d8' });
 
 	// some selects are pre-filled with specific persons, we need to
 	// provide these in the 'pre' datafield, see below how it works

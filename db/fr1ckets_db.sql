@@ -169,12 +169,12 @@ insert into shift_time (description, day) values
 	( 'Maandag 18:00 - 21:00', 4 );
 
 insert into shift_post (what, description) values
-	( 'Bar', 'De toog bemannen en drank verschaffen, de koelkast en het koffiemachien bijvullen.' ),
-	( 'Infodesk', 'Toekomers ontvangen, vragen beantwoorden, tokens verkopen, oogje op de meteo houden.'),
+	( 'Bar', 'De toog bemannen en drank verschaffen, de koelkast en het koffiemachien bijvullen, een snackje serveren.' ),
+	( 'Infodesk', 'Toekomers ontvangen, vragen beantwoorden, tokens verkopen, special guests en content bringers van informatie voorzien, oogje op de meteo houden.'),
 	( 'Vliegende keeper', 'Enkel de meest willekeurige taken zijn goed genoeg voor de vliegende keeper! Mensen zoeken, gasten doorverwijzen, last minute patches...'),
-	( 'Koken', 'Zaterdag voorzien we kip met fri3tjes en appelmoes, zondag een BBQ!'),
+	( 'Koken', 'Op zaterdag fri3tjes bakken, op zondag de BBQ bemannen. Tafels en stoelen opstellen en later weer terug zetten voor de talks & workshops.'),
 	( 'Content support', 'Content-brengers helpen met opzet/afbraak van hun talks en workshops, bezoekers begeleiden, opvolgen dat het tijdsschema gerespecteerd blijft.'),
-	( 'Parking/bakfietsen', 'Bakfietsen heen en weer tussen parking en kampplaats voeren zodat toekomende/vertrekkende gasten vlot hun bagage kunnen transporteren.');
+	( 'Parking/bakfietsen', 'Zodat de toekomende en vertrekkende gasten vlot hun bagage kunnen transporteren, de bakfietsen heen en weer tussen parking en kamp voeren.');
 
 insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 1, 1, 2 ),

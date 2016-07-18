@@ -831,7 +831,11 @@ def api_set_volunteering_data(nonce):
 	for time_id in sched:
 		for post_id in sched[time_id]:
 			s = sched[time_id][post_id]
-			all_shifts[s['shift_id']] = s['people_needed']
+			all_shifts[s['shift_id']] ={
+				'people_needed' : s['people_needed'],
+				'time_id' : time_id,
+				'post_id' : post_id,
+			}
 
 	updates = {}
 	for k in updates_str:
@@ -845,8 +849,8 @@ def api_set_volunteering_data(nonce):
 			if shift not in all_shifts:
 				D('shift {0} not known for email {1}'.format(shift, email))
 				return jsonify(status='FAIL', msg='unknown shift referenced')
-			all_shifts[shift] -= 1
-			if all_shifts[shift] < 0:
+			all_shifts[shift]['people_needed'] -= 1
+			if all_shifts[shift]['people_needed'] < 0:
 				D('overcommited on shift {0} by email {1}'.format(shift, email))
 				return jsonify(status='FAIL', msg='overcommited on shift')
 
@@ -857,6 +861,36 @@ def api_set_volunteering_data(nonce):
 
 	model.clear_volunteering_schedule(g.db_cursor, email)
 	model.set_volunteering_schedule(g.db_cursor, updates)
+
+	D("volunteers: {0}".format(volunteers))
+	D("sched: {0}".format(sched))
+	D("updates: {0}".format(updates))
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+
+	mail_schedule = {}
+	for person, shifts in updates.iteritems():
+		name = volunteers[person]['name']
+		mail_schedule[name] = []
+		for s in sorted(shifts):
+			mail_schedule[name].append((when[all_shifts[s]['time_id']]['name'], what[all_shifts[s]['post_id']]['name']))
+	D("mail_schedule: {0}".format(mail_schedule))
+
+	"""
+	mail_data = {
+		'email' : email,
+		'schedule_html' : "<ul>{0}</ul>".format([ "<li>{0}:<ul>{1}</ul></li>".format(name, [ "<li>{0} - {1}</li>".format(x[0], x[1]) for x in 
+	}
+	"""
+	if email[-len('.notreal'):] != '.notreal':
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_VOLUNTEERING_SCHEDULE_SUBJECT'],
+			msg_html=texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_VOLUNTEERING_SCHEDULE_TEXT'].format(**mail_data))
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-dequeued to {0}'.format(email))
+		mail.send_notif("dequeued registration: {0}".format(email))
 
 	g.db_commit = True
 	return json.dumps({ 'status' : 'OK' })
@@ -898,7 +932,7 @@ def api_get_volunteering_data(nonce):
 		'volunteers' : volunteers,
 	})
 
-@app.route("/shifts/<nonce>")
-def shifts(nonce=None):
-	return render_template('shifts.html', page_opts={ 'shift' : True})
+@app.route("/volunteers/<nonce>")
+def volunteers(nonce=None):
+	return render_template('volunteers.html', page_opts={ 'shift' : True})
 
