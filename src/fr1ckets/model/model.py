@@ -568,6 +568,118 @@ def purchase_mark_dequeued(cursor, purchase_id):
 	q = "update purchase set queued=0, once_queued=1, dequeued_at=%(now)s where id = %(purchase_id)s;"
 	cursor.execute(q, { 'purchase_id' : purchase_id, 'now' : datetime.datetime.utcnow() })
 
+def get_volunteering_times(cursor):
+	out = {}
+
+	q = """
+		select
+			id,
+			description as name,
+			day as day
+		from
+			shift_time
+		order by id;
+		"""
+
+	cursor.execute(q)
+	for r in cursor.fetchall():
+		out[r['id']] = { 'name' : r['name'], 'day' : r['day'] }
+	return out
+
+def get_volunteering_posts(cursor):
+	out = {}
+
+	q = """
+		select
+			id,
+			what as name,
+			description as `desc`
+		from
+			shift_post
+		order by id;
+		"""
+
+	cursor.execute(q)
+	for r in cursor.fetchall():
+		out[r['id']] = { 'name' : r['name'], 'desc' : r['desc'] }
+	return out
+
+def get_volunteering_schedule(cursor):
+	"""return the full volunteering schedule, with the number of needed persons per shift"""
+	out = {}
+
+	q = """
+		select
+			s.id as shift_id,
+			st.id as shift_time_id,
+			sp.id as shift_post_id,
+			sp.what as what,
+			s.persons as people_needed,
+			sv.purchase_item_id people_present
+		from
+			shift s
+			inner join shift_time st on s.shift_time_id = st.id
+			inner join shift_post sp on s.shift_post_id = sp.id
+			left outer join shift_volunteer sv on s.id = sv.shift_id
+			left outer join purchase_items pui on sv.purchase_item_id = pui.id
+			left outer join purchase pu on pui.purchase_id = pu.id
+		group by st.id, sp.id, sv.purchase_item_id
+		order by st.id, sp.id, sv.purchase_item_id;
+		"""
+
+	cursor.execute(q)
+	ret = cursor.fetchall()
+
+	for r in ret:
+		st_id = r['shift_time_id']
+		sp_id = r['shift_post_id']
+
+		if st_id not in out:
+			out[st_id] = {}
+		if sp_id not in out[st_id]:
+			out[st_id][sp_id] = {
+				'people_needed' : r['people_needed'],
+				'people_present' : 0,
+				'people_list' : [],
+				'shift_id' : r['shift_id']
+			}
+		if r['people_present']:
+			out[st_id][sp_id]['people_list'].append(r['people_present'])
+			out[st_id][sp_id]['people_present'] += 1
+
+	return out
+
+def set_volunteering_schedule(cursor, updates):
+	"""
+	update the shift schedule by registering the given { person_id : [ shift_ids ] }
+	"""
+
+	q = """
+		insert into shift_volunteer
+			( purchase_item_id, shift_id )
+		values
+			( %s, %s );
+		"""
+
+	for person_id in updates:
+		for shift_id in updates[person_id]:
+			cursor.execute(q, (person_id, shift_id))
+
+def clear_volunteering_schedule(cursor, email):
+	"""
+	clear all volunteering schedule entries for tickets owned by this email
+	"""
+
+	q = """
+		delete from
+			shift_volunteer
+		where
+			purchase_item_id in (%s);
+		"""
+	ids = get_volunteers(cursor, email)
+	q = q % ','.join(['%s'] * len(ids))
+	cursor.execute(q, tuple(ids))
+
 def get_stats_tickets(cursor, removed=0, queued=0):
 	q = """
 		select
@@ -632,5 +744,74 @@ def get_stats_tshirts(cursor, removed=0, queued=0):
 		'queued' : queued,
 	}
 
+	cursor.execute(q, qd)
+	return cursor.fetchall()
+
+def get_volunteers(cursor, email_filter=None):
+	"""return all volunteering tickets bought by this email"""
+	out = {}
+	f = ''
+	if email_filter:
+		f = 'pu.email = %(email)s and'
+
+	q = """
+		select
+			pu.email as email,
+			pui.person_name as volunteer_name,
+			pui.id as volunteer_id
+		from
+			purchase pu
+			inner join purchase_items pui on pu.id = pui.purchase_id
+			inner join product pr on pui.product_id = pr.id
+		where
+			""" + f + """
+			pu.removed = 0
+			and pu.queued = 0
+			and pui.person_volunteers_during = 1
+			and pui.person_dob <= %(cutoff)s
+			and pr.name like 'ticket%%';
+		"""
+	qd = {
+		'email' : email_filter,
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
+
+	cursor.execute(q, qd)
+
+	for row in cursor.fetchall():
+		out[row['volunteer_id']] = {
+			'name' : row['volunteer_name'],
+			'email' : row['email'],
+		}
+
+	return out
+
+def get_volunteer_purchases(cursor):
+	"""
+	return an overview of users who bought volunteering tickets, and how
+	many shifts they booked
+	"""
+	q = """
+		select
+			pu.email as email,
+			count(distinct sv.shift_id) as shifts_booked,
+			count(distinct pui.id) as n_volunteers
+		from
+			purchase pu
+			inner join purchase_items pui on pu.id = pui.purchase_id
+			inner join product pr on pui.product_id = pr.id
+			left outer join shift_volunteer sv on pui.id = sv.purchase_item_id
+		where
+			pu.removed = 0
+			and pu.queued = 0
+			and pui.person_volunteers_during = 1
+			and pui.person_dob <= %(cutoff)s
+			and pr.name like 'ticket%%'
+		group by
+			pu.email;
+		"""
+	qd = {
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
 	cursor.execute(q, qd)
 	return cursor.fetchall()

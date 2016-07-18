@@ -113,3 +113,148 @@ create table purchase_items (
 	constraint purchase_items_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update cascade,
 	constraint purchase_items_product_id_fk foreign key (product_id) references product (id) on delete set null on update cascade
 );
+
+drop table if exists shift_time;
+create table shift_time (
+	id integer auto_increment not null,
+	description varchar(64) not null,
+	day integer not null,
+	primary key (id)
+);
+drop table if exists shift_post;
+create table shift_post (
+	id integer auto_increment not null,
+	what varchar(64) not null,
+	description text,
+	primary key (id)
+);
+drop table if exists `shift`;
+create table `shift` (
+	id integer auto_increment not null,
+	shift_time_id integer,
+	shift_post_id integer,
+	persons integer,
+	comments text,
+	primary key (id),
+	constraint shift_shift_time_id_fk foreign key (shift_time_id) references shift_time (id) on delete set null on update cascade,
+	constraint shift_shift_post_id_fk foreign key (shift_post_id) references shift_post (id) on delete set null on update cascade
+);
+
+drop table if exists shift_volunteer;
+create table shift_volunteer (
+	id integer auto_increment not null,
+	purchase_item_id integer,
+	shift_id integer,
+	primary key (id),
+	constraint shift_volunteer_shift_id_fk foreign key (shift_id) references shift (id) on delete set null on update cascade,
+	constraint shift_volunteer_purchase_item_id_fk foreign key (purchase_item_id) references purchase_items (id) on delete set null on update cascade
+);
+
+insert into shift_time (description, day) values
+	( 'Vrijdag 18:00 - 21:00', 1 ),
+	( 'Vrijdag 21:00 - einde', 1 ),
+	( 'Zaterdag 09:00 - 12:00', 2 ),
+	( 'Zaterdag 12:00 - 15:00', 2 ),
+	( 'Zaterdag 15:00 - 18:00', 2 ),
+	( 'Zaterdag 18:00 - 21:00', 2 ),
+	( 'Zaterdag 21:00 - einde', 2 ),
+	( 'Zondag 09:00 - 12:00', 3 ),
+	( 'Zondag 12:00 - 15:00', 3 ),
+	( 'Zondag 15:00 - 18:00', 3 ),
+	( 'Zondag 18:00 - 21:00', 3 ),
+	( 'Zondag 21:00 - einde', 3 ),
+	( 'Maandag 09:00 - 12:00', 4 ),
+	( 'Maandag 12:00 - 15:00', 4 ),
+	( 'Maandag 15:00 - 18:00', 4 ),
+	( 'Maandag 18:00 - 21:00', 4 );
+
+insert into shift_post (what, description) values
+	( 'Bar', 'De toog bemannen en drank verschaffen, de koelkast en het koffiemachien bijvullen, een snackje serveren.' ),
+	( 'Infodesk', 'Toekomers ontvangen, vragen beantwoorden, tokens verkopen, special guests en content bringers van informatie voorzien, oogje op de meteo houden.'),
+	( 'Vliegende keeper', 'Enkel de meest willekeurige taken zijn goed genoeg voor de vliegende keeper! Mensen zoeken, gasten doorverwijzen, last minute patches...'),
+	( 'Koken', 'Op zaterdag fri3tjes bakken, op zondag de BBQ bemannen. Tafels en stoelen opstellen en later weer terug zetten voor de talks & workshops.'),
+	( 'Content support', 'Content-brengers helpen met opzet/afbraak van hun talks en workshops, bezoekers begeleiden, opvolgen dat het tijdsschema gerespecteerd blijft.'),
+	( 'Parking/bakfietsen', 'Zodat de toekomende en vertrekkende gasten vlot hun bagage kunnen transporteren, de bakfietsen heen en weer tussen parking en kamp voeren.');
+
+insert into `shift` (shift_time_id, shift_post_id, persons) values
+	( 1, 1, 2 ),
+	( 1, 2, 2 ),
+	( 1, 6, 1 ),
+
+	( 2, 1, 2 ),
+	( 2, 2, 2 ),
+	( 2, 6, 1 ),
+
+	( 3, 1, 2 ),
+	( 3, 2, 2 ),
+	( 3, 3, 1 ),
+	( 3, 5, 3 ),
+	( 3, 6, 1 ),
+
+	( 4, 1, 2 ),
+	( 4, 2, 2 ),
+	( 4, 3, 1 ),
+	( 4, 5, 3 ),
+
+	( 5, 1, 2 ),
+	( 5, 2, 2 ),
+	( 5, 3, 1 ),
+	( 5, 4, 4 ),
+	( 5, 5, 3 ),
+
+	( 6, 1, 2 ),
+	( 6, 2, 1 ),
+	( 6, 3, 1 ),
+	( 6, 4, 8 ),
+
+	( 7, 1, 2 ),
+	( 7, 2, 1 ),
+	( 7, 3, 1 ),
+
+	( 8, 1, 2 ),
+	( 8, 2, 2 ),
+	( 8, 3, 1 ),
+	( 8, 5, 3 ),
+
+	( 9, 1, 2 ),
+	( 9, 2, 2 ),
+	( 9, 3, 1 ),
+	( 9, 5, 3 ),
+
+	( 10, 1, 2 ),
+	( 10, 2, 2 ),
+	( 10, 3, 1 ),
+	( 10, 4, 4 ),
+	( 10, 5, 3 ),
+
+	( 11, 1, 2 ),
+	( 11, 2, 1 ),
+	( 11, 3, 1 ),
+	( 11, 4, 8 ),
+
+	( 12, 1, 2 ),
+	( 12, 2, 1 ),
+	( 12, 3, 1 ),
+
+	( 13, 1, 2 ),
+	( 13, 2, 2 ),
+	( 13, 3, 1 ),
+	( 13, 5, 3 ),
+
+	( 14, 1, 2 ),
+	( 14, 2, 2 ),
+	( 14, 3, 1 ),
+	( 14, 5, 3 ),
+	( 14, 6, 1 ),
+
+	( 15, 1, 2 ),
+	( 15, 2, 2 ),
+	( 15, 3, 1 ),
+	( 15, 6, 1 ),
+
+	( 16, 1, 2 ),
+	( 16, 2, 1 ),
+	( 16, 3, 1 ),
+	( 16, 6, 1 );
+
+
