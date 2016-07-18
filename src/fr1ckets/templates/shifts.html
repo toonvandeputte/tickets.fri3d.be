@@ -1,5 +1,11 @@
 {% include "header.html" %}
 <!-- vim: set sw=2 ts=2: -->
+	<div class="row no_js_warning" id="no_js_warning">
+		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center alert alert-danger">
+			<p>Deze pagina vereist Javascript! Gelieve Javascript op te zetten voor deze site.</p>
+		</div>
+	</div>
+
 	<div class="row">
 
 		<div class="text-center col-sm-6 col-xs-6">
@@ -48,12 +54,12 @@
 
 		<div class="collapse col-xs-12" id="form_entry">
 			<form action="api/set_volunteering_data" method="POST" id="shift_form">
-				<div class="col-xs-12" id="table_dest">
-				</div>
 				<div class="row" id="volunteer_list">
 				</div>
 				<div class="form-group text-right">
 					<p><a class="btn btn-primary btn-lg" href="#" role="button" id="submit">Doorsturen</a></p>
+				</div>
+				<div class="col-xs-12" id="table_dest">
 				</div>
 			</form>
 		</div>

@@ -118,6 +118,7 @@ drop table if exists shift_time;
 create table shift_time (
 	id integer auto_increment not null,
 	description varchar(64) not null,
+	day integer not null,
 	primary key (id)
 );
 drop table if exists shift_post;
@@ -149,23 +150,23 @@ create table shift_volunteer (
 	constraint shift_volunteer_purchase_item_id_fk foreign key (purchase_item_id) references purchase_items (id) on delete set null on update cascade
 );
 
-insert into shift_time (description) values
-	( 'Vrijdag 18:00 - 21:00' ),
-	( 'Vrijdag 21:00 - einde' ),
-	( 'Zaterdag 09:00 - 12:00' ),
-	( 'Zaterdag 12:00 - 15:00' ),
-	( 'Zaterdag 15:00 - 18:00' ),
-	( 'Zaterdag 18:00 - 21:00' ),
-	( 'Zaterdag 21:00 - einde' ),
-	( 'Zondag 09:00 - 12:00' ),
-	( 'Zondag 12:00 - 15:00' ),
-	( 'Zondag 15:00 - 18:00' ),
-	( 'Zondag 18:00 - 21:00' ),
-	( 'Zondag 21:00 - einde' ),
-	( 'Maandag 09:00 - 12:00' ),
-	( 'Maandag 12:00 - 15:00' ),
-	( 'Maandag 15:00 - 18:00' ),
-	( 'Maandag 18:00 - 21:00' );
+insert into shift_time (description, day) values
+	( 'Vrijdag 18:00 - 21:00', 1 ),
+	( 'Vrijdag 21:00 - einde', 1 ),
+	( 'Zaterdag 09:00 - 12:00', 2 ),
+	( 'Zaterdag 12:00 - 15:00', 2 ),
+	( 'Zaterdag 15:00 - 18:00', 2 ),
+	( 'Zaterdag 18:00 - 21:00', 2 ),
+	( 'Zaterdag 21:00 - einde', 2 ),
+	( 'Zondag 09:00 - 12:00', 3 ),
+	( 'Zondag 12:00 - 15:00', 3 ),
+	( 'Zondag 15:00 - 18:00', 3 ),
+	( 'Zondag 18:00 - 21:00', 3 ),
+	( 'Zondag 21:00 - einde', 3 ),
+	( 'Maandag 09:00 - 12:00', 4 ),
+	( 'Maandag 12:00 - 15:00', 4 ),
+	( 'Maandag 15:00 - 18:00', 4 ),
+	( 'Maandag 18:00 - 21:00', 4 );
 
 insert into shift_post (what, description) values
 	( 'Bar', 'De toog bemannen en drank verschaffen, de koelkast en het koffiemachien bijvullen.' ),
@@ -187,19 +188,19 @@ insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 3, 1, 2 ),
 	( 3, 2, 2 ),
 	( 3, 3, 1 ),
-	( 3, 5, 1 ),
+	( 3, 5, 3 ),
 	( 3, 6, 1 ),
 
 	( 4, 1, 2 ),
 	( 4, 2, 2 ),
 	( 4, 3, 1 ),
-	( 4, 5, 1 ),
+	( 4, 5, 3 ),
 
 	( 5, 1, 2 ),
 	( 5, 2, 2 ),
 	( 5, 3, 1 ),
 	( 5, 4, 4 ),
-	( 5, 5, 1 ),
+	( 5, 5, 3 ),
 
 	( 6, 1, 2 ),
 	( 6, 2, 1 ),
@@ -213,18 +214,18 @@ insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 8, 1, 2 ),
 	( 8, 2, 2 ),
 	( 8, 3, 1 ),
-	( 8, 5, 1 ),
+	( 8, 5, 3 ),
 
 	( 9, 1, 2 ),
 	( 9, 2, 2 ),
 	( 9, 3, 1 ),
-	( 9, 5, 1 ),
+	( 9, 5, 3 ),
 
 	( 10, 1, 2 ),
 	( 10, 2, 2 ),
 	( 10, 3, 1 ),
 	( 10, 4, 4 ),
-	( 10, 5, 1 ),
+	( 10, 5, 3 ),
 
 	( 11, 1, 2 ),
 	( 11, 2, 1 ),
@@ -238,12 +239,12 @@ insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 13, 1, 2 ),
 	( 13, 2, 2 ),
 	( 13, 3, 1 ),
-	( 13, 5, 1 ),
+	( 13, 5, 3 ),
 
 	( 14, 1, 2 ),
 	( 14, 2, 2 ),
 	( 14, 3, 1 ),
-	( 14, 5, 1 ),
+	( 14, 5, 3 ),
 	( 14, 6, 1 ),
 
 	( 15, 1, 2 ),

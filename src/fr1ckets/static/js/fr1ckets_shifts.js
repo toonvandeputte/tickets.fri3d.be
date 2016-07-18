@@ -40,7 +40,7 @@ $(document).ready(function() {
 			}
 		}
 	});
-
+	$('.no_js_warning').hide();
 	$('#global_info').collapse('show');
 	$('#form_entry').collapse('hide');
 });
@@ -197,28 +197,31 @@ function schedule_render()
 	var select_count = 0;
 	var selects = new Array();
 	var fill_previous = new Object();
+	var prev_day = undefined;
 
 	f += '<table class="table table-hover table-condensed">';
-	f += '  <thead>';
-	f += '    <tr>';
-	f += '      <th>Shift</th>';
-	for (var p in posts) {
-		f += '        <th>' + posts[p]['name'] + '</th>';
-	}
-	f += '    </tr>';
-	f += '  </thead>';
 	f += '  <tbody>';
-	/*
-	f += '    <tr>';
-	f += '      <td>&nbsp</td>';
-	for (var p in posts) {
-		f += '        <td>'+posts[p]['desc']+'</td>';
+
+	function header(day) {
+		var fh = '';
+		fh += '    <tr>';
+		fh += '      <td><b><i>Dag '+day+'</i></b></td>';
+		for (var p in posts) {
+			fh += '        <td><b>' + posts[p]['name'] + '</b></td>';
+		}
+		fh += '    </tr>';
+		return fh;
 	}
-	f += '    </tr>';
-	*/
+
 	for (var t in times) {
+		if (times[t]['day'] != prev_day) {
+			console.log("prev="+prev_day+" new="+times[t]['day']);
+			f += header(times[t]['day']);
+			prev_day = times[t]['day'];
+		}
+
 		f += '    <tr>';
-		f += '      <td>' + times[t] + '</td>';
+		f += '      <td>' + times[t]['name'] + '</td>';
 		for (var p in posts) {
 			f += '      <td>';
 			if (!(t in sched && p in sched[t])) {
@@ -315,7 +318,7 @@ function schedule_render()
 	$('#submit').on('click', function(e) {
 		e.preventDefault();
 		if (!volunteer_totals_check()) {
-			alert('Niet al uw personen hebben minstens '+min_shifts+' shiften, gelieve te verbeteren');
+			alert('Niet al uw personen hebben minstens '+min_shifts+' shift, gelieve te verbeteren');
 			return;
 		}
 
