@@ -636,7 +636,7 @@ def volunteering():
 	volunteers = model.get_volunteers(g.db_cursor)
 	sched = model.get_volunteering_schedule(g.db_cursor)
 	purchases = model.get_volunteer_purchases(g.db_cursor)
-	return render_template('volunteering.html', page_opts={ 'internal' : True},
+	return render_template('volunteers_admin.html', page_opts={ 'internal' : True},
 		volunteers=volunteers, sched=sched, purchases=purchases, when=when,
 		what=what)
 
@@ -835,6 +835,7 @@ def api_set_volunteering_data(nonce):
 			s = sched[time_id][post_id]
 			all_shifts[s['shift_id']] ={
 				'people_needed' : s['people_needed'],
+				'people_present' : s['people_present'],
 				'time_id' : time_id,
 				'post_id' : post_id,
 			}
@@ -843,6 +844,7 @@ def api_set_volunteering_data(nonce):
 	for k in updates_str:
 		updates[int(k)] = [ int(x) for x in updates_str[k] ]
 
+	D("pre: {0}".format(all_shifts[1]))
 	for person, shifts in updates.iteritems():
 		if person not in volunteers:
 			D('person {0} not in volunteers for email {1}'.format(person, email))
@@ -851,11 +853,14 @@ def api_set_volunteering_data(nonce):
 			if shift not in all_shifts:
 				D('shift {0} not known for email {1}'.format(shift, email))
 				return jsonify(status='FAIL', msg='unknown shift referenced')
-			all_shifts[shift]['people_needed'] -= 1
-			if all_shifts[shift]['people_needed'] < 0:
+			D("substracting from shft {0}".format(shift))
+			all_shifts[shift]['people_present'] += 1
+			D(all_shifts[1])
+			if (all_shifts[shift]['people_needed'] - all_shifts[shift]['people_present']) < 0:
 				D('overcommited on shift {0} by email {1}'.format(shift, email))
 				return jsonify(status='FAIL', msg='overcommited on shift')
 
+	D("post {0}".format(all_shifts[1]))
 	for person in volunteers:
 		if person not in updates or len(updates[person]) < app.config['VOLUNTEERING_MIN_SHIFTS']:
 			D('undercommited for person {0} by email {1}'.format(person, email))
@@ -864,9 +869,6 @@ def api_set_volunteering_data(nonce):
 	model.clear_volunteering_schedule(g.db_cursor, email)
 	model.set_volunteering_schedule(g.db_cursor, updates)
 
-	D("volunteers: {0}".format(volunteers))
-	D("sched: {0}".format(sched))
-	D("updates: {0}".format(updates))
 	when = model.get_volunteering_times(g.db_cursor)
 	what = model.get_volunteering_posts(g.db_cursor)
 
@@ -895,7 +897,8 @@ def api_set_volunteering_data(nonce):
 		mail.send_notif("dequeued registration: {0}".format(email))
 
 	g.db_commit = True
-	return json.dumps({ 'status' : 'OK' })
+	#return json.dumps({ 'status' : 'OK' })
+	return jsonify(status='OK')
 
 @app.route("/api/get_volunteering_data/<nonce>", methods=[ 'GET' ])
 def api_get_volunteering_data(nonce):
@@ -934,7 +937,25 @@ def api_get_volunteering_data(nonce):
 		'volunteers' : volunteers,
 	})
 
+class VolunteersLaunchForm(Form):
+	"""
+	takes an email, launch to correct volunteering page
+	"""
+	email = EmailField('Email address', validators=[
+		validators.Email(message="Really an email?"),
+		])
+
+@app.route("/volunteers", methods=[ 'GET', 'POST' ])
+def volunteers_launch():
+	form = VolunteersLaunchForm()
+	if form.validate_on_submit():
+		purchase = model.purchase_get(g.db_cursor, email=form.email.data)
+		if purchase:
+			return redirect(url_for('volunteers', nonce=purchase['nonce']))
+	if request.method == 'POST':
+		return render_template('volunteers_launchpad.html', form=form, badentry=True)
+	return render_template('volunteers_launchpad.html', form=form)
+
 @app.route("/volunteers/<nonce>")
 def volunteers(nonce=None):
 	return render_template('volunteers.html', page_opts={ 'shift' : True})
-

@@ -222,12 +222,14 @@ def purchase_create(cursor, email, products, billing_info, queued):
 
 	return out
 
-def purchase_get(cursor, nonce=None, id=None):
+def purchase_get(cursor, nonce=None, id=None, email=None):
 	qf = []
 	if nonce:
 		qf.append("nonce=%(nonce)s")
 	if id:
 		qf.append("id=%(id)s")
+	if email:
+		qf.append("email=%(email)s")
 
 	q = """
 		select
@@ -249,7 +251,7 @@ def purchase_get(cursor, nonce=None, id=None):
 		where
 			""" + " AND ".join(qf) + """;
 		"""
-	cursor.execute(q, { 'nonce' : nonce, 'id' : id })
+	cursor.execute(q, { 'nonce' : nonce, 'id' : id, 'email' : email })
 	return cursor.fetchone()
 
 def purchase_items_get(cursor, id):

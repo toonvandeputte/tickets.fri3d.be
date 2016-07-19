@@ -45,7 +45,7 @@
 		<tbody>
 {% for t in when %}
 			<tr>
-				<td>{{ when[t] }}</td>
+				<td>{{ when[t]['name'] }}</td>
 {% for p in what %}
 				<td>
 {% if t in sched and p in sched[t] %}

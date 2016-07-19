@@ -334,10 +334,11 @@ function schedule_render()
 			}
 		}
 		$.post('/api/set_volunteering_data/'+nonce, JSON.stringify(payload)).done(function(data) {
-			d = JSON.parse(data);
-			console.dir(d);
+			var d = data;
 			if (d.status == 'OK') {
 				$('#confirm_modal').modal();
+			} else {
+				$('#error_modal').modal();
 			}
 		});
 
