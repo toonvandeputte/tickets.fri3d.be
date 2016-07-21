@@ -894,9 +894,6 @@ def api_set_volunteering_data(nonce):
 		schedule_html += '</ul></li>'
 	schedule_html += '</ul>'
 
-	D(schedule_text)
-	D(schedule_html)
-
 	mail_data = {
 		'email' : email,
 		'schedule_html' : schedule_html,
@@ -910,7 +907,7 @@ def api_set_volunteering_data(nonce):
 			msg_html=texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'].format(**mail_data),
 			msg_text=texts['MAIL_VOLUNTEERING_SCHEDULE_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed volunteering-schedule-updated to {0}'.format(email))
-		#mail.send_notif("updated volunteering schedule: {0}".format(email))
+		mail.send_notif("updated volunteering schedule: {0}".format(email))
 
 	g.db_commit = True
 	return jsonify(status='OK')
