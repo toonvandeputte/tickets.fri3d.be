@@ -188,7 +188,6 @@ insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 3, 1, 2 ),
 	( 3, 2, 2 ),
 	( 3, 3, 1 ),
-	( 3, 5, 3 ),
 	( 3, 6, 1 ),
 
 	( 4, 1, 2 ),
