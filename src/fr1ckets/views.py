@@ -827,6 +827,10 @@ def api_set_volunteering_data(nonce):
 		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
 	email = purchase['email']
 	updates_str = json.loads(request.form.keys()[0])
+
+	# clear our own entries so we don't double-count them
+	model.clear_volunteering_schedule(g.db_cursor, email)
+
 	sched = model.get_volunteering_schedule(g.db_cursor)
 	volunteers = model.get_volunteers(g.db_cursor, email_filter=email)
 	all_shifts = {}
@@ -866,7 +870,6 @@ def api_set_volunteering_data(nonce):
 			D('undercommited for person {0} by email {1}'.format(person, email))
 			return jsonify(status='FAIL', msg='not enough shifts entered')
 
-	model.clear_volunteering_schedule(g.db_cursor, email)
 	model.set_volunteering_schedule(g.db_cursor, updates)
 
 	when = model.get_volunteering_times(g.db_cursor)
@@ -878,14 +881,27 @@ def api_set_volunteering_data(nonce):
 		mail_schedule[name] = []
 		for s in sorted(shifts):
 			mail_schedule[name].append((when[all_shifts[s]['time_id']]['name'], what[all_shifts[s]['post_id']]['name']))
-	D("mail_schedule: {0}".format(mail_schedule))
 
-	"""
+	schedule_html = '<ul style="padding: 0; Margin: 0;">'
+	schedule_text = ''
+	for person in mail_schedule:
+		schedule_html += '<li style="Margin: 0;">{0}:<ul>'.format(person)
+		schedule_text += '* {0}:\n'.format(person)
+		for e in mail_schedule[person]:
+			when, what = e
+			schedule_html += '    <li>{0}: {1}</li>'.format(when, what)
+			schedule_text += '\t- {0}: {1}\n'.format(when, what)
+		schedule_html += '</ul></li>'
+	schedule_html += '</ul>'
+
+	D(schedule_text)
+	D(schedule_html)
+
 	mail_data = {
 		'email' : email,
-		'schedule_html' : "<ul>{0}</ul>".format([ "<li>{0}:<ul>{1}</ul></li>".format(name, [ "<li>{0} - {1}</li>".format(x[0], x[1]) for x in 
+		'schedule_html' : schedule_html,
+		'schedule_text' : schedule_text,
 	}
-	"""
 	if email[-len('.notreal'):] != '.notreal':
 		mail.send_mail(
 			from_addr=app.config['MAIL_MY_ADDR'],
@@ -893,11 +909,10 @@ def api_set_volunteering_data(nonce):
 			subject=texts['MAIL_VOLUNTEERING_SCHEDULE_SUBJECT'],
 			msg_html=texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'].format(**mail_data),
 			msg_text=texts['MAIL_VOLUNTEERING_SCHEDULE_TEXT'].format(**mail_data))
-		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-dequeued to {0}'.format(email))
-		mail.send_notif("dequeued registration: {0}".format(email))
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed volunteering-schedule-updated to {0}'.format(email))
+		#mail.send_notif("updated volunteering schedule: {0}".format(email))
 
 	g.db_commit = True
-	#return json.dumps({ 'status' : 'OK' })
 	return jsonify(status='OK')
 
 @app.route("/api/get_volunteering_data/<nonce>", methods=[ 'GET' ])
