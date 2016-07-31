@@ -1,7 +1,7 @@
 {% include "header.html" %}
 <!-- vim: set sw=2 ts=2: -->
 
-	<div class="row no_js_warning">
+	<div class="row no_js_warning" id="no_js_warning">
 		<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center alert alert-danger">
 			<p>Deze pagina vereist Javascript! Gelieve Javascript op te zetten voor deze site.</p>
 		</div>
@@ -34,19 +34,20 @@
 			<div class="well"> <!--page-header">-->
 				<h1>Hallo!</h1>
 				<h4>
-					{% if tickets_available > 10 %}
 					<p>Welkom op de ticketshop voor Fri3d Camp 2016!</p>
+			{% if not 'tickets' in selling_inhibited %}
+				{% if tickets_available > 10 %}
 					<p>Er zijn nog <b>{{ tickets_available }}</b> tickets beschikbaar!</p>
-					<p>Bij vragen gelieve ons te mailen op <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
-					{% elif tickets_available > 0 %}
-					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
+				{% elif tickets_available > 0 %}
 					<p>Er zijn nog maar <b>{{ tickets_available }}</b> tickets beschikbaar! Je kan er meer bestellen, maar dan komt je bestelling in de wachtrij tot er terug plaatsen vrij zijn, we laten je dan iets weten.</p>
-					<p>Nog vragen? Mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
-					{% else %}
-					<p>Welkom op de ticket-page voor Fri3d Camp 2016!</p>
+				{% else %}
 					<p>Alle beschikbare tickets zijn weg! Je kan zeker nog een bestelling plaatsen, deze komt in de wachtrij en we laten je iets weten als er terug plaats is.</p>
-					<p>Nog vragen? Mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
-					{% endif %}
+				{% endif %}
+			{% endif %}
+			{% if selling_inhibited|length > 0 %}
+					<p>De volgende items zijn niet meer beschikbaar: <b>{{ selling_inhibited|join(', ') }}</b>.</p>
+			{% endif %}
+					<p>Nog vragen? Check de <a href="http://fri3d.be/faq/">FAQ</a>, of mail naar <a href="mailto:tickets@fri3d.be">tickets@fri3d.be</a>.</p>
 				</h4>
 			</div>
 		</div>
@@ -70,8 +71,18 @@
 		</div>
 		<!-- END EMAIL -->
 
+		{% if 'tickets' in selling_inhibited %}
+		<div class="row">
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+				<div class="well">
+					<p>Helaas is de verkoop van de eigenlijke tickets stopgezet, je kan nog wel andere zaken bestellen.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+
 		<!-- NORMAL TICKET -->
-		<div class="form-group">
+		<div class="form-group" {% if 'tickets' in selling_inhibited %} hidden {% endif %}>
 			<label for="n_tickets" class="col-xs-6 col-sm-3 control-label">Tickets</label>
 			<div class="col-xs-6 col-sm-3">
 				<select id="n_tickets" name="n_tickets" class="form-control">
@@ -100,10 +111,10 @@
 			</div>
 			<div class="col-xs-12 col-sm-6">
 				<ul>
-					<li>Toegang tot Fri3d Camp 2016 van vrijdag 12 augustus tot en met maandag 15 augustus.</li>
+					<li>Toegang tot Fri3d Camp 2016 van vrijdag 12 augustus tot en met maandag 15 augustus. Elk ticket bevat twee warme maaltijden.</li>
 					<li>Minstens één volunteer-shift (enkele uren drank tappen, infobalie bemannen, etc.) voor wie 16 jaar of ouder is bij de start van het kamp.</li>
 					<li>Wil je geen volunteer-shift meedraaien, vink dan de optie <em>premium</em> aan. Je ticket wordt dan wel duurder.</li>
-					<li>In de prijs van één ticket zitten twee warme maaltijden inbegrepen.</li>
+					<li>Selecteer het aantal tickets om de per-ticket opties te zien.</li>
 			</ul>
 			</div>
 		</div>
@@ -118,8 +129,18 @@
 		</div>
 		<!-- END BUSINESS INFO -->
 
-		<!-- KID TSHIRTS -->
+		{% if 'tshirts' in selling_inhibited %}
 		<div class="row">
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+				<div class="well">
+					<p>Helaas is de verkoop van tshirts stopgezet, je kan nog wel andere zaken bestellen.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+
+		<!-- KID TSHIRTS -->
+		<div class="row" {% if 'tshirts' in selling_inhibited %} hidden {% endif %}>
 			<div class="col-xs-12 col-sm-8 col-sm-offset-2">
 				<div class="thumbnail">
 					<img src="/static/img/tshirt_k.png" class="img-rounded">
@@ -219,7 +240,7 @@
 		<!-- END KID TSHIRTS -->
 
 		<!-- ADULT F TSHIRTS -->
-		<div class="row">
+		<div class="row" {% if 'tshirts' in selling_inhibited %} hidden {% endif %}>
 			<div class="col-xs-12 col-sm-8 col-sm-offset-2">
 				<div class="thumbnail">
 					<img src="/static/img/tshirt_f.png" class="img-rounded">
@@ -335,7 +356,7 @@
 		<!-- ADULT F TSHIRTS -->
 
 		<!-- ADULT M TSHIRTS -->
-		<div class="row">
+		<div class="row" {% if 'tshirts' in selling_inhibited %} hidden {% endif %}>
 			<div class="col-xs-12 col-sm-8 col-sm-offset-2">
 				<div class="thumbnail">
 					<img src="/static/img/tshirt_m.png" class="img-rounded">
@@ -451,7 +472,17 @@
 		<!-- ADULT M TSHIRTS -->
 
 		<!-- BEGIN TOKENS -->
-		<div class="form-group">
+		{% if 'tokens' in selling_inhibited %}
+		<div class="row">
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+				<div class="well">
+					<p>Helaas is de verkoop van tshirts stopgezet, je kan nog wel andere zaken bestellen.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+
+		<div class="form-group" {% if 'tokens' in selling_inhibited %} hidden {% endif %}>
 			<label for="token" class="col-xs-6 col-sm-3 control-label">Tokens voor consumpties</label>
 			<div class="col-xs-6 col-sm-3">
 				<select id="token" name="token" class="form-control">
@@ -536,6 +567,28 @@
 		</div>
 	</div>
 	<!-- END ORDER OVERVIEW MODAL -->
+
+	<!-- ORDER VALIDATION MODAL -->
+	<div class="modal fade" id="validation_modal" tabindex="-1" role="dialog" arial-labelledby="validation_modal_label">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Sluiten">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="validation_modal_label">Enkele foutjes</h4>
+				</div>
+				<div class="modal-body">
+					<div id="validation_content">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Terug</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END ORDER VALIDATION MODAL -->
 
 	<!-- REGISTRATION OUTCOME MODAL -->
 	<div class="modal fade" id="outcome_modal" tabindex="-1" role="dialog" arial-labelledby="outcome_modal_label">

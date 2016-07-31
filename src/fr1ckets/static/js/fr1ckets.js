@@ -37,8 +37,28 @@ $('#overview_order').on('click', function() {
 		},
 	});
 });
+
+function is_safari() {
+	return navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1;
+}
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
+
+	if (!("required" in document.createElement("input")) || is_safari()) {
+		errors = validate_choices();
+		if (errors.length > 0) {
+			var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
+			f += '<ul>';
+			for (var e in errors) {
+				f += '<li>'+errors[e]+'</li>';
+			}
+			f += '</ul>'
+			$('#validation_content').html(f);
+			$('#validation_modal').modal('show');
+			return;
+		}
+	}
+
 	$('#overview_content').html(update_overview());
 	$('#overview_modal').modal('show');
 });
@@ -124,7 +144,7 @@ function handle_reservation(data) {
 		available_date.setTime(reservation.available_from*1000);
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
-		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen!</p>';
+		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
 		f += '  </div>';
 		f += '</div>';
 	} else if (available && reservation.discount > 0) {
@@ -162,6 +182,65 @@ function find_ticket_by_dob(dob, billable) {
 
 function get_n_tickets() {
 	return parseInt($('#n_tickets').val());
+}
+
+function validate_choices() {
+	var errors = []
+
+	// alert("validity="+$('#ticket_form')[0].checkValidity());
+	var n_tickets = parseInt($('#n_tickets').val());
+	var need_business_info = false;
+
+	if ($('#email').val().length == 0) {
+		errors.push("Email-adres");
+	}
+	for (var i = 0; i < n_tickets; i++) {
+		var src = 'tickets_'+i;
+		var year_src = src + '_dob_year';
+		var month_src = src + '_dob_month';
+		var day_src = src + '_dob_day';
+		var name_src = src + '_name';
+		var billable_src = src + "_billable";
+		var now = new Date();
+
+		var dob_year = parseInt($('#'+year_src).val());
+		var dob_month = parseInt($('#'+month_src).val());
+		var dob_day = parseInt($('#'+day_src).val());
+		var name = $('#' + name_src).val();
+		var billable = Boolean($('#'+billable_src).prop('checked'));
+
+		console.log(dob_year, dob_month, dob_day);
+		if (!dob_year || ((dob_year < 1900) || (dob_year > now.getFullYear()))) {
+			errors.push("Geboortejaar ticket "+(i+1));
+		}
+		if (!dob_month || (dob_month < 1) || (dob_month > 12)) {
+			errors.push("Geboortemaand ticket "+(i+1));
+		}
+		if (!dob_day || (dob_day < 1) || (dob_day > 31)) {
+			errors.push("Geboortedag ticket "+(i+1));
+		}
+		if (name.length == 0) {
+			errors.push("Naam ticket "+(i+1));
+		}
+		if (billable) {
+			need_business_info = true;
+		}
+	}
+	if (need_business_info) {
+		var business_name = $('#business_name').val();
+		var business_address = $('#business_address').val();
+		var business_vat = $('#business_address').val();
+
+		if ((business_name.length == 0) || (business_address.length == 0) || (business_vat.length == 0)) {
+			errors.push("Bedrijfs-informatie");
+		}
+	}
+
+	if (!$('#terms_payment').prop('checked') || !$('#terms_supervision').prop('checked') || !$('#terms_excellent').prop('checked')) {
+		errors.push("Termen en condities");
+	}
+	return errors
+
 }
 
 function enumerate_choices() {
@@ -275,7 +354,7 @@ $(document).ready(function() {
 	update_price_total_display();
 });
 
-var ticket_volunteering_cutoff = Date.now() - 16 * 3600*24*356*1000;
+var ticket_volunteering_cutoff = new Date(2000, 8, 13).getTime();
 
 var showing_business_info = false;
 function display_business_info() {
@@ -470,10 +549,10 @@ $('#n_tickets').on('change', function() {
 		f += '   <input id="'+dob_year_id+'" name="'+dob_year_id+'" class="form-control col-sm-2" type="tel" maxlength="4" pattern="(19|20|21)[0-9]{2}" required aria-required="true" placeholder="YYYY">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="MM">';
+		f += '   <input id="'+dob_month_id+'" name="'+dob_month_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="^(1[0-2]|0?[1-9])$" required aria-required="true" placeholder="MM">';
 		f += '  </div>';
 		f += '  <div class="col-sm-2">';
-		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="[0-9]{1,2}" required aria-required="true" placeholder="DD">';
+		f += '   <input id="'+dob_day_id+'" name="'+dob_day_id+'" class="form-control col-sm-1" type="tel" maxlength="2" pattern="^(3[01]|[12][0-9]|0?[1-9])$" required aria-required="true" placeholder="DD">';
 		f += '  </div>';
 		f += '</div>';
 		// bill box

@@ -1,0 +1,20 @@
+@media(min-width: 768px) {
+	.sidebar {
+		width: 158px;
+		top: 25px;
+	}
+}
+@media(min-width: 992px) {
+	.sidebar {
+		width: 213px;
+		top: 25px;
+		position: fixed;
+	}
+}
+@media(min-width: 1200px) {
+	.sidebar {
+		width: 263px;
+		position: fixed;
+	}
+}
+

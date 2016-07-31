@@ -145,3 +145,28 @@ Met vriendelijke groeten,
 De Fri3d Camp organisatie.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
+
+# mail sent when user commits a volunteering schedule
+texts['MAIL_VOLUNTEERING_SCHEDULE_SUBJECT'] = u"Uw Fri3d Camp 2016 vrijwilligers-schema is opgeslagen."
+texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'] = u"""<html>
+<body>
+<p>Beste,</p>
+<p>Hier een overzicht van je vrijwilligers-schema dat je hebt ingegeven. Je kan later nog terug naar de pagina gaan om dit aan te passen.</p>
+<p>{schedule_html}</p>
+<p>Met vriendelijke groeten,</p>
+<p>De Fri3d Camp organisatie.</p>
+<p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
+</body>
+</html>"""
+
+texts['MAIL_VOLUNTEERING_SCHEDULE_TEXT'] = u"""Beste,
+
+Hier een overzicht van je vrijwilligers-schema dat je hebt ingegeven. Je kan later nog terug naar de pagina gaan om dit aan te passen.
+
+{schedule_text}
+
+Met vriendelijke groeten,
+
+De Fri3d Camp organisatie.
+
+Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""

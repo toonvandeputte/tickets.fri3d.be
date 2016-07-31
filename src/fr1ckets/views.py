@@ -231,9 +231,13 @@ def price_distribution_strategy(cursor, nonce):
 @app.route('/tickets', methods=[ 'GET' ])
 @req_auth_public
 def tickets():
+	if app.config['CLOSED']:
+		return render_template('closed.html')
 	form = TicketForm()
 	tickets_available = app.config['TICKETS_MAX'] - model.tickets_actual_total(g.db_cursor)
-	return render_template('tickets.html', form=form, tickets_available=tickets_available)
+	return render_template('tickets.html',
+			selling_inhibited=app.config['INHIBIT_SELLING'],
+			form=form, tickets_available=tickets_available)
 
 @app.route('/api/tickets_register', methods=[ 'POST' ])
 @req_auth_public
@@ -322,7 +326,10 @@ def ticket_register():
 				msg_text=texts['MAIL_TICKETS_ORDERED_QUEUE_TEXT'].format(**mail_data))
 			model.purchase_history_append(g.db_cursor, purchase['id'],
 				msg='mailed ok-queued to {0}'.format(form.email.data))
-		mail.send_notif("new registration: {0} bought {1} tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
+		if not queued:
+			mail.send_notif("new registration: {0} bought {1} tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
+		else:
+			mail.send_notif("new registration: {0} bought {1} QUEUED tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
 	g.db_commit = True
 
@@ -507,16 +514,131 @@ def reservation_add():
 @app.route('/admin/overview', methods=[ 'GET' ])
 @req_auth_admin
 def overview():
-	overview_tickets = model.get_overview_tickets(g.db_cursor)
-	overview_tshirts = model.get_overview_tshirts(g.db_cursor)
-	overview_tokens = model.get_overview_tokens(g.db_cursor)
+	purchases = map(dict, model.get_purchases(g.db_cursor, strip_removed=False))
+	tickets_active = map(dict, model.get_stats_tickets(g.db_cursor))
+	tickets_queued = map(dict, model.get_stats_tickets(g.db_cursor, queued=1))
+	tshirts_active = map(dict, model.get_stats_tshirts(g.db_cursor))
+	tshirts_queued = map(dict, model.get_stats_tshirts(g.db_cursor, queued=1))
+
+	stats_purchases = { t :
+		{
+			'orders' : 0,
+			'tickets' : 0,
+			'tshirts' : 0,
+			'tokens' : 0,
+			'money' : 0,
+		} for t in [ 'active_paid', 'active_unpaid', 'active_total', 'queued', 'total' ]
+	}
+
+	for det in purchases:
+		dests = [ 'total' ]
+		if det['removed']:
+			continue
+		if not det['queued']:
+			dests.append('active_paid' if det['paid'] else 'active_unpaid')
+			dests.append('active_total')
+		else:
+			dests.append('queued')
+		for dest in dests:
+			stats_purchases[dest]['tickets'] += det['n_tickets']
+			stats_purchases[dest]['tshirts'] += det['n_tshirts']
+			stats_purchases[dest]['tokens'] += det['n_tokens']
+			stats_purchases[dest]['money'] += det['total_price']
+			stats_purchases[dest]['orders'] += 1
+	
+	for t in stats_purchases:
+		for k in stats_purchases[t]:
+			stats_purchases[t][k] = int(stats_purchases[t][k])
+
+	tickets_active_total = {}
+	tickets_active_total['type'] = 'total active'
+	tickets_queued_total = {}
+	tickets_queued_total['type'] = 'total queued'
+	tickets_total = {}
+	tickets_total['type'] = 'total'
+	for t in tickets_active:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tickets_active_total:
+					tickets_active_total[k] = 0
+				if k not in tickets_total:
+					tickets_total[k] = 0
+				tickets_active_total[k] += t[k]
+				tickets_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' active'
+	tickets_active.append(tickets_active_total)
+	for t in tickets_queued:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tickets_queued_total:
+					tickets_queued_total[k] = 0
+				if k not in tickets_total:
+					tickets_total[k] = 0
+				tickets_queued_total[k] += t[k]
+				tickets_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' queued'
+	tickets_queued.append(tickets_queued_total)
+	tickets = []
+	tickets.extend(tickets_active)
+	tickets.extend(tickets_queued)
+	tickets.append(tickets_total)
+
+	tshirts_active_total = {}
+	tshirts_active_total['type'] = 'total active'
+	tshirts_queued_total = {}
+	tshirts_queued_total['type'] = 'total queued'
+	tshirts_total = {}
+	tshirts_total['type'] = 'total'
+	for t in tshirts_active:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tshirts_active_total:
+					tshirts_active_total[k] = 0
+				if k not in tshirts_total:
+					tshirts_total[k] = 0
+				tshirts_active_total[k] += t[k]
+				tshirts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' active'
+	tshirts_active.append(tshirts_active_total)
+	for t in tshirts_queued:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in tshirts_queued_total:
+					tshirts_queued_total[k] = 0
+				if k not in tshirts_total:
+					tshirts_total[k] = 0
+				tshirts_queued_total[k] += t[k]
+				tshirts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' queued'
+	tshirts_queued.append(tshirts_queued_total)
+	tshirts = []
+	tshirts.extend(tshirts_active)
+	tshirts.extend(tshirts_queued)
+	tshirts.append(tshirts_total)
+
 	return render_template('overview.html',
-		overview_tickets=overview_tickets,
-		overview_tshirts=overview_tshirts,
-		overview_tokens=overview_tokens,
+		purchases=stats_purchases,
+		tickets=tickets,
+		tshirts=tshirts,
 		page_opts={
 			'charting' : True,
 			'internal' : True})
+
+@app.route('/admin/volunteering', methods=[ 'GET' ])
+@req_auth_admin
+def volunteering():
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+	volunteers = model.get_volunteers(g.db_cursor)
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	purchases = model.get_volunteer_purchases(g.db_cursor)
+	return render_template('volunteers_admin.html', page_opts={ 'internal' : True},
+		volunteers=volunteers, sched=sched, purchases=purchases, when=when,
+		what=what)
 
 @app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
 @req_auth_admin
@@ -538,6 +660,7 @@ def api_purchase_mark_paid(purchase_id, paid):
 				msg_html=texts['MAIL_PAYMENT_RECEIVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_PAYMENT_RECEIVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-paid to {0}'.format(email))
+		mail.send_notif("payment received for registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -565,6 +688,7 @@ def api_purchase_mark_removed(purchase_id, removed):
 				msg_html=texts['MAIL_REMOVED_HTML'].format(**mail_data),
 				msg_text=texts['MAIL_REMOVED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-removed to {0}'.format(email))
+		mail.send_notif("removed registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -646,6 +770,7 @@ def api_purchase_mark_dequeued(purchase_id):
 			msg_html=texts['MAIL_UNQUEUED_HTML'].format(**mail_data),
 			msg_text=texts['MAIL_UNQUEUED_TEXT'].format(**mail_data))
 		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed purchase-dequeued to {0}'.format(email))
+		mail.send_notif("dequeued registration: {0}".format(email))
 
 	g.db_commit = True
 	return "ok", 200
@@ -694,3 +819,155 @@ def admin():
 @req_auth_public
 def index():
 	return redirect(url_for('tickets'))
+
+@app.route("/api/set_volunteering_data/<nonce>", methods=[ 'GET', 'POST' ])
+def api_set_volunteering_data(nonce):
+	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
+	if not purchase:
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+	email = purchase['email']
+	updates_str = json.loads(request.form.keys()[0])
+
+	# clear our own entries so we don't double-count them
+	model.clear_volunteering_schedule(g.db_cursor, email)
+
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers = model.get_volunteers(g.db_cursor, email_filter=email)
+	all_shifts = {}
+	for time_id in sched:
+		for post_id in sched[time_id]:
+			s = sched[time_id][post_id]
+			all_shifts[s['shift_id']] ={
+				'people_needed' : s['people_needed'],
+				'people_present' : s['people_present'],
+				'time_id' : time_id,
+				'post_id' : post_id,
+			}
+
+	updates = {}
+	for k in updates_str:
+		updates[int(k)] = [ int(x) for x in updates_str[k] ]
+
+	D("pre: {0}".format(all_shifts[1]))
+	for person, shifts in updates.iteritems():
+		if person not in volunteers:
+			D('person {0} not in volunteers for email {1}'.format(person, email))
+			return jsonify(status='FAIL', msg='one or more persons not reachable')
+		for shift in shifts:
+			if shift not in all_shifts:
+				D('shift {0} not known for email {1}'.format(shift, email))
+				return jsonify(status='FAIL', msg='unknown shift referenced')
+			D("substracting from shft {0}".format(shift))
+			all_shifts[shift]['people_present'] += 1
+			D(all_shifts[1])
+			if (all_shifts[shift]['people_needed'] - all_shifts[shift]['people_present']) < 0:
+				D('overcommited on shift {0} by email {1}'.format(shift, email))
+				return jsonify(status='FAIL', msg='overcommited on shift')
+
+	D("post {0}".format(all_shifts[1]))
+	for person in volunteers:
+		if person not in updates or len(updates[person]) < app.config['VOLUNTEERING_MIN_SHIFTS']:
+			D('undercommited for person {0} by email {1}'.format(person, email))
+			return jsonify(status='FAIL', msg='not enough shifts entered')
+
+	model.set_volunteering_schedule(g.db_cursor, updates)
+
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+
+	mail_schedule = {}
+	for person, shifts in updates.iteritems():
+		name = volunteers[person]['name']
+		mail_schedule[name] = []
+		for s in sorted(shifts):
+			mail_schedule[name].append((when[all_shifts[s]['time_id']]['name'], what[all_shifts[s]['post_id']]['name']))
+
+	schedule_html = '<ul style="padding: 0; Margin: 0;">'
+	schedule_text = ''
+	for person in mail_schedule:
+		schedule_html += '<li style="Margin: 0;">{0}:<ul>'.format(person)
+		schedule_text += '* {0}:\n'.format(person)
+		for e in mail_schedule[person]:
+			when, what = e
+			schedule_html += '    <li>{0}: {1}</li>'.format(when, what)
+			schedule_text += '\t- {0}: {1}\n'.format(when, what)
+		schedule_html += '</ul></li>'
+	schedule_html += '</ul>'
+
+	mail_data = {
+		'email' : email,
+		'schedule_html' : schedule_html,
+		'schedule_text' : schedule_text,
+	}
+	if email[-len('.notreal'):] != '.notreal':
+		mail.send_mail(
+			from_addr=app.config['MAIL_MY_ADDR'],
+			to_addrs=[ email, app.config['MAIL_CC_ADDR'] ],
+			subject=texts['MAIL_VOLUNTEERING_SCHEDULE_SUBJECT'],
+			msg_html=texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'].format(**mail_data),
+			msg_text=texts['MAIL_VOLUNTEERING_SCHEDULE_TEXT'].format(**mail_data))
+		model.purchase_history_append(g.db_cursor, purchase['id'], msg='mailed volunteering-schedule-updated to {0}'.format(email))
+		mail.send_notif("updated volunteering schedule: {0}".format(email))
+
+	g.db_commit = True
+	return jsonify(status='OK')
+
+@app.route("/api/get_volunteering_data/<nonce>", methods=[ 'GET' ])
+def api_get_volunteering_data(nonce):
+	purchase = model.purchase_get(g.db_cursor, nonce=nonce)
+	if not purchase:
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+	email = purchase['email']
+	when = model.get_volunteering_times(g.db_cursor)
+	what = model.get_volunteering_posts(g.db_cursor)
+	sched = model.get_volunteering_schedule(g.db_cursor)
+	volunteers_all = model.get_volunteers(g.db_cursor)
+	volunteers_mine = model.get_volunteers(g.db_cursor, email_filter=email)
+	volunteers = {
+		'all' : volunteers_all,
+		'mine' : volunteers_mine.keys()
+	}
+
+	if not len(volunteers_mine):
+		return json.dumps({ 'status' : 'FAIL', 'msg' : 'Onbekend email of email zonder volunteer-tickets :-('})
+
+	def anonymize(name):
+		t = name.strip().split(' ')
+		if len(t) > 1:
+			return "{0} {1}".format(t[0], ''.join([ i[0] for i in t[1:] ]))
+		else:
+			return name
+	for v in volunteers_all:
+		if v not in volunteers_mine:
+			volunteers_all[v]['name'] = anonymize(volunteers_all[v]['name'])
+			del volunteers_all[v]['email']
+
+	return json.dumps({ 'status': 'OK',
+		'times' : when,
+		'posts' : what,
+		'sched' : sched,
+		'volunteers' : volunteers,
+	})
+
+class VolunteersLaunchForm(Form):
+	"""
+	takes an email, launch to correct volunteering page
+	"""
+	email = EmailField('Email address', validators=[
+		validators.Email(message="Really an email?"),
+		])
+
+@app.route("/volunteers", methods=[ 'GET', 'POST' ])
+def volunteers_launch():
+	form = VolunteersLaunchForm()
+	if form.validate_on_submit():
+		purchase = model.purchase_get(g.db_cursor, email=form.email.data)
+		if purchase:
+			return redirect(url_for('volunteers', nonce=purchase['nonce']))
+	if request.method == 'POST':
+		return render_template('volunteers_launchpad.html', form=form, badentry=True)
+	return render_template('volunteers_launchpad.html', form=form)
+
+@app.route("/volunteers/<nonce>")
+def volunteers(nonce=None):
+	return render_template('volunteers.html', page_opts={ 'shift' : True})
