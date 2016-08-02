@@ -257,6 +257,7 @@ def purchase_get(cursor, nonce=None, id=None, email=None):
 def purchase_items_get(cursor, id):
 	q = """
 		select
+			pr.name as product_name,
 			pr.display as product,
 			pr.billable as billable,
 			pui.n as n,
