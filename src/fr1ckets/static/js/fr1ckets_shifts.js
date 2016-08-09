@@ -213,9 +213,23 @@ function schedule_render()
 		return fh;
 	}
 
+	var times_names = new Array();
 	for (var t in times) {
+		times_names.push(times[t]['index']);
+	}
+	var cmp = function(a, b) {
+		return a - b;
+	}
+	times_names.sort(cmp);
+
+	for (var t_name in times_names) {
+		var t = undefined;
+		for (var t_find in times) {
+			if (times_names[t_name] == times[t_find]['index']) {
+				t = t_find;
+			}
+		}
 		if (times[t]['day'] != prev_day) {
-			console.log("prev="+prev_day+" new="+times[t]['day']);
 			f += header(times[t]['day']);
 			prev_day = times[t]['day'];
 		}

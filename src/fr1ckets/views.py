@@ -666,7 +666,7 @@ def volunteering():
 
 	return render_template('volunteers_admin.html', page_opts={ 'internal' : True},
 		volunteers=volunteers, sched=sched, purchases=purchases, when=when,
-		what=what, volunteer_purchases=volunteer_purchases, 
+		what=what, volunteer_purchases=volunteer_purchases,
 		volunteer_tickets=volunteer_tickets, shifts=shifts, slots=slots)
 
 @app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])

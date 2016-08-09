@@ -618,7 +618,8 @@ def get_volunteering_times(cursor):
 		select
 			id,
 			description as name,
-			day as day
+			day as day,
+			logical_index as `index`
 		from
 			shift_time
 		order by id;
@@ -626,7 +627,7 @@ def get_volunteering_times(cursor):
 
 	cursor.execute(q)
 	for r in cursor.fetchall():
-		out[r['id']] = { 'name' : r['name'], 'day' : r['day'] }
+		out[r['id']] = { 'name' : r['name'], 'day' : r['day'], 'index' : r['index'] }
 	return out
 
 def get_volunteering_posts(cursor):
