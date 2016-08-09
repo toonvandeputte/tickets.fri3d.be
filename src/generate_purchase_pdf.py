@@ -30,9 +30,19 @@ t = """
 		bottom: 2cm;
 		margin-left: 1cm;
 		margin-right: 1cm;
-		height: 1cm;
+		height: 2cm;
 	}
-	
+}
+table, th, td {
+	border-bottom: 1px solid #ddd;
+	padding-top: 5px;
+	font-size: 115%%;
+}
+.halign {
+	text-align: center;
+}
+.header {
+	font-style: italic;
 }
 </style>
 <body>
@@ -42,71 +52,85 @@ t = """
 """
 
 def mk_page(email, d, volunteering):
-	print email
 	o = """
-			<div vertical-align="1">
-				<h2>Welkom op Fri3dcamp, %(email)s!</h2>
-				<p>Dit is een overzicht van je bestelling.</p>
-				<p>Mocht de inhoud van de totebag niet kloppen, kom even langs de infodesk.</p>
+			<div style="text-align: center; font-size: 275%%">
+				<h1><b>%(email)s %(npers)sp</b></h1>
+			</div>
+			<div class="halign">
+				<h1>Welkom op Fri3dcamp!</h1>
+				<h3>Dit is een overzicht van je bestelling.</h3>
 			</div>
 			%(tickets)s
+			<br>
 			%(others)s
+			<br>
 			%(vol)s
+			<br>
+			<div class="footer">
+			<p>Nuttige tips:</p>
+			<ul>
+			<li>De openingsceremonie neemt <b>zaterdag</b> om <b>11:00</b> plaats.</li>
+			<li>De officiele communicatiebron is de <b>infodesk</b>. Daarnaast zitten al vele kampeerders op onze <b>Slack</b>, je kan jezelf toevoegen en meepraten op <u>http://slack.fri3d.be/</u>.</li>
+			<li>Je kan <b>vrijdag</b> en <b>zaterdag</b> tot <b>15:00</b> brood en croissants bestellen aan de <b>infodesk</b>. Je kan je bestelling de volgende ochtend om  <b>9:00</b> ophalen aan de infodesk.</li>
+			<li>Vragen? Kijk even in de FAQ <u>http://fri3d.be/faq</u>, of kom langs de infodesk!</li>
+			</ul>
+			</div>
 			<div><pdf:nextpage /></div>
 		"""
 	tickets = [ p for p in d if 'ticket' in p['product'] ]
 	others = [ p for p in d if 'ticket' not in p['product'] ]
 	volunteers = [ p for p in tickets if p['person_id'] in volunteering ]
 
-	print volunteers
 	if len(volunteers):
 		vol_html = """
-		<div>
+		<div id="volunteering">
 			<p><b>Volunteering</b>:</p>
 			<table>
-				<tr>
+				<tr class="header">
 					<td>Naam</td>
 					<td>Wanneer</td>
 					<td>Wat</td>
 				</tr>"""
 		for v in volunteers:
 			i = v['person_id']
-			vol_html += """
-				<tr>
-					<td>{0}</td>
-					<td>{1}</td>
-					<td>{2}</td>
-				</tr>""".format(v['name'], volunteering[i]['when']['name'], volunteering[i]['what']['name'])
+			for e in volunteering[i]:
+				vol_html += """
+					<tr>
+						<td>{0}</td>
+						<td>{1}</td>
+						<td>{2}</td>
+					</tr>""".format(v['name'], e['when']['name'], e['what']['name'])
 		vol_html += "</table></div>"
 	else:
 		vol_html = ""
 
 	tickets_html = """
-	<div>
+	<div id="tickets">
 		<p><b>Tickets</b>:</p>
 		<table>
-			<tr>
+			<tr class="header">
 				<td>Naam</td>
 				<td>Ticket</td>
 				<td>Volunteer</td>
 				<td>Volunteer opkuis</td>
 			</tr>"""
 	for t in tickets:
-		print t
 		tickets_html += """
 			<tr>
 				<td>{0}</td>
 				<td>{1}</td>
 				<td>{2}</td>
 				<td>{3}</td>
-			</tr>""".format(t['name'], t['what'], t['volunteer_during'], t['volunteer_after'])
+			</tr>""".format(t['name'], t['what'],
+				"ja" if t['volunteer_during'] else "", 
+				"ja" if t['volunteer_after'] else "")
 	tickets_html += "</table></div>"
 	if len(others):
 		others_html = """
-		<div>
+		<div id="andere">
 			<p><b>Andere</b>:</p>
 			<table>
-				<tr>
+				<tr class="header">
 					<td>Item</td>
 					<td>Aantal</td>
 				</tr>"""
@@ -122,6 +146,7 @@ def mk_page(email, d, volunteering):
 
 	return o % {
 		'email' : str(email),
+		'npers' : len(tickets),
 		'tickets' : tickets_html,
 		'others' : others_html,
 		'vol' : vol_html,
@@ -138,14 +163,18 @@ with app.app_context():
 		for post in sched[time]:
 			s = sched[time][post]
 			for person in s['people_list']:
-				sched_by_person[person] = { 'when' : when[time], 'what' : what[post] }
+				if person not in sched_by_person:
+					sched_by_person[person] = []
+				sched_by_person[person].append({ 'when' : when[time], 'what' : what[post] })
 
-	print sched_by_person
 	entries = []
-	for email in purchases_all.keys()[:20]:
+	for email in sorted([ str(e) for e in purchases_all.keys()], key=str.lower):
+		for p in purchases_all[email]:
+			for k, v in p.iteritems():
+				if type(v) in [ unicode, str ]:
+					p[k] = v.encode('ascii', 'replace')
 		entries.append(mk_page(email, purchases_all[email], sched_by_person))
-	pdf = pisa.CreatePDF(t % { 'entries' : "".join(entries) }, file('ok.pdf', 'wb'))
-	pprint.pprint(t % { 'entries' : ''.join(entries) })
+	pdf = pisa.CreatePDF(t % { 'entries' : "".join(entries) }, file('purchases.pdf', 'wb'))
 	g.db_commit = True
 	setup.wrapup_db(None)
 

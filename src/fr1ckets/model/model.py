@@ -431,7 +431,10 @@ def purchases_get_all(cursor, strip_removed=True, strip_queued=True):
 			pui.id as person_id,
 			pui.person_name as name,
 			pui.person_dob as dob,
-			pui.person_volunteers_during as volunteer_during,
+			(case
+				when pui.person_dob <= %(cutoff)s
+				then pui.person_volunteers_during
+				else 0 end) as volunteer_during,
 			pui.person_volunteers_after as volunteer_after,
 			pui.person_food_vegitarian as veggy,
 			pui.n as n,
@@ -446,6 +449,9 @@ def purchases_get_all(cursor, strip_removed=True, strip_queued=True):
 		order by
 				pu.id, pr.id;
 		"""
+	qa = {
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
 	opt = []
 	if strip_removed:
 		opt.append(" pu.removed = 0 ")
@@ -454,7 +460,7 @@ def purchases_get_all(cursor, strip_removed=True, strip_queued=True):
 
 	emails = {}
 
-	cursor.execute(q.format(" AND ".join(opt)))
+	cursor.execute(q.format(" AND ".join(opt)), qa)
 
 	for r in cursor.fetchall():
 		if r['email'] not in emails:
