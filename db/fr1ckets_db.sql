@@ -42,8 +42,13 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'tshirt_kid_m', 'kinderen 7-8 jaar tshirt', 20, 20, '', 0),
 	( 'tshirt_kid_l', 'kinderen 9-11 jaar tshirt', 20, 20, '', 0),
 	( 'tshirt_kid_xl', 'kinderen 12-14 jaar tshirt', 20, 20, '', 0),
-	( 'token',           'dranktoken',                    1.5, 1.5, '', 0);
-	
+	( 'token',           'dranktoken',                    1.5, 1.5, '', 0),
+	( 'ticket_vip_all', 'VIP ticket voor alle dagen', 0, 0, '1900-01-01 00:00:00', 0),
+	( 'ticket_vip_friday', 'VIP ticket voor vrijdag', 0, 0, '1900-01-01 00:00:00', 0),
+	( 'ticket_vip_saturday', 'VIP ticket voor zaterdag', 0, 0, '1900-01-01 00:00:00', 0),
+	( 'ticket_vip_sunday', 'VIP ticket voor zondag', 0, 0, '1900-01-01 00:00:00', 0),
+	( 'ticket_vip_monday', 'VIP ticket voor maandag', 0, 0, '1900-01-01 00:00:00', 0);
+
 drop table if exists reservation;
 create table reservation (
 	id integer auto_increment not null,

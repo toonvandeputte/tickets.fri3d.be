@@ -257,6 +257,7 @@ def purchase_get(cursor, nonce=None, id=None, email=None):
 def purchase_items_get(cursor, id):
 	q = """
 		select
+			pr.name as product_name,
 			pr.display as product,
 			pr.billable as billable,
 			pui.n as n,
@@ -422,6 +423,52 @@ def get_prices(cursor):
 	cursor.execute(q)
 	return cursor.fetchall()
 
+def purchases_get_all(cursor, strip_removed=True, strip_queued=True):
+	q = """
+		select
+			pu.id as id,
+			pu.email as email,
+			pui.id as person_id,
+			pui.person_name as name,
+			pui.person_dob as dob,
+			(case
+				when pui.person_dob <= %(cutoff)s
+				then pui.person_volunteers_during
+				else 0 end) as volunteer_during,
+			pui.person_volunteers_after as volunteer_after,
+			pui.person_food_vegitarian as veggy,
+			pui.n as n,
+			pr.display as what,
+			pr.name as product
+		from
+			purchase pu
+			inner join purchase_items pui on pu.id = pui.purchase_id
+			inner join product pr on pui.product_id = pr.id
+		where
+			{0}
+		order by
+				pu.id, pr.id;
+		"""
+	qa = {
+		'cutoff' : app.config['VOLUNTEERING_CUTOFF_DATE'],
+	}
+	opt = []
+	if strip_removed:
+		opt.append(" pu.removed = 0 ")
+	if strip_queued:
+		opt.append(" pu.queued = 0 ")
+
+	emails = {}
+
+	cursor.execute(q.format(" AND ".join(opt)), qa)
+
+	for r in cursor.fetchall():
+		if r['email'] not in emails:
+			emails[r['email']] = []
+		emails[r['email']].append(dict(r))
+
+	return emails
+
 def get_purchases(cursor, strip_removed=False):
 	"""
 	get total overview of all purchases in the system, including all types
@@ -577,7 +624,8 @@ def get_volunteering_times(cursor):
 		select
 			id,
 			description as name,
-			day as day
+			day as day,
+			logical_index as `index`
 		from
 			shift_time
 		order by id;
@@ -585,7 +633,7 @@ def get_volunteering_times(cursor):
 
 	cursor.execute(q)
 	for r in cursor.fetchall():
-		out[r['id']] = { 'name' : r['name'], 'day' : r['day'] }
+		out[r['id']] = { 'name' : r['name'], 'day' : r['day'], 'index' : r['index'] }
 	return out
 
 def get_volunteering_posts(cursor):
@@ -796,7 +844,7 @@ def get_volunteer_purchases(cursor):
 	q = """
 		select
 			pu.email as email,
-			count(distinct sv.shift_id) as shifts_booked,
+			count(sv.shift_id) as shifts_booked,
 			count(distinct pui.id) as n_volunteers
 		from
 			purchase pu

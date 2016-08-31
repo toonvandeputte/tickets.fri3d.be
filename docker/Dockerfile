@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:jessie-backports
 
 RUN apt-get -y update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y	\
@@ -17,6 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y	\
 	nginx-full			\
 	supervisor			\
 	python-requests		\
+	python-pisa			\
 	make
 
 EXPOSE 8080

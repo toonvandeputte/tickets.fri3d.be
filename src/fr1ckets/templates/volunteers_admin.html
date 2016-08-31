@@ -4,6 +4,12 @@
 <div class="container-fluid">
 
 <div class="col-md-4 col-xs-12">
+	<ul>
+		<li>Er zijn {{ shifts['total'] }} shiften waarvan {{ shifts['total'] - shifts['complete'] }} nog niet volledig.</li>
+		<li>Er zijn {{ slots['total'] }} slots waarvan {{ slots['total'] - slots['complete'] }} leeg.</li>
+		<li>Er zijn {{ volunteer_tickets['total'] }} volunteers waarvan {{ volunteer_tickets['total'] - volunteer_tickets['complete'] }} nog niet ingevuld.</li>
+		<li>Er zijn {{ volunteer_purchases['total'] }} aankopen met volunteering tickets, waarvan {{ volunteer_purchases['total'] - volunteer_purchases['complete'] }} nog niet ingevuld.</li>
+	</ul>
 	<table class="table table-hover table-condensed">
 		<caption>Ticketholders met volunteering tickets.</caption>
 		<thead>

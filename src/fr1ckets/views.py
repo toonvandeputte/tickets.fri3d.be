@@ -636,9 +636,38 @@ def volunteering():
 	volunteers = model.get_volunteers(g.db_cursor)
 	sched = model.get_volunteering_schedule(g.db_cursor)
 	purchases = model.get_volunteer_purchases(g.db_cursor)
+
+	shifts = {
+		'total' : 0,
+		'complete' : 0,
+	}
+	slots = {
+		'total' : 0,
+		'complete' : 0
+	}
+	for t in sched:
+		for p in sched[t]:
+			s = sched[t][p]
+			shifts['total'] += 1
+			if s['people_present'] >= s['people_needed']:
+				shifts['complete'] += 1
+
+			slots['total'] += s['people_needed']
+			slots['complete'] += s['people_present']
+
+	volunteer_purchases = { 'total' : 0, 'complete' : 0 }
+	volunteer_tickets = { 'total' : 0, 'complete' : 0 }
+	for p in purchases:
+		volunteer_tickets['total'] += p['n_volunteers']
+		volunteer_purchases['total'] += 1
+		if p['n_volunteers'] <= p['shifts_booked']:
+			volunteer_purchases['complete'] += 1
+			volunteer_tickets['complete'] += p['n_volunteers']
+
 	return render_template('volunteers_admin.html', page_opts={ 'internal' : True},
 		volunteers=volunteers, sched=sched, purchases=purchases, when=when,
-		what=what)
+		what=what, volunteer_purchases=volunteer_purchases,
+		volunteer_tickets=volunteer_tickets, shifts=shifts, slots=slots)
 
 @app.route('/admin/api/purchase_mark_paid/<int:purchase_id>/<int:paid>', methods=[ 'GET' ])
 @req_auth_admin
