@@ -474,8 +474,8 @@ function mk_cb_update_visitor_options(index) {
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 16 augustus 2016 helpen opruimen. Pizza en karma voorzien!">';
-			f += '      Helpt opkuisen op 16 augustus';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Pizza en karma voorzien!">';
+			f += '      Helpt opkuisen op 21 augustus';
 			f += '    </label>';
 			f += '  </div>';
 		}

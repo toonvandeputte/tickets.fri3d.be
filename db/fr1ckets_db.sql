@@ -19,10 +19,10 @@ create table product (
 );
 
 insert into product (name, display, price, volunteering_price, max_dob, billable) values
-	( 'ticket_3bit',     '3bit 0-3 jaar',                  8, 8, '2013-08-15 02:00:00', 0),
-	( 'ticket_4bit',     '4bit 3-6 jaar',                  16, 16, '2010-08-15 02:00:00', 0),
-	( 'ticket_5bit',     '5bit 6-12 jaar',                 32, 32, '2004-08-15 02:00:00', 0),
-	( 'ticket_6bit',     '6bit 12-24 jaar',                64, 56, '1992-08-15 02:00:00', 0),
+	( 'ticket_3bit',     '3bit 0-3 jaar',                  8, 8, '2015-08-18 02:00:00', 0),
+	( 'ticket_4bit',     '4bit 3-6 jaar',                  16, 16, '2012-08-18 02:00:00', 0),
+	( 'ticket_5bit',     '5bit 6-12 jaar',                 32, 32, '2006-08-18 02:00:00', 0),
+	( 'ticket_6bit',     '6bit 12-24 jaar',                64, 56, '1994-08-18 02:00:00', 0),
 	( 'ticket_7bit',     '7bit +24 jaar',                  128, 112, '1900-01-01 00:00:00', 0),
 	( 'ticket_8bit',     '8bit zakelijk',                  309.76, 309.76, '1900-01-01 00:00:00', 1),
 	( 'tshirt_adult_m_xs',  'volwassenen mannen tshirt XS',       20, 20, '', 0),
@@ -63,7 +63,7 @@ create table reservation (
 );
 
 insert into reservation (email, discount, available_from) values
-	('default',           0,  '2016-06-01 19:00:00.000000');
+	('default',           0,  '2018-06-01 19:00:00.000000');
 
 drop table if exists purchase;
 create table purchase (
