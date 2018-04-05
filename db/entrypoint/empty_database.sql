@@ -1,10 +1,5 @@
--- drop user 'fr1ckets'@'localhost';
-create user 'fr1ckets'@'localhost' identified by 'flotilla';
-grant all on fr1ckets.* to 'fr1ckets'@'localhost';
-
-drop database if exists fr1ckets;
-create database fr1ckets;
-use fr1ckets;
+CREATE SCHEMA IF NOT EXISTS `fr1ckets` DEFAULT CHARACTER SET utf8mb4;
+USE `fr1ckets`;
 
 drop table if exists product;
 create table product (
@@ -25,24 +20,24 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'ticket_6bit',     '6bit 12-24 jaar',                64, 56, '1994-08-18 02:00:00', 0),
 	( 'ticket_7bit',     '7bit +24 jaar',                  128, 112, '1900-01-01 00:00:00', 0),
 	( 'ticket_8bit',     '8bit zakelijk',                  309.76, 309.76, '1900-01-01 00:00:00', 1),
-	( 'tshirt_adult_m_xs',  'volwassenen mannen tshirt XS',       20, 20, '', 0),
-	( 'tshirt_adult_m_s',  'volwassenen mannen tshirt S',       20, 20, '', 0),
-	( 'tshirt_adult_m_m',  'volwassenen mannen tshirt M',      20, 20, '', 0),
-	( 'tshirt_adult_m_l',  'volwassenen mannen tshirt L',       20, 20, '', 0),
-	( 'tshirt_adult_m_xl', 'volwassenen mannen tshirt XL', 20, 20, '', 0),
-	( 'tshirt_adult_m_xxl', 'volwassenen mannen tshirt XXL', 20, 20, '', 0),
-	( 'tshirt_adult_f_xs',  'volwassenen vrouwen tshirt XS',       20, 20, '', 0),
-	( 'tshirt_adult_f_s',  'volwassenen vrouwen tshirt S',       20, 20, '', 0),
-	( 'tshirt_adult_f_m',  'volwassenen vrouwen tshirt M',      20, 20, '', 0),
-	( 'tshirt_adult_f_l',  'volwassenen vrouwen tshirt L',       20, 20, '', 0),
-	( 'tshirt_adult_f_xl', 'volwassenen vrouwen tshirt XL', 20, 20, '', 0),
-	( 'tshirt_adult_f_xxl', 'volwassenen vrouwen tshirt XXL', 20, 20, '', 0),
-	( 'tshirt_kid_xs', 'kinderen 3-4 jaar tshirt', 20, 20, '', 0),
-	( 'tshirt_kid_s', 'kinderen 5-6 jaar tshirt', 20, 20, '', 0),
-	( 'tshirt_kid_m', 'kinderen 7-8 jaar tshirt', 20, 20, '', 0),
-	( 'tshirt_kid_l', 'kinderen 9-11 jaar tshirt', 20, 20, '', 0),
-	( 'tshirt_kid_xl', 'kinderen 12-14 jaar tshirt', 20, 20, '', 0),
-	( 'token',           'dranktoken',                    1.5, 1.5, '', 0),
+	( 'tshirt_adult_m_xs',  'volwassenen mannen tshirt XS',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_m_s',  'volwassenen mannen tshirt S',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_m_m',  'volwassenen mannen tshirt M',      20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_m_l',  'volwassenen mannen tshirt L',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_m_xl', 'volwassenen mannen tshirt XL', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_m_xxl', 'volwassenen mannen tshirt XXL', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_xs',  'volwassenen vrouwen tshirt XS',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_s',  'volwassenen vrouwen tshirt S',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_m',  'volwassenen vrouwen tshirt M',      20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_l',  'volwassenen vrouwen tshirt L',       20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_xl', 'volwassenen vrouwen tshirt XL', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_adult_f_xxl', 'volwassenen vrouwen tshirt XXL', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_kid_xs', 'kinderen 3-4 jaar tshirt', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_kid_s', 'kinderen 5-6 jaar tshirt', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_kid_m', 'kinderen 7-8 jaar tshirt', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_kid_l', 'kinderen 9-11 jaar tshirt', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'tshirt_kid_xl', 'kinderen 12-14 jaar tshirt', 20, 20, '1900-01-01 00:00:00', 0),
+	( 'token',           'dranktoken',                    1.5, 1.5, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_all', 'VIP ticket voor alle dagen', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_friday', 'VIP ticket voor vrijdag', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_saturday', 'VIP ticket voor zaterdag', 0, 0, '1900-01-01 00:00:00', 0),
@@ -57,7 +52,7 @@ create table reservation (
 	available_from datetime not null,
 	claimed integer default 0,
 	claimed_at datetime default null,
-	comments text default null,
+	comments text,
 	primary key (id),
 	index reservation_email_index (email asc)
 );
@@ -82,10 +77,10 @@ create table purchase (
 	paid_at datetime default null,
 	billed_at datetime default null,
 	dequeued_at datetime default null,
-	comments text default '',
-	business_name text default '',
-	business_address text default '',
-	business_vat text default '',
+	comments text,
+	business_name text,
+	business_address text,
+	business_vat text,
 	primary key (id),
 	index purchase_nonce_index (nonce asc),
 	constraint purchase_reservation_id_fk foreign key (reservation_id) references reservation (id) on delete set null on update cascade
@@ -109,8 +104,8 @@ create table purchase_items (
 	purchase_id integer,
 	product_id integer,
 	n integer not null,
-	person_name text not null,
-	person_dob date not null,
+	person_name text null,
+	person_dob date null,
 	person_volunteers_during integer not null,
 	person_volunteers_after integer not null,
 	person_food_vegitarian integer not null,

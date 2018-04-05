@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from celery import Celery
 from celery.utils.log import get_task_logger
 
-app = Celery(broker='redis://localhost')
+app = Celery(broker='redis://queue')
 l = get_task_logger(__name__)
 
 @app.task(name='fr1ckets.background.tasks.mail', bind=True)

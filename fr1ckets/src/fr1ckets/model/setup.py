@@ -5,7 +5,8 @@ from fr1ckets import app
 
 @app.before_request
 def setup_db():
-	g.db_con = MySQLdb.connect(user=app.config['DB_USER'],
+	g.db_con = MySQLdb.connect(host=app.config['DB_HOST'],
+			user=app.config['DB_USER'],
 			passwd=app.config['DB_PASS'],
 			db=app.config['DB_NAME'],
 			cursorclass=MySQLdb.cursors.DictCursor,

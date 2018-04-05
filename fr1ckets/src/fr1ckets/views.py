@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4:sw=4:noexpandtab
 from flask import request, jsonify, render_template, redirect, url_for, g, Response, session
-from flask_wtf import Form
+from flask_wtf import FlaskForm as Form
 from wtforms import StringField, validators
 from wtforms import BooleanField, IntegerField, TextAreaField
 from wtforms.fields.html5 import EmailField, DateTimeField
@@ -170,8 +170,8 @@ def extract_products(cursor, form_general, form_tickets):
 			out.append({
 				'product_id' : k_t['id'],
 				'n' : n.data,
-				'person_name' : '',
-				'person_dob' : '',
+				'person_name' : None,
+				'person_dob' : None,
 				'person_volunteers_during' : False,
 				'person_volunteers_after' : False,
 				'person_food_vegitarian' : False,

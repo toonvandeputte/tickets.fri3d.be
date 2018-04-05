@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4:sw=4:noexpandtab
 from fr1ckets import app
-from fr1ckets.background.tasks import mail
-from fr1ckets.background.tasks import notif
+from celery import Celery
+
+celery_app = Celery(broker='redis://queue')
+
+mail = celery_app.signature('fr1ckets.background.tasks.mail')
+notif = celery_app.signature('fr1ckets.background.tasks.notif')
 
 def send_mail(from_addr, to_addrs, subject, msg_html, msg_text):
 	mail.delay(from_addr, to_addrs, subject, msg_html, msg_text,

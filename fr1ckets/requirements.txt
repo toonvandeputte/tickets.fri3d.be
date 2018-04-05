@@ -1,0 +1,7 @@
+gunicorn
+flask
+Flask-WTF
+mysqlclient
+requests
+celery
+redis

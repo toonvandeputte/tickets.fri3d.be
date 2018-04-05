@@ -1,0 +1,44 @@
+version: '3'
+services:
+    web:
+        image: nginx
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro
+            - ./web/cert.pem:/cert.pem:ro
+            - ./web/key.pem:/key.pem:ro
+            - ./web/certbot_challenge:/var/certbot_challenge:ro
+            - ./web/www:/var/www:ro
+        links:
+            - fr1ckets:fr1ckets
+    db:
+        image: mysql
+        volumes:
+            - ./db/contents:/var/lib/mysql
+            - ./db/backups:/backups
+            - ./db/entrypoint:/docker-entrypoint-initdb.d:ro
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        env_file:
+            - ./env
+    queue:
+        image: redis
+    fr1ckets:
+        build: ./fr1ckets
+        links:
+            - db:db
+            - queue:queue
+        env_file:
+            - ./env
+        volumes:
+            - ./fr1ckets/src:/src
+        command: python ./wsgi.py
+    worker:
+        build: ./worker
+        links:
+            - queue:queue
+        env_file:
+            - ./env
+        volumes:
+            - ./worker/src:/src

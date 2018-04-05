@@ -1,5 +1,8 @@
 # tickets.fri3d.be
-Ticket website for Fri3d Camp 2016
+
+**Pulling her to docker-compose, moving target till the dust settles.**
+
+Ticket website for Fri3d Camp 2018
 
 **This ships without a real config file, ask Jef for fr1ckets_priv.conf (there be SMTP creds).**
 
