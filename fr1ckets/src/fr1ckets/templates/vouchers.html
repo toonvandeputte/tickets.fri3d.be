@@ -1,0 +1,51 @@
+{% include "header.html" %}
+<!-- vim: set sw=2 ts=2: -->
+
+<div class="row">
+	<div class="col-sm-12">
+		<table class="table">
+			<thead>
+				<th>id</th>
+				<th>code</th>
+				<th>discount</th>
+				<th>can order from</th>
+				<th>claimed</th>
+				<th>claimed at</th>
+				<th>comments</th>
+				<th>edit</th>
+				<th>remove</th>
+			</thead>
+			<tbody>
+{% for voucher in vouchers %}
+			<tr>
+				<td>{{ voucher.id }}</td>
+				<td>{{ voucher.code }}</td>
+				<td>{{ voucher.discount }}</td>
+				<td>{{ voucher.available_from }}</td>
+				<td>{{ voucher.claimed }}</td>
+				<td>{{ voucher.claimed_at }}</td>
+				<td>{{ voucher.comments }}</td>
+				<td>
+					<a class="btn btn-default btn-sm" href="/admin/voucher_edit/{{ voucher.id }}">
+						edit
+					</a>
+				</td>
+{% if not voucher.claimed %}
+				<td>
+					<a class="btn btn-danger btn-sm" href="/admin/voucher_delete/{{ voucher.id }}">
+						delete
+					</a>
+				</td>
+{% else %}
+				<td>claimed!</td>
+{% endif %}
+			</tr>
+{% endfor %}
+		</table>
+		<div class="text-right">
+			<a class="btn btn-default" href="/admin/voucher_add">Add</a>
+		</div>
+	</div>
+</div>
+
+{% include "footer.html" %}

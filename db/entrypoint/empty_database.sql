@@ -60,10 +60,26 @@ create table reservation (
 insert into reservation (email, discount, available_from) values
 	('default',           0,  '2018-06-01 19:00:00.000000');
 
+drop table if exists voucher;
+create table voucher (
+	id integer auto_increment not null,
+	code varchar(128) not null unique,
+	discount integer default 0,
+	available_from datetime not null,
+	claimed integer default 0,
+	claimed_at datetime default null,
+	comments text,
+	primary key (id),
+	index voucher_code_index (code asc)
+);
+
+insert into voucher (code, discount, available_from) values
+	('default', 0, '2018-06-01 19:00:00.000000');
+
 drop table if exists purchase;
 create table purchase (
 	id integer auto_increment not null,
-	reservation_id integer,
+	voucher_id integer,
 	email varchar(128) not null,
 	nonce varchar(128) not null,
 	payment_code varchar(128) not null unique,
@@ -83,7 +99,7 @@ create table purchase (
 	business_vat text,
 	primary key (id),
 	index purchase_nonce_index (nonce asc),
-	constraint purchase_reservation_id_fk foreign key (reservation_id) references reservation (id) on delete set null on update cascade
+	constraint purchase_voucher_id_fk foreign key (voucher_id) references voucher (id) on delete set null on update cascade
 );
 
 drop table if exists purchase_history;

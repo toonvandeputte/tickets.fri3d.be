@@ -5,12 +5,11 @@
 <div class="row">
 	<form class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" action="{{ form_dest }}" method="POST">
 		{{ form.csrf_token }}
-		{{ field(form.email, reservation.email) }}
-		{{ field(form.discount, reservation.discount) }}
-		{{ field(form.available_from, reservation.available_from) }}
-		{{ field(form.claimed, reservation.claimed) }}
-		{{ field(form.claimed_at, reservation.claimed_at) }}
-		{{ field(form.comments, reservation.comments, rows=10) }}
+		{{ field(form.discount, voucher.discount) }}
+		{{ field(form.available_from, voucher.available_from) }}
+		{{ field(form.claimed, voucher.claimed) }}
+		{{ field(form.claimed_at, voucher.claimed_at) }}
+		{{ field(form.comments, voucher.comments, rows=10) }}
 		<div class="form-group text-right">
 			<button type="submit" class="btn btn-default">Save</button>
 		</div>
