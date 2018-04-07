@@ -597,7 +597,7 @@ def get_timeline_something(cursor, what):
 		where
 			pu.removed=0 and
 			pr.name like '{0}%'
-		group by pu.created_at
+		group by pu.created_at, pr.name
 		order by pu.created_at, pr.name asc;"""
 	cursor.execute(q.format(what))
 	return cursor.fetchall()

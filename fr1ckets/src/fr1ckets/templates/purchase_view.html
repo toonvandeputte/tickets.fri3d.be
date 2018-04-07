@@ -8,8 +8,8 @@
 		<table class="table table-striped table-condensed">
 			<tbody>
 				<tr><td>email</td><td>{{ purchase.email }}</td></tr>
-				<tr><td>reservation</td><td>{{ reservation.email }}</td></tr>
-				<tr><td>payement</td><td>{{ purchase.payment_code }}</td></tr>
+				<tr><td>voucher</td><td>{{ voucher.code }}</td></tr>
+				<tr><td>payment</td><td>{{ purchase.payment_code }}</td></tr>
 				<tr><td>bought at</td><td>{{ purchase.created_at }}</td></tr>
 {% if n_billables %}
 				<tr><td>billable</td><td><b>YES</b></td></tr>
@@ -52,7 +52,7 @@
 					<td>{{ i.price_total }}</td>
 				</tr>
 {% endfor %}
-{% if reservation.discount %}
+{% if voucher.discount %}
 				<tr>
 					<td><b>DISCOUNT</b></td>
 					<td></td>
@@ -62,7 +62,7 @@
 					<td></td>
 					<td></td>
 					<td></td>
-					<td>-{{ reservation.discount }}</td>
+					<td>-{{ voucher.discount }}</td>
 				</tr>
 {% endif %}
 {% if n_billables %}
