@@ -101,7 +101,7 @@ create table purchase (
 	business_vat text,
 	primary key (id),
 	index purchase_nonce_index (nonce asc),
-	constraint purchase_voucher_id_fk foreign key (voucher_id) references voucher (id) on delete set null on update cascade
+	constraint purchase_voucher_id_fk foreign key (voucher_id) references voucher (id) on delete restrict on update cascade
 );
 
 drop table if exists purchase_history;

@@ -103,7 +103,8 @@ def voucher_delete(cursor, id):
 		delete from
 			voucher
 		where
-			id=%(id)s;
+			id=%(id)s
+			AND code != 'default';
 		"""
 	cursor.execute(q, { 'id' : id })
 

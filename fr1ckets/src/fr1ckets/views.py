@@ -439,11 +439,10 @@ def voucher_delete(id):
 	delete a voucher based on id
 	"""
 	model.voucher_delete(g.db_cursor, id=id)
-	model.purchase_history_append(g.db_cursor, id, msg='marked as removed')
 	g.db_commit = True
 	return redirect(url_for('vouchers'))
 
-class ReservationForm(Form):
+class VoucherForm(Form):
 	"""
 	voucher manipulation form
 	"""
@@ -451,7 +450,7 @@ class ReservationForm(Form):
 		validators.NumberRange(message='Not a number!', min=0),
 		])
 	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
-		validators.Required('Needed field.'),
+		validators.Required('Had trouble parsing this date.'),
 		])
 	claimed = BooleanField('Has been claimed')
 	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
@@ -467,7 +466,7 @@ def voucher_edit(id):
 	"""
 	overwrite voucher by id
 	"""
-	form = ReservationForm()
+	form = VoucherForm()
 	if form.validate_on_submit():
 		# form validated, pack and save
 		changeset = {
@@ -498,7 +497,7 @@ def voucher_add():
 	"""
 	add a voucher
 	"""
-	form = ReservationForm()
+	form = VoucherForm()
 	if form.validate_on_submit():
 		# form validated, pack and save
 		changeset = {
