@@ -15,6 +15,13 @@ def random_string(length=32):
 			for _ in range(length)
 		])
 
+def random_voucher(length=10):
+	return ''.join(
+		[ random.SystemRandom().choice(string.ascii_uppercase)
+			for _ in range(length)
+		])
+
+
 def voucher_find(cursor, code):
 	"""
 	find any unclaimed voucher with this code, if none is found we return
@@ -138,7 +145,7 @@ def voucher_create(cursor, values):
 			%(comments)s
 		);
 		"""
-	code = random_string(8)
+	code = random_voucher()
 	qd = copy.deepcopy(values)
 	qd['code'] = code
 	cursor.execute(q, qd)
