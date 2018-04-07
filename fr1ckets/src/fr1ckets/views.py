@@ -86,6 +86,10 @@ class TicketForm(Form):
 		validators.NumberRange(min=0, max=100),
 		])
 
+	badge_robot_parts = IntegerField('badge_robot_parts', validators=[
+		validators.NumberRange(min=0, max=20),
+		])
+
 	for tshirt in generate_tshirt_names():
 		vars()[tshirt] = IntegerField(tshirt, validators=[
 			validators.NumberRange(min=0, max=10),
@@ -112,6 +116,9 @@ class BusinessForm(Form):
 def make_form_individual_tickets(n_tickets):
 	class IndividualTicketForm(Form):
 		pass
+
+	if n_tickets:
+		setattr(IndividualTicketForm, 'bringing_camper', BooleanField('bringing_camper'))
 
 	for i in range(n_tickets):
 		fmt = "tickets_{0}".format(i)
@@ -152,12 +159,21 @@ def extract_billing_info(form_tickets):
 
 	return out
 
+def extract_general_ticket_info(form_tickets):
+	out = {}
+
+	field = getattr(form_tickets, 'bringing_camper', None)
+	out['bringing_camper'] = field.data if field else False
+
+	return out
+
 def extract_products(cursor, form_general, form_tickets):
 
 	p = map(dict, model.products_get(cursor))
 	known_tickets = sorted([ t for t in p if 'ticket' in t['name'] ], key=lambda t: t['max_dob'], reverse=True)
 	known_tshirts = [ t for t in p if 'tshirt' in t['name'] ]
 	known_tokens = [ t for t in p if 'token' in t['name'] ]
+	known_badge_parts = [ t for t in p if 'badge' in t['name'] ]
 	seen_business_tickets = False
 	out = []
 
@@ -182,6 +198,7 @@ def extract_products(cursor, form_general, form_tickets):
 
 	out.extend(find_knowns(known_tshirts, form_general))
 	out.extend(find_knowns(known_tokens, form_general))
+	out.extend(find_knowns(known_badge_parts, form_general))
 
 	for i in range(n_tickets):
 		fmt = 'tickets_{0}'.format(i)
@@ -279,6 +296,7 @@ def ticket_register():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
+	print "products={0!r}".format(products)
 	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
@@ -290,10 +308,11 @@ def ticket_register():
 				message=u"De zakelijke details zijn niet volledig!")
 
 	billing_info = extract_billing_info(business_form)
+	general_ticket_info = extract_general_ticket_info(individual_form)
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
-	purchase = model.purchase_create(g.db_cursor, form.email.data, form.voucher_code.data, products, billing_info, queued)
+	purchase = model.purchase_create(g.db_cursor, form.email.data, form.voucher_code.data, products, billing_info, general_ticket_info, queued)
 
 	# get the prices back (includes voucher discounts, volunteering discounts, ...)
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
@@ -455,7 +474,7 @@ def voucher_edit(id):
 			'discount' : form.discount.data,
 			'available_from' : form.available_from.data,
 			'claimed' : bool(form.claimed.data),
-			'claimed_at' : form.claimed_at.data or '',
+			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
 		}
 		model.voucher_update(g.db_cursor, id, changeset)

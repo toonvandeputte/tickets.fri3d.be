@@ -144,6 +144,49 @@
 		</div>
 		<!-- END BUSINESS INFO -->
 
+		<!-- BADGE ROBOT PARTS -->
+		{% if 'badge_robot_parts' in selling_inhibited %}
+		<div class="row">
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+				<div class="well">
+					<p>Helaas is de verkoop van robot parts stopgezet, je kan nog wel andere zaken bestellen.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		<div class="row" {% if 'badge_robot_parts' in selling_inhibited %} hidden {% endif %}>
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2">
+				<div class="thumbnail">
+					<img src="/static/img/bade_robot_parts.jpg" class="img-rounded">
+					<div class="caption text-center">
+						<h3>Robot parts voor de badge</h3>
+						<p>Voor elke badge kan je ook de stukken bestellen om er een robot mee te maken!</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-12 col-sm-8 col-sm-offset-2">
+				<div class="form-group">
+					<label for="tshirt_kid_s" class="col-xs-4 col-sm-4 control-label">Robot parts</label>
+					<div class="col-xs-8 col-sm-6">
+						<select id="badge_robot_parts" name="badge_robot_parts" class="form-control">
+							<option value="0" selected>0</option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9">9</option>
+							<option value="10">10</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div> <!-- row -->
+		<!-- END BADGE ROBOT PARTS -->
+
 		{% if 'tshirts' in selling_inhibited %}
 		<div class="row">
 			<div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">

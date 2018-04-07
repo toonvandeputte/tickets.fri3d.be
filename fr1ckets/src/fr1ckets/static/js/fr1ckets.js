@@ -288,6 +288,8 @@ function enumerate_choices() {
 		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 		var ticket = find_ticket_by_dob(dob, billable);
+		if (!ticket)
+			continue;
 		var name = $('#' + name_src).val();
 		var volunteering_during = !Boolean($('#'+not_volunteering_src).prop('checked'))
 		var volunteering_after = Boolean($('#'+cleanup_src).prop('checked'));
@@ -602,6 +604,19 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="collapsible" id="'+options_id+'">';
 		f += '</div>';
 	}
+	f += '<hr/>';
+
+	f += '<div class="form-group">';
+	f += '  <div class="col-xs-12 col-sm-11 col-sm-offset-1">';
+	f += '    <div class="checkbox">';
+	f += '      <label>';
+	f += '        <input type="checkbox" id="bringing_camper" name="bringing_camper">';
+	f += '        Graag een plaatsje op de voorziene parking voor onze camper!';
+	f += '      </label>';
+	f += '    </div>';
+	f += '  </div>';
+	f += '</div>';
+
 	f += '<hr/>';
 
 	// push it into the DOM so we can hook event listeners on it

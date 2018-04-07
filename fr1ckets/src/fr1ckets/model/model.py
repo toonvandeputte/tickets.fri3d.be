@@ -164,7 +164,7 @@ def generate_payment_code(date):
 	total += check
 	return "{0:012d}".format(total)
 
-def purchase_create(cursor, email, voucher_code, products, billing_info, queued):
+def purchase_create(cursor, email, voucher_code, products, billing_info, general_ticket_info, queued):
 	"""
 	"""
 	now = datetime.datetime.utcnow()
@@ -180,9 +180,9 @@ def purchase_create(cursor, email, voucher_code, products, billing_info, queued)
 		insert into purchase (
 			email, nonce, voucher_id, created_at, queued,
 			business_name, business_address, business_vat,
-			payment_code)
+			payment_code, bringing_camper)
 		values
-			(%s, %s, %s, %s, %s, %s, %s, %s, %s);
+			(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
 		"""
 	n_tries = 20
 	while True:
@@ -194,7 +194,7 @@ def purchase_create(cursor, email, voucher_code, products, billing_info, queued)
 			payment_code = generate_payment_code(now)
 			cursor.execute(q, (email, nonce, voucher['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
-				payment_code))
+				payment_code, general_ticket_info['bringing_camper']))
 		except MySQLdb.IntegrityError as e:
 			n_tries -= 1
 			if n_tries == 0:
