@@ -274,16 +274,28 @@ def ticket_register():
 	# and build a validator accordingly
 	n_tickets = form.n_tickets.data
 
+	# check the reservation first
+	reservation = model.reservation_find(g.db_cursor, form.email.data)
+	print "found reservation: {0!r}".format(reservation)
+	if not reservation['available_from'] <= datetime.datetime.utcnow():
+		# not so fast
+		time_to_go = reservation['available_from'] - datetime.datetime.utcnow()
+		return jsonify(
+			status='FAIL',
+			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
+
 	# check the voucher first
 	print "voucher code={0}".format(form.voucher_code.data)
 	voucher = model.voucher_find(g.db_cursor, form.voucher_code.data)
 	print "found voucher: {0!r}".format(voucher)
+	"""
 	if not voucher['available_from'] <= datetime.datetime.utcnow():
 		# not so fast
 		time_to_go = voucher['available_from'] - datetime.datetime.utcnow()
 		return jsonify(
 			status='FAIL',
 			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(voucher['available_from'], int(time_to_go.total_seconds())))
+	"""
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
