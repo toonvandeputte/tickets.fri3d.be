@@ -1,3 +1,4 @@
 *.pyc
 *_priv.conf
 db/contents
+fr1ckets/src/fr1ckets/node_modules

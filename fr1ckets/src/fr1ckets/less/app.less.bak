@@ -1,0 +1,18 @@
+@import "params";
+
+.row-fri3dheader {
+    background-color: @clr-primary8;
+    background-image: url('../img/header_forest.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.row-fri3dheader .headerlogo {
+    margin-top:@margin*4;
+    margin-bottom:@margin*3;
+}
+
+.row-fri3dheader .headerlogo img {
+    max-width: 440px;
+}
