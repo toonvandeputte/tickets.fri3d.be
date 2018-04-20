@@ -1,0 +1,18 @@
+{
+  "name": "fri3d.be",
+  "version": "1.0.0",
+  "description": "Fri3d Camp 2018 site",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp-less": "^3.3.0",
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.0.4",
+    "gulp-less": "^3.3.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-watch": "^4.3.11"
+  }
+}

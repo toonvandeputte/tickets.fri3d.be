@@ -1,0 +1,239 @@
+@color-schedule1: #eae6a4;
+@color-schedule2: #c5f4c1;
+@color-schedule3: #ffeed7;
+@color-schedule4: fade(@brand-secondary-lighter, 80%);
+
+.bg-schedule1 {
+	background-color: @color-schedule1;
+	background-image: url('../images/patterns/white-wave.png');
+}
+.bg-schedule2 {
+	background-color: @color-schedule2;
+	background-image: url('../images/patterns/arches.png');
+}
+.bg-schedule3 {
+	background-color: @color-schedule3;
+	background-image: url('../images/patterns/circles.png');
+}
+.bg-schedule4 {
+	background-color: @color-schedule4;
+	background-image: url('../images/patterns/reticular-tissue.png');
+}
+
+.schedule-row-hour {
+	border-top:1px solid @gray-light;
+	height:7.69%;
+	width:100%;
+	box-sizing: border-box;
+}
+.schedule-row {
+	box-sizing: border-box;
+}
+.schedule-cols {
+	padding-left: 60px;
+}
+.schedule-day h2 {
+	padding-top: 40px;
+}
+.schedule-col {
+	position: relative;
+	height:1560px;
+	h2 {
+		margin-bottom: 30px;
+	}
+	&:first-child {
+		.schedule-timelabel {
+			display: block;
+		}
+	}
+	h3 {
+		font-size: @font-size-h4;
+		min-height: 30px;
+		@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+			font-size: @font-size-h6;
+			font-family: @font-family-base;
+			font-weight: bold;
+			min-height: 20px;
+			margin-bottom: 0;
+		}
+	}
+}
+.daysnav {
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid @gray-light;
+}
+.tracksnav li {
+	font-size: @font-size-small;
+}
+.schedule-halfhour {
+	border-top:1px dotted @gray-light;
+	height:50%;
+	box-sizing: border-box;
+	width:100%;
+	&:first-of-type {
+		border-top:none;
+	}
+}
+.schedule-timelabel {
+	height:1.923%;
+	margin-top: -10px;
+	background-color: white;
+	box-sizing: border-box;
+	width: 50px;
+	margin-left:-50px;
+	float:left;
+	clear: left;
+	@media (min-width: @screen-sm-min) {
+		display: none;
+	}
+}
+.schedule-items {
+	width:100%;
+	height:100%;
+	position: relative;
+	margin-top: 30px;
+}
+.schedule-hours {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+.schedule-item {
+	//border:1px solid @brand-secondary-light;
+	background-color: fade(@brand-secondary-lighter, 80%);
+	box-sizing: border-box;
+	width:100%;
+	position: absolute;
+	font-size:@font-size-small;
+	overflow: hidden;
+	line-height: 1.2;
+	&.well {
+		background-color:@gray-lighter;
+		width:auto;
+		position: relative;
+		.schedule-clickarea {
+			background: transparent;
+			padding:0;
+			border:none;
+		}
+	}
+	@media (max-width: @screen-sm-max) {
+		line-height: 1;
+	}
+	h4 {
+		font-size: @font-size-base;
+		@media (max-width: @screen-sm-max) {
+			font-family: @font-family-base;
+			font-weight: bold;
+			font-size: @font-size-small;
+		}
+		margin:0;
+		margin-bottom: 5px;
+		padding:0;
+	}
+	.schedule-clickarea {
+		background-color: fade(@brand-secondary-lighter, 80%);
+		padding:5px;
+		display: block;
+		height: 100%;
+		box-sizing: border-box;
+		width:100%;
+		border-top: 1px solid @brand-secondary;
+		border-bottom: 1px solid @brand-secondary-light;
+		color:@gray-darker;
+		background-repeat: repeat;
+		box-sizing: border-box;
+	}
+	&.overlap {
+		width:80%;
+		margin-left: 20%;
+		border-left: 1px solid;
+	}
+	&.overlap2 {
+		width:60%;
+		margin-left: 40%;
+		border-left: 1px solid;
+	}
+	&.orga {
+		border-color:darken(@color-schedule1,20%);
+		.schedule-clickarea {
+			border-color:darken(@color-schedule1,20%);
+			.bg-schedule1();
+		}
+	}
+ 	&.talk {
+		border-color:darken(@color-schedule2,20%);
+		.schedule-clickarea {
+			border-color:darken(@color-schedule2,20%);
+			.bg-schedule2();
+		}
+	}
+	&.workshop {
+		border-color:darken(@color-schedule3,20%);
+		.schedule-clickarea {
+			border-color:darken(@color-schedule3,20%);
+			.bg-schedule3();
+		}
+	}
+	&.kids {
+		border-color: darken(@color-schedule4,20%);
+		.schedule-clickarea {
+			border-color: darken(@color-schedule4,20%);
+			.bg-schedule4();
+		}
+	}
+}
+
+.legend {
+  margin-top: 20px;
+  span {
+  	font-size: @font-size-small;
+    padding: 5px;
+  }
+  .orga {
+	.bg-schedule1();
+  }
+  .talk {
+	.bg-schedule2();
+  }
+  .workshop {
+	.bg-schedule3();
+  }
+  .kids {
+	.bg-schedule4();
+  }
+}
+
+//popups
+
+.modal_close {
+	display: none;
+}
+
+.popups > article {
+    display: none;
+    background-color: white;
+    padding:15px;
+    width:100%;
+    max-width: @screen-sm-max;
+	position: relative;
+	h3 {
+		margin-top: 0;
+		padding-right: 20px;
+	}
+	.modal_close {
+		display: block;
+		position: absolute;
+		right:10px;
+		top:10px;
+		/*width:24px;
+		height:24px;*/
+		cursor:pointer;
+		.fa {
+			position:absolute;
+			left:0px;
+			top:0px;
+		}
+	}
+}
