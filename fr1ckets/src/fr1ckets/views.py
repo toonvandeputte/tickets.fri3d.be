@@ -76,7 +76,11 @@ class TicketForm(Form):
 		validators.Email(message="Really an email?"),
 		])
 
-	voucher_code = StringField('voucher_code', validators=[])
+	voucher_code_0 = StringField('voucher_code_0', validators=[])
+	voucher_code_1 = StringField('voucher_code_1', validators=[])
+	voucher_code_2 = StringField('voucher_code_2', validators=[])
+	voucher_code_3 = StringField('voucher_code_3', validators=[])
+	voucher_code_4 = StringField('voucher_code_4', validators=[])
 
 	n_tickets = IntegerField('n_tickets', validators=[
 		validators.NumberRange(min=0, max=20),
@@ -285,17 +289,13 @@ def ticket_register():
 			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
 
 	# check the voucher first
-	print "voucher code={0}".format(form.voucher_code.data)
-	voucher = model.voucher_find(g.db_cursor, form.voucher_code.data)
-	print "found voucher: {0!r}".format(voucher)
-	"""
-	if not voucher['available_from'] <= datetime.datetime.utcnow():
-		# not so fast
-		time_to_go = voucher['available_from'] - datetime.datetime.utcnow()
-		return jsonify(
-			status='FAIL',
-			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(voucher['available_from'], int(time_to_go.total_seconds())))
-	"""
+	voucher_codes = []
+	for i in range(5):
+		voucher_codes.append(getattr(form, "voucher_code_{0}".format(i)).data)
+	voucher_codes = filter(lambda x: len(x) > 0, voucher_codes)
+	print "voucher_codes={0}".format(voucher_codes)
+	#voucher = model.voucher_find(g.db_cursor, form.voucher_code_0.data)
+	#print "found voucher: {0!r}".format(voucher)
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
@@ -324,7 +324,7 @@ def ticket_register():
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
-	purchase = model.purchase_create(g.db_cursor, form.email.data, form.voucher_code.data, products, billing_info, general_ticket_info, queued)
+	purchase = model.purchase_create(g.db_cursor, form.email.data, voucher_codes, products, billing_info, general_ticket_info, queued)
 
 	# get the prices back (includes voucher discounts, volunteering discounts, ...)
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
@@ -865,6 +865,13 @@ def api_get_voucher(code):
 	return json.dumps({
 			'code' : r['code'],
 			'discount' : r['discount'],
+		})
+
+@app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
+@req_auth_public
+def api_get_reservation(email):
+	r = model.reservation_find(g.db_cursor, email)
+	return json.dumps({
 			'available_from' : r['available_from_unix'],
 		})
 

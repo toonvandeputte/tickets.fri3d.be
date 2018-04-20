@@ -56,32 +56,17 @@
 	<form action="api/tickets_register" method="POST" class="form-horizontal col-xs-12 col-sm-8 col-sm-offset-2" id="ticket_form">
 		{{ form.csrf_token }}
 
-		<!-- BEGIN VOUCHER -->
-		<div class="row"><div class="col-xs-12">nog niet gestyled ツ</div></div>
-		<div class="form-group">
-			<div class="col-xs-12 col-sm-11 col-sm-offset-1">
-				<div class="checkbox">
-					<label>
-						<input type="checkbox" id="have_voucher" name="have_voucher" class="filled-in">Ik heb een voucher.
-					</label>
-				</div>
-			</div>
-		</div>
-		<div class="collapsible" id="voucher">
-		</div>
-		<div class="row">
-			<div class="col-sm-offset-1 col-sm-10">
-				<div class="collapsable" id="voucher_message_collapse">
-				</div>
-			</div>
-		</div>
-		<!-- END VOUCHER -->
-
 		<!-- BEGIN EMAIL -->
 		<div class="form-group">
 			<label for="email" class="col-sm-3 control-label">Email</label>
 			<div class="col-sm-9">
 				<input class="form-control" id="email" name="email" type="email" required aria-required="true">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-offset-1 col-sm-10">
+				<div class="collapsable" id="reservation_message_collapse">
+				</div>
 			</div>
 		</div>
 		<!-- END EMAIL -->
@@ -560,6 +545,27 @@
 			</div>
 		</div>
 		<!-- END TOKENS -->
+
+		<!-- BEGIN VOUCHER -->
+		<div class="row"><div class="col-xs-12">nog niet gestyled ツ</div></div>
+		<div class="form-group">
+			<div class="col-xs-12 col-sm-11 col-sm-offset-1">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" id="have_voucher" name="have_voucher" class="filled-in">Ik heb één of meerdere vouchers.
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="collapsible" id="voucher">
+		</div>
+		<div class="row">
+			<div class="col-sm-offset-1 col-sm-10">
+				<div class="collapsable" id="reservation_message_collapse">
+				</div>
+			</div>
+		</div>
+		<!-- END VOUCHER -->
 
 		<!-- BLACK TONGUE OF MORDOR -->
 		<div class="form-group">

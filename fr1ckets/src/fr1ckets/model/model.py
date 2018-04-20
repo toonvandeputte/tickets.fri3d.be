@@ -34,8 +34,7 @@ def voucher_find(cursor, code):
 		select
 			id,
 			code,
-			discount,
-			unix_timestamp(available_from) as available_from_unix
+			discount
 		from
 			voucher
 		where
@@ -43,30 +42,35 @@ def voucher_find(cursor, code):
 			and claimed = 0;
 		"""
 	qd = { 'code' : code}
-	
+
 	cursor.execute(q, qd)
 	rs = cursor.fetchall()
 
-	if len(rs) != 1 and code != 'default':
-		return voucher_find(cursor, 'default')
+	return rs[0] if len(rs) > 0 else {
+		'id' : None,
+		'code' : 'none',
+		'discount' : 0,
+	}
 
-	return rs[0]
-
-def voucher_claim(cursor, code):
+def voucher_claim(cursor, code, purchase_id):
 	res = voucher_find(cursor, code)
+	if not res['id']:
+		return
 
 	q = """
 		update
 			voucher
 		set
 			claimed = 1,
-			claimed_at = %(now)s
+			claimed_at = utc_timestamp(),
+			purchase_id = %(purchase_id)s
 		where
 			code = %(code)s
 			AND claimed = 0;
 		"""
 	qd = {
 		'code' : code,
+		'purchase_id' : purchase_id,
 	}
 
 	cursor.execute(q, qd)
@@ -160,7 +164,7 @@ def reservation_find(cursor, email):
 		from
 			reservation
 		where
-			code = %(code)s
+			email = %(email)s
 			and claimed = 0;
 		"""
 	qd = { 'email' : email }
@@ -181,7 +185,7 @@ def reservation_claim(cursor, email):
 			reservation
 		set
 			claimed = 1,
-			claimed_at = %(now)s
+			claimed_at = utc_timestamp()
 		where
 			email = %(email)s
 			AND claimed = 0
@@ -281,14 +285,14 @@ def generate_payment_code(date):
 	total += check
 	return "{0:012d}".format(total)
 
-def purchase_create(cursor, email, voucher_code, products, billing_info, general_ticket_info, queued):
+def purchase_create(cursor, email, voucher_codes, products, billing_info, general_ticket_info, queued):
 	"""
 	"""
 	now = datetime.datetime.utcnow()
 	nonce = random_string(16)
 
 	# get the reservation for this email
-	reservation = reservation_claim(cursor, voucher_code)
+	reservation = reservation_claim(cursor, email)
 
 	payment_code = generate_payment_code(now)
 
@@ -335,6 +339,10 @@ def purchase_create(cursor, email, voucher_code, products, billing_info, general
 	for p in products:
 		p['purchase_id'] = purchase_id
 		cursor.execute(q, p)
+
+	# and claim the vouchers
+	for c in voucher_codes:
+		voucher_claim(cursor, c, purchase_id)
 
 	out = {}
 	out['nonce'] = nonce
@@ -468,10 +476,10 @@ def products_get(cursor):
 def get_purchase_discount(cursor, nonce):
 	q = """
 		select
-			voucher.discount as discount
+			sum(voucher.discount) as discount
 		from
-			purchase
-			inner join voucher on purchase.voucher_id = voucher.id
+			voucher
+			inner join purchase on voucher.purchase_id = voucher.id
 		where
 			purchase.nonce = %(nonce)s;
 		"""
