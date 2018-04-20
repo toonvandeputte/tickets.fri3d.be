@@ -635,8 +635,7 @@ def voucher_add():
 	# always-existing "default" voucher (used when no specific hit
 	# was found) as a template, and substract a week since the caller
 	# will likely want to make a prevoucher
-	default_id = model.voucher_find(g.db_cursor, 'default')['id']
-	default_r = dict(model.voucher_get(g.db_cursor, default_id)[0])
+	default_r = model.voucher_find(g.db_cursor, 'none')
 	default_r['discount'] = 0
 	#default_r['available_from'] -= datetime.timedelta(weeks=1)
 	default_r['claimed'] = False #bool(default_r['claimed'])
