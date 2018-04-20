@@ -432,6 +432,114 @@ def payments():
 			purchases_dequeueable=purchases_dequeueable, tickets_queued=tickets_queued,
 			purchases=p, page_opts={ 'internal' : True })
 
+@app.route('/admin/reservations')
+@req_auth_admin
+def reservations():
+	"""
+	build a list of reservations, return
+	"""
+	r = model.reservation_get(g.db_cursor)
+	return render_template('reservations.html', reservations=r,
+			page_opts={
+				'internal' : True
+			})
+
+@app.route('/admin/reservation_delete/<int:id>')
+@req_auth_admin
+def reservation_delete(id):
+	"""
+	delete a reservation based on id
+	"""
+	model.reservation_delete(g.db_cursor, id=id)
+	g.db_commit = True
+	return redirect(url_for('reservations'))
+
+class ReservationForm(Form):
+	"""
+	reservation manipulation form
+	"""
+	email = EmailField('Email address', validators=[
+		validators.Email(message="Really an email?"),
+		])
+	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Required('Had trouble parsing this date.'),
+		])
+	claimed = BooleanField('Has been claimed')
+	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Optional(),
+		])
+	comments = TextAreaField('Internal comments', validators=[
+		validators.Optional(),
+		])
+
+@app.route('/admin/reservation_edit/<int:id>', methods=[ 'GET', 'POST'])
+@req_auth_admin
+def reservation_edit(id):
+	"""
+	overwrite reservation by id
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or None,
+			'comments' : form.comments.data,
+		}
+		model.reservation_update(g.db_cursor, id, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show form
+	res = map(dict, model.reservation_get(g.db_cursor, id))
+	for r in res:
+		r['claimed'] = bool(r['claimed'])
+	return render_template('reservation_edit.html', reservation=res[0],
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_edit', id=id))
+
+@app.route('/admin/reservation_add', methods=[ 'GET', 'POST'])
+@req_auth_admin
+def reservation_add():
+	"""
+	add a reservation
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or None,
+			'comments' : form.comments.data,
+		}
+		reservation = model.reservation_create(g.db_cursor, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show the form, we use the
+	# always-existing "default" reservation (used when no specific hit
+	# was found) as a template, and substract a week since the caller
+	# will likely want to make a prereservation
+	default_id = model.reservation_find(g.db_cursor, 'default')['id']
+	default_r = dict(model.reservation_get(g.db_cursor, default_id)[0])
+	default_r['email'] = u''
+	default_r['available_from'] -= datetime.timedelta(weeks=1)
+	default_r['claimed'] = False #bool(default_r['claimed'])
+	default_r['claimed_at'] = ""
+	return render_template('reservation_edit.html', reservation=default_r,
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_add', id=id))
+
 @app.route('/admin/vouchers')
 @req_auth_admin
 def vouchers():
@@ -461,9 +569,9 @@ class VoucherForm(Form):
 	discount = IntegerField(u'Discount on order in €', validators=[
 		validators.NumberRange(message='Not a number!', min=0),
 		])
-	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
-		validators.Required('Had trouble parsing this date.'),
-		])
+	#available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+	#	validators.Required('Had trouble parsing this date.'),
+	#	])
 	claimed = BooleanField('Has been claimed')
 	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
 		validators.Optional(),
@@ -483,7 +591,7 @@ def voucher_edit(id):
 		# form validated, pack and save
 		changeset = {
 			'discount' : form.discount.data,
-			'available_from' : form.available_from.data,
+			#'available_from' : form.available_from.data,
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
@@ -514,7 +622,7 @@ def voucher_add():
 		# form validated, pack and save
 		changeset = {
 			'discount' : form.discount.data,
-			'available_from' : form.available_from.data,
+			#'available_from' : form.available_from.data,
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
@@ -530,8 +638,9 @@ def voucher_add():
 	default_id = model.voucher_find(g.db_cursor, 'default')['id']
 	default_r = dict(model.voucher_get(g.db_cursor, default_id)[0])
 	default_r['discount'] = 0
-	default_r['available_from'] -= datetime.timedelta(weeks=1)
-	default_r['claimed'] = bool(default_r['claimed'])
+	#default_r['available_from'] -= datetime.timedelta(weeks=1)
+	default_r['claimed'] = False #bool(default_r['claimed'])
+	default_r['claimed_at'] = ""
 	return render_template('voucher_edit.html', voucher=default_r,
 			form=form,
 			page_opts={
