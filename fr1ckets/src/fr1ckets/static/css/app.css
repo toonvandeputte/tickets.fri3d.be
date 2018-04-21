@@ -7422,6 +7422,14 @@ line.logoline-B {
 .row-fri3dheader .headerlogo img {
   max-width: 440px;
 }
+/* vouchercodes */
+.form-group-voucher_code.form-group-voucher_code_0,
+.form-group-voucher_code.showfield {
+  display: block;
+}
+.form-group-voucher_code {
+  display: none;
+}
 @page {
   size: A4 portrait;
 }
