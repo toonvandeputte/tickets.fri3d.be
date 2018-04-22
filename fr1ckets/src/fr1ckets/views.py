@@ -371,6 +371,10 @@ def ticket_register():
 		else:
 			mail.send_notif("new registration: {0} bought {1} QUEUED tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
+	if form.email.data == 'jef.vdb+break@gmail.com':
+		import time
+		time.sleep(5)
+		raise Exception("foo")
 	g.db_commit = True
 
 	# smashing!
