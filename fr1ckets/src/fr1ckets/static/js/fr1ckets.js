@@ -340,10 +340,24 @@ function update_price_total_display() {
 
 }
 
+function showhide_vouchers() {
+	for (var i = 0; i < 5; i++) {
+		nextfield = i+1;
+		if ( !$('#voucher_code_'+i).val() ) {
+			console.log('hide next empty field');
+			if (!$('.form-group-voucher_code_'+nextfield+' input.form-control').val()) {
+				$('.form-group-voucher_code_'+nextfield).removeClass("showfield");
+			}
+		} else {
+			console.log('show next empty field');
+			$('.form-group-voucher_code_'+nextfield).addClass("showfield");
+		}
+	}
+}
+
 function update_voucher(i) {
 	console.log("update_voucher(i="+i+")");
 	var code = $('#voucher_code_'+i).val() ? $('#voucher_code_'+i).val() : 'unknown';
-
 	$.ajax({
 		url : 'api/get_voucher/' + code,
 		success: function(data) {
@@ -391,8 +405,8 @@ $(document).ready(function() {
 		console.log("have_voucher="+have);
 		if (have) {
 			for (var i = 0; i < 5; i++) {
-				f += '<div class="form-group">';
-				f += '  <label for="voucher_code" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
+				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'">';
+				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
 				f += '  <div class="col-sm-8">';
 				f += '    <input class="form-control" id="voucher_code_'+i+'" name="voucher_code_'+i+'" type=text>';
 				f += '  </div>';
@@ -414,9 +428,13 @@ $(document).ready(function() {
 				$('#voucher_code_'+i).on('change', function() {
 					update_voucher(i);
 				});
+				$('#voucher_code_'+i).on('keyup', function() {
+					showhide_vouchers();
+				});
 			})(i);
 		}
 	});
+
 	$('#n_tickets').on('change', update_price_total_display);
 	update_price_total_display();
 
