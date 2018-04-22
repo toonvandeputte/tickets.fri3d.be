@@ -1,9 +1,43 @@
 var products = [];
-var total_discount = 0;
-
+var vouchers = {}
 const VOUCHERS_MAX = 10;
+const VOUCHER_LEN = 10;
 
 $('.no_js_warning').hide();
+
+function vouchers_add(voucher)
+{
+
+	vouchers[voucher.code] = voucher;
+
+}
+
+function vouchers_reset()
+{
+
+	vouchers = {}
+
+}
+
+function vouchers_discount()
+{
+
+	var discount = 0;
+
+	for (var code in vouchers) {
+		discount += vouchers[code].discount;
+	}
+
+	return discount;
+
+}
+
+function vouchers_present()
+{
+
+	return Object.keys(vouchers).length > 0;
+
+}
 
 $('#overview_order').on('click', function() {
 	var root = location.protocol + '//' + location.hostname;
@@ -97,17 +131,19 @@ function update_overview() {
 	for (var i = 0; i < choices.length; i++) {
 		f += '    <tr>';
 		f += '      <td>'+choices[i].name+'</td>';
-		f += '      <td>'+choices[i].price+'</td>';
+		f += '      <td>€'+choices[i].price+'</td>';
 		f += '      <td>'+choices[i].n+'</td>';
-		f += '      <td>'+(choices[i].price*choices[i].n)+'</td>';
+		f += '      <td>€'+(choices[i].price*choices[i].n)+'</td>';
 		f += '    </tr>';
 	}
-	if (total_discount) {
+	//if (vouchers_present()) {
+	for (var code in vouchers) {
+		var v = vouchers[code];
 		f += '    <tr class="success">';
-		f += '      <td>Korting</td>';
+		f += '      <td>Voucher '+v.reason+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '      <td></td>';
-		f += '      <td></td>';
-		f += '      <td>€'+total_discount+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '    </tr>';
 	}
 	f += '    <tr>';
@@ -155,6 +191,11 @@ function handle_voucher(i, data) {
 		f += '</div>';
 	} else if (available) {
 		f = '';
+	}
+
+	if (voucher.code != 'none') {
+		vouchers_add(voucher);
+		update_price_total_display();
 	}
 
 	$("#voucher_"+i+"_message_collapse").html(f);
@@ -334,7 +375,7 @@ function calculate_total() {
 		total += choices[i].n * choices[i].price;
 	}
 
-	total = Math.max(0, total - total_discount);
+	total = Math.max(0, total - vouchers_discount());
 
 	return total;
 
@@ -421,6 +462,8 @@ $(document).ready(function() {
 				f += '  </div>';
 				f += '</div>';
 			}
+		} else {
+			vouchers_reset();
 		}
 		$('#voucher').html(f);
 
@@ -433,9 +476,8 @@ $(document).ready(function() {
 		for (var i = 0; i < VOUCHERS_MAX; i++) {
 			(function(i) {
 				$('#voucher_code_'+i).on('change keyup paste', function() {
-					console.log("change/keyup/paste");
 					showhide_vouchers();
-					if ($('#voucher_code_'+i).val().length >= 10) {
+					if ($('#voucher_code_'+i).val().length == VOUCHER_LEN) {
 						update_voucher(i);
 					}
 				});
