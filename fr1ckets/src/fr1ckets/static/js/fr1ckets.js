@@ -44,6 +44,19 @@ $('#overview_order').on('click', function() {
 	if (location.port) {
 		root += ':' + location.port;
 	}
+
+	function order_inflight(b) {
+		$('#overview_order').prop('disabled', b);
+		$('#overview_cancel').prop('disabled', b);
+		if (b) {
+			$('#overview_spinner').removeClass('hidden');
+		} else {
+			$('#overview_spinner').addClass('hidden');
+		}
+	}
+
+	order_inflight(true);
+
 	$.ajax({
 		url : root + '/api/tickets_register',
 		type : 'post',
@@ -60,13 +73,16 @@ $('#overview_order').on('click', function() {
 					$('#outcome_modal').modal('show');
 				}
 			}
+			order_inflight(false);
 		},
 		error : function(resp) {
+			order_inflight(false);
 			$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 			$('#outcome_modal').modal('show');
 		},
 		statusCode : {
 			502 : function() {
+				order_inflight(false);
 				$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 				$('#outcome_modal').modal('show');
 			},
