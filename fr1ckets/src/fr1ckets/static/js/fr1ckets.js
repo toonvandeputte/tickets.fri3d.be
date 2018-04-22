@@ -144,7 +144,11 @@ function handle_voucher(i, data) {
 	} else if (voucher.discount > 0) {
 		f += '<div class="row">';
 		f += '  <div class="alert alert-success text-center" role="alert">';
-		f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		if (voucher.reason.length > 0) {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting! Reden: "'+voucher.reason+'"</p>';
+		} else {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		}
 		f += '  </div>';
 		f += '</div>';
 	} else if (available) {
@@ -343,6 +347,7 @@ function update_price_total_display() {
 function showhide_vouchers() {
 	for (var i = 0; i < 5; i++) {
 		nextfield = i+1;
+		console.log("voucher "+i+": contents="+$('#voucher_code_'+i).val());
 		if ( !$('#voucher_code_'+i).val() ) {
 			console.log('hide next empty field');
 			if (!$('.form-group-voucher_code_'+nextfield+' input.form-control').val()) {
@@ -425,11 +430,12 @@ $(document).ready(function() {
 
 		for (var i = 0; i < 5; i++) {
 			(function(i) {
-				$('#voucher_code_'+i).on('change', function() {
-					update_voucher(i);
-				});
-				$('#voucher_code_'+i).on('keyup', function() {
+				$('#voucher_code_'+i).on('change keyup paste', function() {
+					console.log("change/keyup/paste");
 					showhide_vouchers();
+					if ($('#voucher_code_'+i).val().length >= 10) {
+						update_voucher(i);
+					}
 				});
 			})(i);
 		}

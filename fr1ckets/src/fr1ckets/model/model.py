@@ -34,7 +34,8 @@ def voucher_find(cursor, code):
 		select
 			id,
 			code,
-			discount
+			discount,
+			reason
 		from
 			voucher
 		where
@@ -50,6 +51,7 @@ def voucher_find(cursor, code):
 		'id' : None,
 		'code' : 'none',
 		'discount' : 0,
+		'reason' : '',
 	}
 
 def voucher_claim(cursor, code, purchase_id):
@@ -88,7 +90,8 @@ def voucher_get(cursor, id=None):
 			discount,
 			claimed,
 			claimed_at,
-			comments
+			comments,
+			reason
 		from
 			voucher
 		""" + f + ";"
@@ -113,7 +116,8 @@ def voucher_update(cursor, id, values):
 			discount=%(discount)s,
 			claimed=%(claimed)s,
 			claimed_at=%(claimed_at)s,
-			comments=%(comments)s
+			comments=%(comments)s,
+			reason=%(reason)s
 		where
 			id=%(id)s;
 		"""
@@ -130,14 +134,16 @@ def voucher_create(cursor, values):
 				discount,
 				claimed,
 				claimed_at,
-				comments
+				comments,
+				reason
 			)
 		values (
 			%(code)s,
 			%(discount)s,
 			%(claimed)s,
 			%(claimed_at)s,
-			%(comments)s
+			%(comments)s,
+			%(reason)s
 		);
 		"""
 	code = random_voucher()

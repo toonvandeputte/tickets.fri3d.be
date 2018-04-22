@@ -8,6 +8,7 @@
 		{{ field(form.discount, voucher.discount) }}
 		{{ field(form.claimed, voucher.claimed) }}
 		{{ field(form.claimed_at, voucher.claimed_at) }}
+		{{ field(form.reason, voucher.comments, rows=10) }}
 		{{ field(form.comments, voucher.comments, rows=10) }}
 		<div class="form-group text-right">
 			<button type="submit" class="btn btn-default">Save</button>

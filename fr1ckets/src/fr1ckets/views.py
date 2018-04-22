@@ -579,6 +579,10 @@ class VoucherForm(Form):
 	comments = TextAreaField('Internal comments', validators=[
 		validators.Optional(),
 		])
+	reason = TextAreaField('Externally shown reason', validators=[
+		validators.Optional(),
+		])
+
 
 @app.route('/admin/voucher_edit/<int:id>', methods=[ 'GET', 'POST'])
 @req_auth_admin
@@ -595,6 +599,7 @@ def voucher_edit(id):
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
+			'reason' : form.reason.data,
 		}
 		model.voucher_update(g.db_cursor, id, changeset)
 		g.db_commit = True
@@ -626,6 +631,7 @@ def voucher_add():
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
+			'reason' : form.reason.data,
 		}
 		code = model.voucher_create(g.db_cursor, changeset)
 		g.db_commit = True
@@ -973,6 +979,7 @@ def api_get_voucher(code):
 	return json.dumps({
 			'code' : r['code'],
 			'discount' : r['discount'],
+			'reason' : r['reason'],
 		})
 
 @app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
