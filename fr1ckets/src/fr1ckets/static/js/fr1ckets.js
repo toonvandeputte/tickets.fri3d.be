@@ -656,7 +656,7 @@ $('#n_tickets').on('change', function() {
 	var f = "";
 
 	f += '<div class="row text-center">';
-	f += '  <p><h4>Individuele tickets:</h4></p>';
+	f += '  <p><h4>Jouw tickets:</h4></p>';
 	f += '</div>';
 
 	// for each ticket, add some form fields to the collapsible target
