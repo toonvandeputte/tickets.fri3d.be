@@ -76,7 +76,6 @@ def voucher_claim(cursor, code, purchase_id):
 	}
 
 	cursor.execute(q, qd)
-
 	return res
 
 def voucher_get(cursor, id=None):
@@ -485,14 +484,14 @@ def get_purchase_discount(cursor, nonce):
 			sum(voucher.discount) as discount
 		from
 			voucher
-			inner join purchase on voucher.purchase_id = voucher.id
+			inner join purchase on voucher.purchase_id = purchase.id
 		where
 			purchase.nonce = %(nonce)s;
 		"""
 	qd = { 'nonce' : nonce }
 	cursor.execute(q, qd)
 	rs = cursor.fetchone()
-	return rs['discount'] or 0
+	return float(rs['discount'] or 0)
 
 def get_purchase_total(cursor, nonce, only_billable=False):
 	"""

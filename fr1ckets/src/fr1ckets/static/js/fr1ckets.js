@@ -1,6 +1,8 @@
 var products = [];
 var total_discount = 0;
 
+const VOUCHERS_MAX = 10;
+
 $('.no_js_warning').hide();
 
 $('#overview_order').on('click', function() {
@@ -345,7 +347,7 @@ function update_price_total_display() {
 }
 
 function showhide_vouchers() {
-	for (var i = 0; i < 5; i++) {
+	for (var i = 0; i < VOUCHERS_MAX; i++) {
 		nextfield = i+1;
 		console.log("voucher "+i+": contents="+$('#voucher_code_'+i).val());
 		if ( !$('#voucher_code_'+i).val() ) {
@@ -409,7 +411,7 @@ $(document).ready(function() {
 		var f = '';
 		console.log("have_voucher="+have);
 		if (have) {
-			for (var i = 0; i < 5; i++) {
+			for (var i = 0; i < VOUCHERS_MAX; i++) {
 				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'">';
 				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
 				f += '  <div class="col-sm-8">';
@@ -428,7 +430,7 @@ $(document).ready(function() {
 			$("#voucher").collapse('hide');
 		}
 
-		for (var i = 0; i < 5; i++) {
+		for (var i = 0; i < VOUCHERS_MAX; i++) {
 			(function(i) {
 				$('#voucher_code_'+i).on('change keyup paste', function() {
 					console.log("change/keyup/paste");

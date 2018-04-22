@@ -81,6 +81,11 @@ class TicketForm(Form):
 	voucher_code_2 = StringField('voucher_code_2', validators=[])
 	voucher_code_3 = StringField('voucher_code_3', validators=[])
 	voucher_code_4 = StringField('voucher_code_4', validators=[])
+	voucher_code_5 = StringField('voucher_code_5', validators=[])
+	voucher_code_6 = StringField('voucher_code_6', validators=[])
+	voucher_code_7 = StringField('voucher_code_7', validators=[])
+	voucher_code_8 = StringField('voucher_code_8', validators=[])
+	voucher_code_9 = StringField('voucher_code_9', validators=[])
 
 	n_tickets = IntegerField('n_tickets', validators=[
 		validators.NumberRange(min=0, max=20),
@@ -238,6 +243,10 @@ def price_distribution_strategy(cursor, nonce):
 	price_unbillable = price_total - price_billable
 	price_discount = model.get_purchase_discount(g.db_cursor, nonce)
 
+	print "price_total={0!r}".format(price_total)
+	print "price_billable={0!r}".format(price_billable)
+	print "price_unbillable={0!r}".format(price_unbillable)
+	print "price_discount={0!r}".format(price_discount)
 	if price_discount > price_total:
 		# all expenses covered by discount
 		return 0, 0
@@ -289,13 +298,9 @@ def ticket_register():
 			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
 
 	# check the voucher first
-	voucher_codes = []
-	for i in range(5):
-		voucher_codes.append(getattr(form, "voucher_code_{0}".format(i)).data)
-	voucher_codes = filter(lambda x: len(x) > 0, voucher_codes)
+	voucher_codes = filter(lambda x: len(x) > 0,
+		[ getattr(form, "voucher_code_{0}".format(i)).data for i in range(10) ])
 	print "voucher_codes={0}".format(voucher_codes)
-	#voucher = model.voucher_find(g.db_cursor, form.voucher_code_0.data)
-	#print "found voucher: {0!r}".format(voucher)
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
@@ -366,6 +371,7 @@ def ticket_register():
 		else:
 			mail.send_notif("new registration: {0} bought {1} QUEUED tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
+	raise Exception("foo")
 	g.db_commit = True
 
 	# smashing!
