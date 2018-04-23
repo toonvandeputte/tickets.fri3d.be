@@ -136,18 +136,20 @@ function handle_voucher(i, data) {
 	var f = '';
 
 	if (voucher.code == 'none') {
-		f += '<div class="row">';
-		f += '  <div class="alert alert-danger text-center" role="alert">';
+		$('.form-group-voucher_code_'+i).addClass("badvoucher");
+		f += '  <div class="voucher-alert alert alert-danger text-center" role="alert">';
 		f += '    <p>Deze voucher is niet (meer) geldig.</p>';
 		f += '  </div>';
 		f += '</div>';
 	} else if (voucher.discount > 0) {
+		$('.form-group-voucher_code_'+i).addClass("goodvoucher");
 		f += '<div class="row">';
-		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '  <div class="voucher-alert alert alert-success text-center" role="alert">';
 		f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
 		f += '  </div>';
-		f += '</div>';
 	} else if (available) {
+		$('.form-group-voucher_code_'+i).removeClass("badvoucher");
+		$('.form-group-voucher_code_'+i).removeClass("goodvoucher");
 		f = '';
 	}
 
@@ -405,13 +407,13 @@ $(document).ready(function() {
 		console.log("have_voucher="+have);
 		if (have) {
 			for (var i = 0; i < 5; i++) {
-				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'">';
+				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
 				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
 				f += '  <div class="col-sm-8">';
 				f += '    <input class="form-control" id="voucher_code_'+i+'" name="voucher_code_'+i+'" type=text>';
-				f += '  </div>';
-				f += '  <div class="col-sm-offset-5 col-sm-7 collapsible" id="voucher_'+i+'_message_collapse">';
-				f += '  </div>';
+				f += '  </div></div>';
+				f += '<div class="row"><div class="col-sm-offset-4 col-sm-8 collapsible" id="voucher_'+i+'_message_collapse">';
+				f += '  </div></div>';
 				f += '</div>';
 			}
 		}

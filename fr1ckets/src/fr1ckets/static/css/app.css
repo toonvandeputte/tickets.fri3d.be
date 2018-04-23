@@ -7430,6 +7430,17 @@ line.logoline-B {
 .form-group-voucher_code {
   display: none;
 }
+.voucher-alert {
+  margin-top: 16px;
+}
+.goodvoucher input[type="text"] {
+  background-color: #99ff99;
+  border-color: #009900;
+}
+.badvoucher input[type="text"] {
+  background-color: #f2dede;
+  border-color: #990000;
+}
 @page {
   size: A4 portrait;
 }
