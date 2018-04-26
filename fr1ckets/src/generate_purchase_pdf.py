@@ -72,7 +72,7 @@ def mk_page(email, d, volunteering):
 			<li>De openingsceremonie neemt <b>zaterdag</b> om <b>11:00</b> plaats.</li>
 			<li>De officiele communicatiebron is de <b>infodesk</b>. Daarnaast zitten al vele kampeerders op onze <b>Slack</b>, je kan jezelf toevoegen en meepraten op <u>http://slack.fri3d.be/</u>.</li>
 			<li>Je kan <b>vrijdag</b> en <b>zaterdag</b> tot <b>15:00</b> brood en croissants bestellen aan de <b>infodesk</b>. Je kan je bestelling de volgende ochtend om  <b>9:00</b> ophalen aan de infodesk.</li>
-			<li>Vragen? Kijk even in de FAQ <u>http://fri3d.be/faq</u>, of kom langs de infodesk!</li>
+			<li>Vragen? Kijk even in de FAQ <u>http://fri3d.be/deelnemen/faq.html</u>, of kom langs de infodesk!</li>
 			</ul>
 			</div>
 			<div><pdf:nextpage /></div>
