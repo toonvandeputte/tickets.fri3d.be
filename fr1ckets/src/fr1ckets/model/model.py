@@ -306,11 +306,12 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 		insert into purchase (
 			email, nonce, reservation_id, created_at, queued,
 			business_name, business_address, business_vat,
-			payment_code, bringing_camper)
+			payment_code, transportation)
 		values
 			(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
 		"""
 	n_tries = 20
+
 	while True:
 		"""
 		we have randomness in the payment code, should it ever clash, retry
@@ -320,8 +321,9 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 			payment_code = generate_payment_code(now)
 			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
-				payment_code, general_ticket_info['bringing_camper']))
+				payment_code, general_ticket_info['transportation']))
 		except MySQLdb.IntegrityError as e:
+			print e
 			n_tries -= 1
 			if n_tries == 0:
 				raise e

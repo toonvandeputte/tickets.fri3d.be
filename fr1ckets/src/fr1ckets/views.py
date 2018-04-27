@@ -46,8 +46,11 @@ def req_auth_public(f):
 
 def generate_tshirt_names():
 	out = []
-	for tshirt in [ 'adult_f', 'adult_m' ]:
-		for size in [ 'xs', 's', 'm', 'l', 'xl', 'xxl' ]:
+	for tshirt in [ 'adult_f' ]:
+		for size in [ 's', 'm', 'l', 'xl' ]:
+			out.append("tshirt_{0}_{1}".format(tshirt, size))
+	for tshirt in [ 'adult_m' ]:
+		for size in [ 's', 'm', 'l', 'xl', 'xxl' ]:
 			out.append("tshirt_{0}_{1}".format(tshirt, size))
 	for tshirt in [ 'kid' ]:
 		for size in [ 'xs', 's', 'm', 'l', 'xl' ]:
@@ -127,7 +130,7 @@ def make_form_individual_tickets(n_tickets):
 		pass
 
 	if n_tickets:
-		setattr(IndividualTicketForm, 'bringing_camper', BooleanField('bringing_camper'))
+		setattr(IndividualTicketForm, 'transportation', StringField('transportation'))
 
 	for i in range(n_tickets):
 		fmt = "tickets_{0}".format(i)
@@ -171,8 +174,8 @@ def extract_billing_info(form_tickets):
 def extract_general_ticket_info(form_tickets):
 	out = {}
 
-	field = getattr(form_tickets, 'bringing_camper', None)
-	out['bringing_camper'] = field.data if field else False
+	field = getattr(form_tickets, 'transportation', None)
+	out['transportation'] = field.data if field else False
 
 	return out
 

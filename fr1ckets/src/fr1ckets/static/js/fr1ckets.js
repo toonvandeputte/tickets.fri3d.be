@@ -723,13 +723,14 @@ $('#n_tickets').on('change', function() {
 	f += '<hr/>';
 
 	f += '<div class="form-group">';
-	f += '  <div class="col-xs-12 col-sm-11 col-sm-offset-1">';
-	f += '    <div class="checkbox">';
-	f += '      <label>';
-	f += '        <input type="checkbox" id="bringing_camper" name="bringing_camper">';
-	f += '        Graag een plaatsje op de voorziene parking voor onze camper!';
-	f += '      </label>';
-	f += '    </div>';
+	f += '  <label for="transportation" class="col-xs-12 col-sm-6 control-label">Wij dachten aan te komen met</label>';
+	f += '  <div class="col-xs-12 col-sm-6">';
+	f += '    <select id="transportation" name="transportation" class="form-control">';
+	f += '      <option value="CAR">de wagen</option>';
+	f += '      <option value="CAMPERVAN">een kampeerwagen</option>';
+	f += '      <option value="PUBLIC">openbaar vervoer</option>';
+	f += '      <option value="CARPOOL">carpooling</option>';
+	f += '    </select>';
 	f += '  </div>';
 	f += '</div>';
 
