@@ -125,7 +125,6 @@ def voucher_update(cursor, id, values):
 	cursor.execute(q, qd)
 
 def voucher_create(cursor, values):
-	print values
 	q = """
 		insert into
 			voucher (
