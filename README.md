@@ -6,6 +6,13 @@ Ticket website for Fri3d Camp 2018
 
 **This ships without a real config file, ask Jef for fr1ckets_priv.conf (there be SMTP creds).**
 
+##Get a locel version up 'n' running
+
+Do `docker-compose -f docker-compose_dev.yml up` in the project folder to start the dev version. Site will be reachable at localhost:80 and will automatically show all changes you make.
+
+Do `docker-compose up` for a more optimized local version. This will snapshot your current state and serve that, changes to code will not be reflected.
+
+
 A Python-flask app which generates and interprets both the ticket-ordering form and the administrative pages for the orga team. The pages themselves use bootstrap. Datastore is MySQL (was sqlite, again if possible), mail is sent out in the background to a Celery worker pool over Redis.
 
 To work on it, I propose to use docker. On Linux;
@@ -43,7 +50,7 @@ A succinct walkthrough of the code in *$checkout/src/fr1ckets/*;
 * */templates/* holds the templates which are rendered to html with Jinja2
   * *tickets.html* is the motherload, but all the collapsible parts are stuffed by *fr1ckets.js* at run time
 
-LESS stylesheets
+##LESS stylesheets
 
 The css files are based on LESS, and should not be edited directly, but rather generated through Gulp.
 
