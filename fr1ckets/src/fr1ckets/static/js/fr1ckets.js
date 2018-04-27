@@ -693,7 +693,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
 		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Voor de terrein-uitbater hebben we van iedereen de naam en geboortedatum nodig. We berekenen ondertussen het voordeligste ticket.">';
+		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true">';
 		f += '  </div>';
 		f += '</div>';
 		// dob box
@@ -711,7 +711,7 @@ $('#n_tickets').on('change', function() {
 		f += '</div>';
 		// bill box
 		f += '<div class="form-group">';
-		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€256+BTW)</label>';
+		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€317 inclusief BTW)</label>';
 		f += '  <div class="col-sm-8">';
 		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op.">'
 		f += '  </div>';
