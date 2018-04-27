@@ -21,7 +21,6 @@ def random_voucher(length=10):
 			for _ in range(length)
 		])
 
-
 def voucher_find(cursor, code):
 	"""
 	find any unclaimed voucher with this code, if none is found we return
@@ -35,9 +34,7 @@ def voucher_find(cursor, code):
 		select
 			id,
 			code,
-			discount,
-			unix_timestamp(available_from) as available_from_unix,
-			available_from
+			discount
 		from
 			voucher
 		where
@@ -45,34 +42,35 @@ def voucher_find(cursor, code):
 			and claimed = 0;
 		"""
 	qd = { 'code' : code}
-	
+
 	cursor.execute(q, qd)
 	rs = cursor.fetchall()
 
-	if len(rs) != 1 and code != 'default':
-		return voucher_find(cursor, 'default')
+	return rs[0] if len(rs) > 0 else {
+		'id' : None,
+		'code' : 'none',
+		'discount' : 0,
+	}
 
-	return rs[0]
-
-def voucher_claim(cursor, code):
+def voucher_claim(cursor, code, purchase_id):
 	res = voucher_find(cursor, code)
-	if res['code'] == 'default':
-		return res
+	if not res['id']:
+		return
 
 	q = """
 		update
 			voucher
 		set
 			claimed = 1,
-			claimed_at = %(now)s
+			claimed_at = utc_timestamp(),
+			purchase_id = %(purchase_id)s
 		where
 			code = %(code)s
-			AND claimed = 0
-			AND available_from <= utc_timestamp();
+			AND claimed = 0;
 		"""
 	qd = {
-		'now' : datetime.datetime.utcnow(),
 		'code' : code,
+		'purchase_id' : purchase_id,
 	}
 
 	cursor.execute(q, qd)
@@ -88,7 +86,6 @@ def voucher_get(cursor, id=None):
 			id,
 			code,
 			discount,
-			available_from,
 			claimed,
 			claimed_at,
 			comments
@@ -114,7 +111,6 @@ def voucher_update(cursor, id, values):
 			voucher
 		set
 			discount=%(discount)s,
-			available_from=%(available_from)s,
 			claimed=%(claimed)s,
 			claimed_at=%(claimed_at)s,
 			comments=%(comments)s
@@ -132,7 +128,6 @@ def voucher_create(cursor, values):
 			voucher (
 				code,
 				discount,
-				available_from,
 				claimed,
 				claimed_at,
 				comments
@@ -140,7 +135,6 @@ def voucher_create(cursor, values):
 		values (
 			%(code)s,
 			%(discount)s,
-			%(available_from)s,
 			%(claimed)s,
 			%(claimed_at)s,
 			%(comments)s
@@ -151,6 +145,125 @@ def voucher_create(cursor, values):
 	qd['code'] = code
 	cursor.execute(q, qd)
 	return code
+
+def reservation_find(cursor, email):
+	"""
+	find any unclaimed reservation with this email, if none is found we return
+	the default reservation
+
+	the timezone stuff is ugly, but mysql happily returns
+	"""
+	q = "SET @@session.time_zone='+00:00';"
+	cursor.execute(q)
+	q = """
+		select
+			id,
+			email,
+			unix_timestamp(available_from) as available_from_unix,
+			available_from
+		from
+			reservation
+		where
+			email = %(email)s
+			and claimed = 0;
+		"""
+	qd = { 'email' : email }
+	
+	cursor.execute(q, qd)
+	rs = cursor.fetchall()
+
+	if len(rs) != 1 and email != 'default':
+		return reservation_find(cursor, 'default')
+
+	return rs[0]
+
+def reservation_claim(cursor, email):
+	res = reservation_find(cursor, email)
+
+	q = """
+		update
+			reservation
+		set
+			claimed = 1,
+			claimed_at = utc_timestamp()
+		where
+			email = %(email)s
+			AND claimed = 0
+			AND available_from <= utc_timestamp();
+		"""
+	qd = {
+		'email' : email,
+	}
+
+	cursor.execute(q, qd)
+
+	return res
+
+def reservation_get(cursor, id=None):
+	f = ""
+	if id:
+		f = " where id=%(id)s"
+	q = """
+		select
+			id,
+			email,
+			available_from,
+			claimed,
+			claimed_at,
+			comments
+		from
+			reservation
+		""" + f + ";"
+	cursor.execute(q, { 'id' : id })
+	return cursor.fetchall()
+
+def reservation_delete(cursor, id):
+	q = """
+		delete from
+			reservation
+		where
+			id=%(id)s
+			AND email != 'default';
+		"""
+	cursor.execute(q, { 'id' : id })
+
+def reservation_update(cursor, id, values):
+	q = """
+		update
+			reservation
+		set
+			email=%(email)s,
+			available_from=%(available_from)s,
+			claimed=%(claimed)s,
+			claimed_at=%(claimed_at)s,
+			comments=%(comments)s
+		where
+			id=%(id)s;
+		"""
+	qd = copy.deepcopy(values)
+	qd['id'] = id
+	cursor.execute(q, qd)
+
+def reservation_create(cursor, values):
+	print values
+	q = """
+		insert into
+			reservation (
+				email,
+				available_from,
+				claimed,
+				claimed_at,
+				comments
+			)
+		values (
+			%(email)s,
+			%(available_from)s,
+			%(claimed)s,
+			%(claimed_at)s,
+			%(comments)s
+		);
+		"""
+	cursor.execute(q, values)
 
 def generate_payment_code(date):
 	"""
@@ -172,21 +285,21 @@ def generate_payment_code(date):
 	total += check
 	return "{0:012d}".format(total)
 
-def purchase_create(cursor, email, voucher_code, products, billing_info, general_ticket_info, queued):
+def purchase_create(cursor, email, voucher_codes, products, billing_info, general_ticket_info, queued):
 	"""
 	"""
 	now = datetime.datetime.utcnow()
 	nonce = random_string(16)
 
-	# get the voucher for this email
-	voucher = voucher_claim(cursor, voucher_code)
+	# get the reservation for this email
+	reservation = reservation_claim(cursor, email)
 
 	payment_code = generate_payment_code(now)
 
 	# the purchase proper
 	q = """
 		insert into purchase (
-			email, nonce, voucher_id, created_at, queued,
+			email, nonce, reservation_id, created_at, queued,
 			business_name, business_address, business_vat,
 			payment_code, bringing_camper)
 		values
@@ -200,7 +313,7 @@ def purchase_create(cursor, email, voucher_code, products, billing_info, general
 		"""
 		try:
 			payment_code = generate_payment_code(now)
-			cursor.execute(q, (email, nonce, voucher['id'], now, queued,
+			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
 				payment_code, general_ticket_info['bringing_camper']))
 		except MySQLdb.IntegrityError as e:
@@ -227,6 +340,10 @@ def purchase_create(cursor, email, voucher_code, products, billing_info, general
 		p['purchase_id'] = purchase_id
 		cursor.execute(q, p)
 
+	# and claim the vouchers
+	for c in voucher_codes:
+		voucher_claim(cursor, c, purchase_id)
+
 	out = {}
 	out['nonce'] = nonce
 	out['payment_code'] = payment_code
@@ -247,7 +364,7 @@ def purchase_get(cursor, nonce=None, id=None, email=None):
 		select
 			id,
 			email,
-			voucher_id,
+			reservation_id,
 			created_at,
 			dequeued_at,
 			billed_at,
@@ -359,10 +476,10 @@ def products_get(cursor):
 def get_purchase_discount(cursor, nonce):
 	q = """
 		select
-			voucher.discount as discount
+			sum(voucher.discount) as discount
 		from
-			purchase
-			inner join voucher on purchase.voucher_id = voucher.id
+			voucher
+			inner join purchase on voucher.purchase_id = voucher.id
 		where
 			purchase.nonce = %(nonce)s;
 		"""

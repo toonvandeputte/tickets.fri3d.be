@@ -76,7 +76,11 @@ class TicketForm(Form):
 		validators.Email(message="Really an email?"),
 		])
 
-	voucher_code = StringField('voucher_code', validators=[])
+	voucher_code_0 = StringField('voucher_code_0', validators=[])
+	voucher_code_1 = StringField('voucher_code_1', validators=[])
+	voucher_code_2 = StringField('voucher_code_2', validators=[])
+	voucher_code_3 = StringField('voucher_code_3', validators=[])
+	voucher_code_4 = StringField('voucher_code_4', validators=[])
 
 	n_tickets = IntegerField('n_tickets', validators=[
 		validators.NumberRange(min=0, max=20),
@@ -274,16 +278,24 @@ def ticket_register():
 	# and build a validator accordingly
 	n_tickets = form.n_tickets.data
 
-	# check the voucher first
-	print "voucher code={0}".format(form.voucher_code.data)
-	voucher = model.voucher_find(g.db_cursor, form.voucher_code.data)
-	print "found voucher: {0!r}".format(voucher)
-	if not voucher['available_from'] <= datetime.datetime.utcnow():
+	# check the reservation first
+	reservation = model.reservation_find(g.db_cursor, form.email.data)
+	print "found reservation: {0!r}".format(reservation)
+	if not reservation['available_from'] <= datetime.datetime.utcnow():
 		# not so fast
-		time_to_go = voucher['available_from'] - datetime.datetime.utcnow()
+		time_to_go = reservation['available_from'] - datetime.datetime.utcnow()
 		return jsonify(
 			status='FAIL',
-			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(voucher['available_from'], int(time_to_go.total_seconds())))
+			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
+
+	# check the voucher first
+	voucher_codes = []
+	for i in range(5):
+		voucher_codes.append(getattr(form, "voucher_code_{0}".format(i)).data)
+	voucher_codes = filter(lambda x: len(x) > 0, voucher_codes)
+	print "voucher_codes={0}".format(voucher_codes)
+	#voucher = model.voucher_find(g.db_cursor, form.voucher_code_0.data)
+	#print "found voucher: {0!r}".format(voucher)
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
@@ -312,7 +324,7 @@ def ticket_register():
 
 	# create it all
 	queued = True if tickets_available < n_tickets else False
-	purchase = model.purchase_create(g.db_cursor, form.email.data, form.voucher_code.data, products, billing_info, general_ticket_info, queued)
+	purchase = model.purchase_create(g.db_cursor, form.email.data, voucher_codes, products, billing_info, general_ticket_info, queued)
 
 	# get the prices back (includes voucher discounts, volunteering discounts, ...)
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
@@ -420,6 +432,114 @@ def payments():
 			purchases_dequeueable=purchases_dequeueable, tickets_queued=tickets_queued,
 			purchases=p, page_opts={ 'internal' : True })
 
+@app.route('/admin/reservations')
+@req_auth_admin
+def reservations():
+	"""
+	build a list of reservations, return
+	"""
+	r = model.reservation_get(g.db_cursor)
+	return render_template('reservations.html', reservations=r,
+			page_opts={
+				'internal' : True
+			})
+
+@app.route('/admin/reservation_delete/<int:id>')
+@req_auth_admin
+def reservation_delete(id):
+	"""
+	delete a reservation based on id
+	"""
+	model.reservation_delete(g.db_cursor, id=id)
+	g.db_commit = True
+	return redirect(url_for('reservations'))
+
+class ReservationForm(Form):
+	"""
+	reservation manipulation form
+	"""
+	email = EmailField('Email address', validators=[
+		validators.Email(message="Really an email?"),
+		])
+	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Required('Had trouble parsing this date.'),
+		])
+	claimed = BooleanField('Has been claimed')
+	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+		validators.Optional(),
+		])
+	comments = TextAreaField('Internal comments', validators=[
+		validators.Optional(),
+		])
+
+@app.route('/admin/reservation_edit/<int:id>', methods=[ 'GET', 'POST'])
+@req_auth_admin
+def reservation_edit(id):
+	"""
+	overwrite reservation by id
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or None,
+			'comments' : form.comments.data,
+		}
+		model.reservation_update(g.db_cursor, id, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show form
+	res = map(dict, model.reservation_get(g.db_cursor, id))
+	for r in res:
+		r['claimed'] = bool(r['claimed'])
+	return render_template('reservation_edit.html', reservation=res[0],
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_edit', id=id))
+
+@app.route('/admin/reservation_add', methods=[ 'GET', 'POST'])
+@req_auth_admin
+def reservation_add():
+	"""
+	add a reservation
+	"""
+	form = ReservationForm()
+	if form.validate_on_submit():
+		# form validated, pack and save
+		changeset = {
+			'email' : form.email.data,
+			'available_from' : form.available_from.data,
+			'claimed' : bool(form.claimed.data),
+			'claimed_at' : form.claimed_at.data or None,
+			'comments' : form.comments.data,
+		}
+		reservation = model.reservation_create(g.db_cursor, changeset)
+		g.db_commit = True
+		# back to list
+		return redirect(url_for('reservations'))
+	# no form entry or bad validation, show the form, we use the
+	# always-existing "default" reservation (used when no specific hit
+	# was found) as a template, and substract a week since the caller
+	# will likely want to make a prereservation
+	default_id = model.reservation_find(g.db_cursor, 'default')['id']
+	default_r = dict(model.reservation_get(g.db_cursor, default_id)[0])
+	default_r['email'] = u''
+	default_r['available_from'] -= datetime.timedelta(weeks=1)
+	default_r['claimed'] = False #bool(default_r['claimed'])
+	default_r['claimed_at'] = ""
+	return render_template('reservation_edit.html', reservation=default_r,
+			form=form,
+			page_opts={
+				'internal' : True
+			},
+			form_dest=url_for('reservation_add', id=id))
+
 @app.route('/admin/vouchers')
 @req_auth_admin
 def vouchers():
@@ -449,9 +569,9 @@ class VoucherForm(Form):
 	discount = IntegerField(u'Discount on order in €', validators=[
 		validators.NumberRange(message='Not a number!', min=0),
 		])
-	available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
-		validators.Required('Had trouble parsing this date.'),
-		])
+	#available_from = DateTimeField('Can be used from (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
+	#	validators.Required('Had trouble parsing this date.'),
+	#	])
 	claimed = BooleanField('Has been claimed')
 	claimed_at = DateTimeField('Was claimed at (UTC)', format='%Y-%m-%d %H:%M:%S', validators=[
 		validators.Optional(),
@@ -471,7 +591,7 @@ def voucher_edit(id):
 		# form validated, pack and save
 		changeset = {
 			'discount' : form.discount.data,
-			'available_from' : form.available_from.data,
+			#'available_from' : form.available_from.data,
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
@@ -502,7 +622,7 @@ def voucher_add():
 		# form validated, pack and save
 		changeset = {
 			'discount' : form.discount.data,
-			'available_from' : form.available_from.data,
+			#'available_from' : form.available_from.data,
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
@@ -515,11 +635,11 @@ def voucher_add():
 	# always-existing "default" voucher (used when no specific hit
 	# was found) as a template, and substract a week since the caller
 	# will likely want to make a prevoucher
-	default_id = model.voucher_find(g.db_cursor, 'default')['id']
-	default_r = dict(model.voucher_get(g.db_cursor, default_id)[0])
+	default_r = model.voucher_find(g.db_cursor, 'none')
 	default_r['discount'] = 0
-	default_r['available_from'] -= datetime.timedelta(weeks=1)
-	default_r['claimed'] = bool(default_r['claimed'])
+	#default_r['available_from'] -= datetime.timedelta(weeks=1)
+	default_r['claimed'] = False #bool(default_r['claimed'])
+	default_r['claimed_at'] = ""
 	return render_template('voucher_edit.html', voucher=default_r,
 			form=form,
 			page_opts={
@@ -853,6 +973,13 @@ def api_get_voucher(code):
 	return json.dumps({
 			'code' : r['code'],
 			'discount' : r['discount'],
+		})
+
+@app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
+@req_auth_public
+def api_get_reservation(email):
+	r = model.reservation_find(g.db_cursor, email)
+	return json.dumps({
 			'available_from' : r['available_from_unix'],
 		})
 

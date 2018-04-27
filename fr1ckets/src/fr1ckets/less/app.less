@@ -189,6 +189,24 @@ h4 {
         }
     }
 }
+
+
+.control-label.control-label-left {
+    text-align:left
+}
+
+.btn-submit {
+    background-color: @clr-primary1;
+    border-color:@clr-primary4;
+    color:white;
+    &.focus, &:focus, &:hover {
+        background-color: @clr-primary4;
+        border-color: @clr-primary4;
+        color:white;
+    }
+}
+
+
 .herolink .logo-fox {
     display: inline-block;
     width:30px;
@@ -477,6 +495,28 @@ line.logoline-B {
 
 .row-fri3dheader .headerlogo img {
     max-width: 440px;
+}
+
+/* vouchercodes */
+
+.form-group-voucher_code.form-group-voucher_code_0, .form-group-voucher_code.showfield {
+   display: block;
+}
+.form-group-voucher_code {
+    display: none;
+}
+.voucher-alert {
+    margin-top:(@margin*2)
+}
+
+.goodvoucher input[type="text"] {
+    background-color:#99ff99;
+    border-color:#009900;
+}
+
+.badvoucher input[type="text"] {
+    background-color:#f2dede;    
+    border-color:#990000;
 }
 
 @import "print.less";

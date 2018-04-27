@@ -1,5 +1,5 @@
 var products = [];
-var discount = 0;
+var total_discount = 0;
 
 $('.no_js_warning').hide();
 
@@ -100,12 +100,12 @@ function update_overview() {
 		f += '      <td>'+(choices[i].price*choices[i].n)+'</td>';
 		f += '    </tr>';
 	}
-	if (discount) {
+	if (total_discount) {
 		f += '    <tr class="success">';
 		f += '      <td>Korting</td>';
 		f += '      <td></td>';
 		f += '      <td></td>';
-		f += '      <td>€'+discount+'</td>';
+		f += '      <td>€'+total_discount+'</td>';
 		f += '    </tr>';
 	}
 	f += '    <tr>';
@@ -128,49 +128,57 @@ function update_overview() {
 
 }
 
-function handle_voucher(data) {
+function handle_voucher(i, data) {
 
-	/*
-	if ($('#voucher_code').val() == '') {
-		$("#voucher_message_collapse").html('');
-		return;
-	}
-	*/
+	console.dir("handle_voucher(i="+i+" data="+data+")");
 
 	var voucher = JSON.parse(data);
-	var available = Date.now() >= (voucher.available_from*1000);
 	var f = '';
-	var user_entered_something = ($('#voucher_code').val() && $('#voucher_code').val().length > 0) ? true : false;
 
-	if (!available) {
-		var available_date = new Date();
-		available_date.setTime(voucher.available_from*1000);
-		f += '<div class="row">';
-		f += '  <div class="alert alert-danger text-center" role="alert">';
-		if (user_entered_something) {
-			f += '    <p>Deze voucher is niet (meer) geldig. Zonder geldige voucher kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
-		} else {
-			f += '    <p>Zonder een geldige voucher kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
-		}
+	if (voucher.code == 'none') {
+		$('.form-group-voucher_code_'+i).addClass("badvoucher");
+		f += '  <div class="voucher-alert alert alert-danger text-center" role="alert">';
+		f += '    <p>Deze voucher is niet (meer) geldig.</p>';
 		f += '  </div>';
 		f += '</div>';
-	} else if (available && voucher.discount > 0) {
+	} else if (voucher.discount > 0) {
+		$('.form-group-voucher_code_'+i).addClass("goodvoucher");
 		f += '<div class="row">';
-		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '  <div class="voucher-alert alert alert-success text-center" role="alert">';
 		f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
 		f += '  </div>';
-		f += '</div>';
 	} else if (available) {
+		$('.form-group-voucher_code_'+i).removeClass("badvoucher");
+		$('.form-group-voucher_code_'+i).removeClass("goodvoucher");
 		f = '';
 	}
 
-
-	discount = voucher.discount;
-
-	$("#voucher_message_collapse").html(f);
+	$("#voucher_"+i+"_message_collapse").html(f);
 
 }
 
+function handle_reservation(data) {
+
+	var reservation = JSON.parse(data);
+	console.log("reservation:");
+	console.dir(reservation);
+	var available = Date.now() >= (reservation.available_from*1000);
+	console.log("available=",available);
+	var f = '';
+
+	if (!available) {
+		var available_date = new Date();
+		available_date.setTime(reservation.available_from*1000);
+		f += '<div class="row">';
+		f += '  <div class="alert alert-danger text-center" role="alert">';
+		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
+		f += '  </div>';
+		f += '</div>';
+	}
+
+	$("#reservation_message_collapse").html(f);
+
+}
 function find_ticket_by_dob(dob, billable) {
 
 	var ticket = undefined;
@@ -322,7 +330,7 @@ function calculate_total() {
 		total += choices[i].n * choices[i].price;
 	}
 
-	total = Math.max(0, total - discount);
+	total = Math.max(0, total - total_discount);
 
 	return total;
 
@@ -334,16 +342,31 @@ function update_price_total_display() {
 
 }
 
-function update_voucher() {
-	var code = $('#voucher_code').val() ? $('#voucher_code').val() : 'unknown';
+function showhide_vouchers() {
+	for (var i = 0; i < 5; i++) {
+		nextfield = i+1;
+		if ( !$('#voucher_code_'+i).val() ) {
+			console.log('hide next empty field');
+			if (!$('.form-group-voucher_code_'+nextfield+' input.form-control').val()) {
+				$('.form-group-voucher_code_'+nextfield).removeClass("showfield");
+			}
+		} else {
+			console.log('show next empty field');
+			$('.form-group-voucher_code_'+nextfield).addClass("showfield");
+		}
+	}
+}
 
+function update_voucher(i) {
+	console.log("update_voucher(i="+i+")");
+	var code = $('#voucher_code_'+i).val() ? $('#voucher_code_'+i).val() : 'unknown';
 	$.ajax({
 		url : 'api/get_voucher/' + code,
 		success: function(data) {
-			handle_voucher(data);
+			handle_voucher(i, data);
 		},
 		error: function(data) {
-			handle_voucher(data);
+			handle_voucher(i, data);
 		},
 	});
 
@@ -362,17 +385,37 @@ $(document).ready(function() {
 			}
 		},
 	});
+	$('#email').on('change', function() {
+		var email = $('#email').val();
+		if (email.length > 0) {
+			$.ajax({
+				url : 'api/get_reservation/'+email,
+				success : function(data) {
+					handle_reservation(data);
+				},
+				error : function(data) {
+					handle_reservation(data);
+				},
+			});
+		} else {
+			handle_reservation('');
+		}
+	});
 	$('#have_voucher').on('change', function() {
 		var have = $('#have_voucher').prop('checked');
 		var f = '';
 		console.log("have_voucher="+have);
 		if (have) {
-			f += '<div class="form-group">';
-			f += '  <label for="voucher_code" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
-			f += '  <div class="col-sm-8">';
-			f += '    <input class="form-control" id="voucher_code" name="voucher_code" type=text>';
-			f += '  </div>';
-			f += '</div>';
+			for (var i = 0; i < 5; i++) {
+				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
+				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
+				f += '  <div class="col-sm-8">';
+				f += '    <input class="form-control" id="voucher_code_'+i+'" name="voucher_code_'+i+'" type=text>';
+				f += '  </div></div>';
+				f += '<div class="row"><div class="col-sm-offset-4 col-sm-8 collapsible" id="voucher_'+i+'_message_collapse">';
+				f += '  </div></div>';
+				f += '</div>';
+			}
 		}
 		$('#voucher').html(f);
 
@@ -382,14 +425,21 @@ $(document).ready(function() {
 			$("#voucher").collapse('hide');
 		}
 
-		$('#voucher_code').on('change', function() {
-			update_voucher();
-		});
+		for (var i = 0; i < 5; i++) {
+			(function(i) {
+				$('#voucher_code_'+i).on('change', function() {
+					update_voucher(i);
+				});
+				$('#voucher_code_'+i).on('keyup', function() {
+					showhide_vouchers();
+				});
+			})(i);
+		}
 	});
+
 	$('#n_tickets').on('change', update_price_total_display);
 	update_price_total_display();
 
-	update_voucher();
 });
 
 var ticket_volunteering_cutoff = new Date(2000, 8, 13).getTime();

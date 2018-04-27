@@ -49,7 +49,6 @@ drop table if exists reservation;
 create table reservation (
 	id integer auto_increment not null,
 	email varchar(128) not null unique,
-	discount integer default 0,
 	available_from datetime not null,
 	claimed integer default 0,
 	claimed_at datetime default null,
@@ -57,33 +56,16 @@ create table reservation (
 	primary key (id),
 	index reservation_email_index (email asc)
 );
-
-insert into reservation (email, discount, available_from) values
-	('default',           0,  '2018-06-01 19:00:00.000000');
-
-drop table if exists voucher;
-create table voucher (
-	id integer auto_increment not null,
-	code varchar(128) not null unique,
-	discount integer default 0,
-	available_from datetime not null,
-	claimed integer default 0,
-	claimed_at datetime default null,
-	comments text,
-	primary key (id),
-	index voucher_code_index (code asc)
-);
-
-insert into voucher (code, discount, available_from) values
-	('default', 0, '2018-06-01 19:00:00.000000');
+insert into reservation (email, available_from) values
+	('default', '2018-06-01 19:00:00');
 
 drop table if exists purchase;
 create table purchase (
 	id integer auto_increment not null,
-	voucher_id integer,
 	email varchar(128) not null,
 	nonce varchar(128) not null,
 	payment_code varchar(128) not null unique,
+	reservation_id integer,
 	bringing_camper integer default 0,
 	queued integer default 0,
 	once_queued integer default 0,
@@ -101,7 +83,32 @@ create table purchase (
 	business_vat text,
 	primary key (id),
 	index purchase_nonce_index (nonce asc),
-	constraint purchase_voucher_id_fk foreign key (voucher_id) references voucher (id) on delete restrict on update cascade
+	constraint purchase_reservation_id_fk foreign key (reservation_id) references reservation (id) on delete restrict on update cascade
+);
+
+drop table if exists voucher;
+create table voucher (
+	id integer auto_increment not null,
+	code varchar(128) not null unique,
+	discount integer default 0,
+	claimed integer default 0,
+	claimed_at datetime default null,
+	comments text,
+	purchase_id integer,
+	primary key (id),
+	index voucher_code_index (code asc),
+	constraint voucher_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete set null on update cascade
+);
+
+
+drop table if exists purchase_voucher;
+create table purchase_voucher (
+	id integer auto_increment not null,
+	purchase_id integer,
+	voucher_id integer,
+	primary key (id),
+	constraint purchase_voucher_purchase_id_fk foreign key (purchase_id) references purchase (id) on delete cascade on update cascade,
+	constraint purchase_voucher_voucher_id_fk foreign key (voucher_id) references voucher (id) on delete cascade on update cascade
 );
 
 drop table if exists purchase_history;
