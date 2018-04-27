@@ -93,6 +93,7 @@ create table voucher (
 	discount integer default 0,
 	claimed integer default 0,
 	claimed_at datetime default null,
+	reason text,
 	comments text,
 	purchase_id integer,
 	primary key (id),

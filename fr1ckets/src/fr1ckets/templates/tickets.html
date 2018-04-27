@@ -544,7 +544,7 @@
 						<span id="price_total">no js :/</span>
 					</div>
 					<div class="form-group col-xs-6 text-right">						
-						<button type="submit" class="btn btn-submit" id="check_button">Bestellen</button>
+						<button type="submit" class="btn btn-submit" id="check_button">Bestelling controleren</button>
 					</div>
 			</div>
 		</div>
@@ -564,9 +564,10 @@
 				<div class="modal-body">
 					<div id="overview_content">
 					</div>
+						<div class="loader hidden text-center" id="overview_spinner"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Aanpassen</button>
+					<button type="button" class="btn btn-default" id="overview_cancel" data-dismiss="modal">Aanpassen</button>
 					<button type="button" class="btn btn-default" id="overview_order">Bestellen!</button>
 				</div>
 			</div>

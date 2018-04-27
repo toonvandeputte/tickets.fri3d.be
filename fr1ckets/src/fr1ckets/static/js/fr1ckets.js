@@ -1,13 +1,62 @@
 var products = [];
-var total_discount = 0;
+var vouchers = {}
+const VOUCHERS_MAX = 10;
+const VOUCHER_LEN = 10;
 
 $('.no_js_warning').hide();
+
+function vouchers_add(voucher)
+{
+
+	vouchers[voucher.code] = voucher;
+
+}
+
+function vouchers_reset()
+{
+
+	vouchers = {}
+
+}
+
+function vouchers_discount()
+{
+
+	var discount = 0;
+
+	for (var code in vouchers) {
+		discount += vouchers[code].discount;
+	}
+
+	return discount;
+
+}
+
+function vouchers_present()
+{
+
+	return Object.keys(vouchers).length > 0;
+
+}
 
 $('#overview_order').on('click', function() {
 	var root = location.protocol + '//' + location.hostname;
 	if (location.port) {
 		root += ':' + location.port;
 	}
+
+	function order_inflight(b) {
+		$('#overview_order').prop('disabled', b);
+		$('#overview_cancel').prop('disabled', b);
+		if (b) {
+			$('#overview_spinner').removeClass('hidden');
+		} else {
+			$('#overview_spinner').addClass('hidden');
+		}
+	}
+
+	order_inflight(true);
+
 	$.ajax({
 		url : root + '/api/tickets_register',
 		type : 'post',
@@ -24,13 +73,16 @@ $('#overview_order').on('click', function() {
 					$('#outcome_modal').modal('show');
 				}
 			}
+			order_inflight(false);
 		},
 		error : function(resp) {
+			order_inflight(false);
 			$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 			$('#outcome_modal').modal('show');
 		},
 		statusCode : {
 			502 : function() {
+				order_inflight(false);
 				$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 				$('#outcome_modal').modal('show');
 			},
@@ -95,17 +147,19 @@ function update_overview() {
 	for (var i = 0; i < choices.length; i++) {
 		f += '    <tr>';
 		f += '      <td>'+choices[i].name+'</td>';
-		f += '      <td>'+choices[i].price+'</td>';
+		f += '      <td>€'+choices[i].price+'</td>';
 		f += '      <td>'+choices[i].n+'</td>';
-		f += '      <td>'+(choices[i].price*choices[i].n)+'</td>';
+		f += '      <td>€'+(choices[i].price*choices[i].n)+'</td>';
 		f += '    </tr>';
 	}
-	if (total_discount) {
+	//if (vouchers_present()) {
+	for (var code in vouchers) {
+		var v = vouchers[code];
 		f += '    <tr class="success">';
-		f += '      <td>Korting</td>';
+		f += '      <td>Voucher '+v.reason+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '      <td></td>';
-		f += '      <td></td>';
-		f += '      <td>€'+total_discount+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '    </tr>';
 	}
 	f += '    <tr>';
@@ -145,12 +199,21 @@ function handle_voucher(i, data) {
 		$('.form-group-voucher_code_'+i).addClass("goodvoucher");
 		f += '<div class="row">';
 		f += '  <div class="voucher-alert alert alert-success text-center" role="alert">';
-		f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		if (voucher.reason.length > 0) {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting! Reden: "'+voucher.reason+'"</p>';
+		} else {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		}
 		f += '  </div>';
 	} else if (available) {
 		$('.form-group-voucher_code_'+i).removeClass("badvoucher");
 		$('.form-group-voucher_code_'+i).removeClass("goodvoucher");
 		f = '';
+	}
+
+	if (voucher.code != 'none') {
+		vouchers_add(voucher);
+		update_price_total_display();
 	}
 
 	$("#voucher_"+i+"_message_collapse").html(f);
@@ -330,7 +393,7 @@ function calculate_total() {
 		total += choices[i].n * choices[i].price;
 	}
 
-	total = Math.max(0, total - total_discount);
+	total = Math.max(0, total - vouchers_discount());
 
 	return total;
 
@@ -343,8 +406,9 @@ function update_price_total_display() {
 }
 
 function showhide_vouchers() {
-	for (var i = 0; i < 5; i++) {
+	for (var i = 0; i < VOUCHERS_MAX; i++) {
 		nextfield = i+1;
+		console.log("voucher "+i+": contents="+$('#voucher_code_'+i).val());
 		if ( !$('#voucher_code_'+i).val() ) {
 			console.log('hide next empty field');
 			if (!$('.form-group-voucher_code_'+nextfield+' input.form-control').val()) {
@@ -406,7 +470,7 @@ $(document).ready(function() {
 		var f = '';
 		console.log("have_voucher="+have);
 		if (have) {
-			for (var i = 0; i < 5; i++) {
+			for (var i = 0; i < VOUCHERS_MAX; i++) {
 				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
 				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
 				f += '  <div class="col-sm-8">';
@@ -416,6 +480,8 @@ $(document).ready(function() {
 				f += '  </div></div>';
 				f += '</div>';
 			}
+		} else {
+			vouchers_reset();
 		}
 		$('#voucher').html(f);
 
@@ -425,13 +491,13 @@ $(document).ready(function() {
 			$("#voucher").collapse('hide');
 		}
 
-		for (var i = 0; i < 5; i++) {
+		for (var i = 0; i < VOUCHERS_MAX; i++) {
 			(function(i) {
-				$('#voucher_code_'+i).on('change', function() {
-					update_voucher(i);
-				});
-				$('#voucher_code_'+i).on('keyup', function() {
+				$('#voucher_code_'+i).on('change keyup paste', function() {
 					showhide_vouchers();
+					if ($('#voucher_code_'+i).val().length == VOUCHER_LEN) {
+						update_voucher(i);
+					}
 				});
 			})(i);
 		}
@@ -608,7 +674,7 @@ $('#n_tickets').on('change', function() {
 	var f = "";
 
 	f += '<div class="row text-center">';
-	f += '  <p><h4>Individuele tickets:</h4></p>';
+	f += '  <p><h4>Jouw tickets:</h4></p>';
 	f += '</div>';
 
 	// for each ticket, add some form fields to the collapsible target
