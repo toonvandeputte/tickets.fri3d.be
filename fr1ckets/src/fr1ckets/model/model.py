@@ -337,10 +337,12 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 	q = """
 		insert into purchase_items (
 			purchase_id, product_id, n, person_name, person_dob,
-			person_volunteers_during, person_volunteers_after, person_food_vegitarian)
+			person_volunteers_before, person_volunteers_during, person_volunteers_after,
+			person_food_vegitarian)
 		values
 			(%(purchase_id)s, %(product_id)s, %(n)s, %(person_name)s, %(person_dob)s,
-			%(person_volunteers_during)s, %(person_volunteers_after)s, %(person_food_vegitarian)s);
+			%(person_volunteers_before)s, %(person_volunteers_during)s, %(person_volunteers_after)s,
+			%(person_food_vegitarian)s);
 		"""
 	for p in products:
 		p['purchase_id'] = purchase_id

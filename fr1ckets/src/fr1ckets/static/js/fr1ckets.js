@@ -617,6 +617,7 @@ function mk_cb_update_visitor_options(index) {
 		if (ticket && can_volunteer) {
 			var volunteering_id = fmt + "_options_not_volunteering_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
+			var buildup_id = fmt + "_options_volunteers_before";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
 			if (billable) {
@@ -626,7 +627,13 @@ function mk_cb_update_visitor_options(index) {
 			f += '      Kan géén vrijwilligers-shift doen.';
 			f += '    </label>';
 			f += '  </div>';
-			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
+			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken altijd wel mensen die graag mee het kamp komen opbouwen, zo mogelijk al vanaf donderdag.">';
+			f += '      Helpt opbouwen (mogelijk al vanaf donderdag 16 augustus).';
+			f += '    </label>';
+			f += '  </div>';
+			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
 			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Pizza en karma voorzien!">';
 			f += '      Helpt opkuisen op 21 augustus';

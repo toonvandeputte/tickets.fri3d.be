@@ -132,6 +132,7 @@ create table purchase_items (
 	n integer not null,
 	person_name text null,
 	person_dob date null,
+	person_volunteers_before integer not null,
 	person_volunteers_during integer not null,
 	person_volunteers_after integer not null,
 	person_food_vegitarian integer not null,
