@@ -9,11 +9,18 @@ gulp.task('default', function() {
     gulp.src(['less/app.less'])
         .pipe(less())
         .pipe(cleanCSS())
+        .pipe(gulp.dest('static/css'));
+    gulp.src(['less/tickets.less'])
+        .pipe(less())
+        .pipe(cleanCSS())
         .pipe(gulp.dest('static/css'))
 });
 
 gulp.task('dev', function() {
     gulp.src(['less/app.less'])
+        .pipe(less())
+        .pipe(gulp.dest('static/css'));
+    gulp.src(['less/tickets.less'])
         .pipe(less())
         .pipe(gulp.dest('static/css'))
 });

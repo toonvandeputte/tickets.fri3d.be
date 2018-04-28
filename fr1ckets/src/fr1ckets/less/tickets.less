@@ -1,0 +1,19 @@
+@import "params";
+select {
+	margin-bottom: 10px;
+}
+
+@keyframes spin {
+	0% { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+
+.loader {
+	width: 50px;
+	height: 50px;
+	animation: spin 1s linear infinite;
+	-webkit-animation: spin 1s linear infinite;
+	border: 10px solid @clr-gray4;
+	border-top: 10px solid @clr-primary7;
+	border-radius: 50%;
+}
