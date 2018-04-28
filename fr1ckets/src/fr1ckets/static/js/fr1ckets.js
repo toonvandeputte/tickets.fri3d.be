@@ -96,19 +96,17 @@ function is_safari() {
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
 
-	if (!("required" in document.createElement("input")) || is_safari()) {
-		errors = validate_choices();
-		if (errors.length > 0) {
-			var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
-			f += '<ul>';
-			for (var e in errors) {
-				f += '<li>'+errors[e]+'</li>';
-			}
-			f += '</ul>'
-			$('#validation_content').html(f);
-			$('#validation_modal').modal('show');
-			return;
+	errors = validate_choices();
+	if (errors.length > 0) {
+		var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
+		f += '<ul>';
+		for (var e in errors) {
+			f += '<li>'+errors[e]+'</li>';
 		}
+		f += '</ul>'
+		$('#validation_content').html(f);
+		$('#validation_modal').modal('show');
+		return;
 	}
 
 	$('#overview_content').html(update_overview());
@@ -293,7 +291,6 @@ function validate_choices() {
 		var name = $('#' + name_src).val();
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 
-		console.log(dob_year, dob_month, dob_day);
 		if (!dob_year || ((dob_year < 1900) || (dob_year > now.getFullYear()))) {
 			errors.push("Geboortejaar ticket "+(i+1));
 		}
