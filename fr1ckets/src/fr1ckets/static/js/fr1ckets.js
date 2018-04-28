@@ -425,7 +425,6 @@ function showhide_vouchers() {
 }
 
 function update_voucher(i) {
-	console.log("update_voucher(i="+i+")");
 	var code = $('#voucher_code_'+i).val() ? $('#voucher_code_'+i).val() : 'unknown';
 	$.ajax({
 		url : 'api/get_voucher/' + code,
@@ -471,7 +470,6 @@ $(document).ready(function() {
 	$('#have_voucher').on('change', function() {
 		var have = $('#have_voucher').prop('checked');
 		var f = '';
-		console.log("have_voucher="+have);
 		if (have) {
 			for (var i = 0; i < VOUCHERS_MAX; i++) {
 				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
@@ -499,6 +497,11 @@ $(document).ready(function() {
 				$('#voucher_code_'+i).on('change keyup paste', function() {
 					showhide_vouchers();
 					if ($('#voucher_code_'+i).val().length == VOUCHER_LEN) {
+						update_voucher(i);
+					}
+				});
+				$('#voucher_code_'+i).on('focusout', function() {
+					if ($('#voucher_code_'+i).val().length) {
 						update_voucher(i);
 					}
 				});
