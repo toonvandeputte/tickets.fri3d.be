@@ -592,11 +592,11 @@ function mk_cb_update_visitor_options(index) {
 		var ef = '';
 		// this part needs to be shown for every ticket
 		if (ticket) {
-			f += '<div class="row">';
-			f += '  <div class="col-sm-6 col-sm-offset-4">';
-			f += '    <p id="'+ticket_name_id+'">'+ticket.display+'</p>';
+			f += '<div class="row ticketinfo" >';
+			f += '  <div class="col-sm-6 col-sm-offset-4 ticketname">';
+			f += '    <p id="'+ticket_name_id+'"><i class="glyphicon glyphicon-ok"></i> '+ticket.display+'</p>';
 			f += '  </div>';
-			f += '  <div class="col-sm-2 text-right">';
+			f += '  <div class="col-sm-2 text-right ticketprice">';
 			f += '    <p id="'+ticket_price_id+'">€'+ticket.volunteering_price+'</p>';
 			f += '  </div>';
 			f += '</div>';
@@ -711,9 +711,8 @@ $('#n_tickets').on('change', function() {
 		f += '</div>';
 		// bill box
 		f += '<div class="form-group">';
-		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€317 inclusief BTW)</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op.">'
+		f += '  <div class="checkbox col-sm-8 col-sm-offset-4">';
+		f += '    <label><input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op."> Ticket met factuur (altijd €317 inclusief BTW)</label>'
 		f += '  </div>';
 		f += '</div>';
 		// collapse for options depending on input above
@@ -723,15 +722,22 @@ $('#n_tickets').on('change', function() {
 	f += '<hr/>';
 
 	f += '<div class="form-group">';
-	f += '  <label for="transportation" class="col-xs-12 col-sm-6 control-label">Wij dachten aan te komen met</label>';
+	f += '  <div class="row">';
+	f += '  <label for="transportation" class="col-xs-12 col-sm-4 control-label">Vervoer</label>';
 	f += '  <div class="col-xs-12 col-sm-6">';
 	f += '    <select id="transportation" name="transportation" class="form-control">';
-	f += '      <option value="CAR">de wagen</option>';
-	f += '      <option value="CAMPERVAN">een kampeerwagen</option>';
+	f += '      <option value="CAR">wagen</option>';
+	f += '      <option value="CAMPERVAN">een kampeerwagen (camper of caravan)</option>';
 	f += '      <option value="PUBLIC">openbaar vervoer</option>';
 	f += '      <option value="CARPOOL">carpooling</option>';
 	f += '    </select>';
 	f += '  </div>';
+	f += '  </div>';
+	f += '  <div class="row">';
+	f += '  <div class="col-sm-5 col-sm-offset-4">';
+	f += '  	<p>Dit heeft geen impact op de ticketprijs, maar zo weten we ongeveer hoeveel parkeerplaatsen en plaatsen voor caravans en campers we moeten voorzien.</p>';
+	f += '  </div>';
+	f += '</div>';
 	f += '</div>';
 
 	f += '<hr/>';
