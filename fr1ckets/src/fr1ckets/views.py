@@ -1001,6 +1001,7 @@ def api_get_voucher(code):
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({
+			'is_default' : r['email'] == 'default',
 			'available_from' : r['available_from_unix'],
 		})
 

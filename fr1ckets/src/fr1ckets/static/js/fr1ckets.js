@@ -223,10 +223,7 @@ function handle_voucher(i, data) {
 function handle_reservation(data) {
 
 	var reservation = JSON.parse(data);
-	console.log("reservation:");
-	console.dir(reservation);
 	var available = Date.now() >= (reservation.available_from*1000);
-	console.log("available=",available);
 	var f = '';
 
 	if (!available) {
@@ -235,6 +232,12 @@ function handle_reservation(data) {
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
 		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
+		f += '  </div>';
+		f += '</div>';
+	} else if (!reservation.is_default) {
+		f += '<div class="row">';
+		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '    <p>Reservatie gevonden! Let op, deze reservatie is slechts goed voor één bestelling. Eens de publieke verkoop start kan je natuurlijk bijbestellen.</p>';
 		f += '  </div>';
 		f += '</div>';
 	}
