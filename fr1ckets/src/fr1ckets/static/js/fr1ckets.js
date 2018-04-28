@@ -96,19 +96,17 @@ function is_safari() {
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
 
-	if (!("required" in document.createElement("input")) || is_safari()) {
-		errors = validate_choices();
-		if (errors.length > 0) {
-			var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
-			f += '<ul>';
-			for (var e in errors) {
-				f += '<li>'+errors[e]+'</li>';
-			}
-			f += '</ul>'
-			$('#validation_content').html(f);
-			$('#validation_modal').modal('show');
-			return;
+	errors = validate_choices();
+	if (errors.length > 0) {
+		var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
+		f += '<ul>';
+		for (var e in errors) {
+			f += '<li>'+errors[e]+'</li>';
 		}
+		f += '</ul>'
+		$('#validation_content').html(f);
+		$('#validation_modal').modal('show');
+		return;
 	}
 
 	$('#overview_content').html(update_overview());
@@ -223,10 +221,7 @@ function handle_voucher(i, data) {
 function handle_reservation(data) {
 
 	var reservation = JSON.parse(data);
-	console.log("reservation:");
-	console.dir(reservation);
 	var available = Date.now() >= (reservation.available_from*1000);
-	console.log("available=",available);
 	var f = '';
 
 	if (!available) {
@@ -235,6 +230,12 @@ function handle_reservation(data) {
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
 		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
+		f += '  </div>';
+		f += '</div>';
+	} else if (!reservation.is_default) {
+		f += '<div class="row">';
+		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '    <p>Reservatie gevonden! Let op, deze reservatie is slechts goed voor één bestelling. Eens de publieke verkoop start kan je natuurlijk bijbestellen.</p>';
 		f += '  </div>';
 		f += '</div>';
 	}
@@ -290,7 +291,6 @@ function validate_choices() {
 		var name = $('#' + name_src).val();
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 
-		console.log(dob_year, dob_month, dob_day);
 		if (!dob_year || ((dob_year < 1900) || (dob_year > now.getFullYear()))) {
 			errors.push("Geboortejaar ticket "+(i+1));
 		}
@@ -422,7 +422,6 @@ function showhide_vouchers() {
 }
 
 function update_voucher(i) {
-	console.log("update_voucher(i="+i+")");
 	var code = $('#voucher_code_'+i).val() ? $('#voucher_code_'+i).val() : 'unknown';
 	$.ajax({
 		url : 'api/get_voucher/' + code,
@@ -468,7 +467,6 @@ $(document).ready(function() {
 	$('#have_voucher').on('change', function() {
 		var have = $('#have_voucher').prop('checked');
 		var f = '';
-		console.log("have_voucher="+have);
 		if (have) {
 			for (var i = 0; i < VOUCHERS_MAX; i++) {
 				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
@@ -496,6 +494,11 @@ $(document).ready(function() {
 				$('#voucher_code_'+i).on('change keyup paste', function() {
 					showhide_vouchers();
 					if ($('#voucher_code_'+i).val().length == VOUCHER_LEN) {
+						update_voucher(i);
+					}
+				});
+				$('#voucher_code_'+i).on('focusout', function() {
+					if ($('#voucher_code_'+i).val().length) {
 						update_voucher(i);
 					}
 				});
@@ -617,6 +620,7 @@ function mk_cb_update_visitor_options(index) {
 		if (ticket && can_volunteer) {
 			var volunteering_id = fmt + "_options_not_volunteering_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
+			var buildup_id = fmt + "_options_volunteers_before";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
 			if (billable) {
@@ -626,7 +630,13 @@ function mk_cb_update_visitor_options(index) {
 			f += '      Kan géén vrijwilligers-shift doen.';
 			f += '    </label>';
 			f += '  </div>';
-			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
+			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken altijd wel mensen die graag mee het kamp komen opbouwen, zo mogelijk al vanaf donderdag.">';
+			f += '      Helpt opbouwen (mogelijk al vanaf donderdag 16 augustus).';
+			f += '    </label>';
+			f += '  </div>';
+			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
 			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Pizza en karma voorzien!">';
 			f += '      Helpt opkuisen op 21 augustus';

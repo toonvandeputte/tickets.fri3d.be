@@ -157,7 +157,7 @@ def make_form_individual_tickets(n_tickets):
 				]))
 
 		fmt += "_options"
-		for field in [ '_not_volunteering_during', '_volunteers_after', '_vegitarian' ]:
+		for field in [ '_volunteers_before', '_not_volunteering_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
 			setattr(IndividualTicketForm, name, BooleanField(name, default=False))
 	return IndividualTicketForm
@@ -202,6 +202,7 @@ def extract_products(cursor, form_general, form_tickets):
 				'n' : n.data,
 				'person_name' : None,
 				'person_dob' : None,
+				'person_volunteers_before' : False,
 				'person_volunteers_during' : False,
 				'person_volunteers_after' : False,
 				'person_food_vegitarian' : False,
@@ -230,6 +231,7 @@ def extract_products(cursor, form_general, form_tickets):
 			'n' : 1,
 			'person_dob' : dob,
 			'person_name' : getattr(form_tickets, fmt + '_name').data,
+			'person_volunteers_before' : getattr(form_tickets, fmt + '_options_volunteers_before').data,
 			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_not_volunteering_during').data,
 			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
 			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
@@ -999,6 +1001,7 @@ def api_get_voucher(code):
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({
+			'is_default' : r['email'] == 'default',
 			'available_from' : r['available_from_unix'],
 		})
 
