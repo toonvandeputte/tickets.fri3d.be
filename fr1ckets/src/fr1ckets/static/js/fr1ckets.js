@@ -735,6 +735,7 @@ $('#n_tickets').on('change', function() {
 	f += '  <label for="transportation" class="col-xs-12 col-sm-4 control-label">Vervoer</label>';
 	f += '  <div class="col-xs-12 col-sm-6">';
 	f += '    <select id="transportation" name="transportation" class="form-control">';
+	f += '      <option value="UNSURE">nog niet zeker</option>';
 	f += '      <option value="CAR">wagen</option>';
 	f += '      <option value="CAMPERVAN">een kampeerwagen (camper of caravan)</option>';
 	f += '      <option value="PUBLIC">openbaar vervoer</option>';
