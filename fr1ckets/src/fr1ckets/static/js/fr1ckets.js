@@ -225,11 +225,10 @@ function handle_reservation(data) {
 	var f = '';
 
 	if (!available) {
-		var available_date = new Date();
-		available_date.setTime(reservation.available_from*1000);
+		var s = moment(reservation.available_from*1000).format('YYYY-MM-DD HH:mm:ss');
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
-		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
+		f += '    <p>Met dit email-adres kan je pas vanaf '+s+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
 		f += '  </div>';
 		f += '</div>';
 	} else if (!reservation.is_default) {
