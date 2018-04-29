@@ -14,6 +14,8 @@ import time
 import json
 import datetime
 
+from pprint import pprint as P
+
 D = app.logger.debug
 
 def check_auth_admin(u, p):
@@ -191,12 +193,19 @@ def extract_products(cursor, form_general, form_tickets):
 
 	n_tickets = form_general.n_tickets.data
 
+	def find_product(p, product_id):
+		for product in p:
+			if product['id'] == product_id:
+				return product
+		return None
+
 	def find_knowns(known, form):
 		out = []
 		for k_t in known:
 			n = getattr(form, k_t['name'], None)
 			if not (n and n.data):
 				continue
+			relevant_product = find_product(p, k_t['id'])
 			out.append({
 				'product_id' : k_t['id'],
 				'n' : n.data,
@@ -206,6 +215,7 @@ def extract_products(cursor, form_general, form_tickets):
 				'person_volunteers_during' : False,
 				'person_volunteers_after' : False,
 				'person_food_vegitarian' : False,
+				'textual' : '{0} ({1:d}x)'.format(relevant_product['display'], n.data),
 			})
 		return out
 
@@ -226,16 +236,35 @@ def extract_products(cursor, form_general, form_tickets):
 				break
 		if billable:
 			seen_business_tickets = True
+		person_name = getattr(form_tickets, fmt + '_name').data
+		person_volunteers_before = getattr(form_tickets, fmt + '_options_volunteers_before').data
+		person_volunteers_during = not getattr(form_tickets, fmt + '_options_not_volunteering_during').data
+		person_volunteers_after =  getattr(form_tickets, fmt + '_options_volunteers_after').data
+		person_food_vegitarian = getattr(form_tickets, fmt + '_options_vegitarian').data
+		textual_options = []
+		if person_food_vegitarian:
+			textual_options.append('vegetarisch')
+		if person_volunteers_before:
+			textual_options.append('helpt opbouwen')
+		if person_volunteers_during:
+			textual_options.append('vrijwilliger-shifts')
+		else:
+			textual_options.append('premium')
+		if person_volunteers_after:
+			textual_options.append('helpt afbreken')
+		textual = '{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name, ', '.join(textual_options))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
 			'person_dob' : dob,
-			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_before' : getattr(form_tickets, fmt + '_options_volunteers_before').data,
-			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_not_volunteering_during').data,
-			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
-			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
+			'person_name' : person_name,
+			'person_volunteers_before' : person_volunteers_before,
+			'person_volunteers_during' : person_volunteers_during,
+			'person_volunteers_after' : person_volunteers_after,
+			'person_food_vegitarian' : person_food_vegitarian,
+			'textual' : textual,
 		})
+		
 	
 	return out, seen_business_tickets
 
@@ -318,7 +347,7 @@ def ticket_register():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-	print "products={0!r}".format(products)
+	P(products)
 	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
@@ -350,7 +379,15 @@ def ticket_register():
 		'payment_code' : prettify_purchase_code(purchase['payment_code']),
 		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
 		'email' : form.email.data,
+		'items_overview_text' : '',
+		'items_overview_html' : '',
 	}
+
+	mail_data['items_overview_html'] += '<ul>'
+	for p in products:
+		mail_data['items_overview_html'] += '<li>{0}</li>'.format(p['textual'])
+		mail_data['items_overview_text'] += '  - {0}\n'.format(p['textual'])
+	mail_data['items_overview_html'] += '</ul>'
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
 		if not queued:
