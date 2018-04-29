@@ -15,7 +15,7 @@ texts['MAIL_TICKETS_ORDERED_OK_HTML'] = u"""<html>
 <p>{items_overview_html}</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -38,7 +38,7 @@ We zien je graag op het kamp!
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
@@ -51,7 +51,7 @@ texts['MAIL_TICKETS_ORDERED_QUEUE_HTML'] = u"""<html>
 <p>Helaas zijn alle beschikbare plaatsen volzet. Je bestelling is dus niet kunnen doorgaan. We hebben je bestelling onthouden en contacteren je wanneer er voldoende plaatsen zijn vrijgekomen. We hanteren een first-come first-served principe.</p>
 <p>Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>. Zo maak je anderen erg blij!</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -66,7 +66,7 @@ Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat da
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
@@ -82,7 +82,7 @@ texts['MAIL_UNQUEUED_HTML'] = u"""<html>
 <p>Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat dan snel weten via <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>. Zo maak je anderen die op tickets zitten te wachten erg blij!</p>
 <p>We zien je graag op het kamp!</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -101,7 +101,7 @@ Heb je ondertussen andere plannen, en wil je je bestelling afzeggen? Laat dat da
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
@@ -112,7 +112,7 @@ texts['MAIL_PAYMENT_RECEIVED_HTML'] = u"""<html>
 <p>Beste,</p>
 <p>Je betaling is binnengekomen! Je hoeft verder niets meer te doen. Je tickets en je eventuele extra's, zullen klaarliggen op het kamp. Hou <a href="http://www.fri3d.be">www.fri3d.be</a> in het oog voor updates. Tot dan!</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -123,7 +123,7 @@ Je betaling is binnengekomen! Je hoeft verder niets meer te doen. Je tickets en 
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
@@ -135,7 +135,7 @@ texts['MAIL_REMOVED_HTML'] = u"""<html>
 <p>We hebben de betaling van je tickets helaas niet binnen de 14 dagen ontvangen. Je bestelling is dan ook geschrapt, en je bestelde tickets en eventuele extra's zijn opnieuw vrijgegeven voor verkoop.</p>
 <p>Mocht deze mail je betaling kruisen, dan zullen we het bedrag terugstorten.</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -148,7 +148,7 @@ Mocht deze mail je betaling kruisen, dan zullen we het bedrag terugstorten.
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
 
@@ -160,7 +160,7 @@ texts['MAIL_VOLUNTEERING_SCHEDULE_HTML'] = u"""<html>
 <p>Hier een overzicht van je vrijwilligers-schema dat je hebt ingegeven. Je kan later nog terug naar de pagina gaan om dit aan te passen.</p>
 <p>{schedule_html}</p>
 <p>Met vriendelijke groeten,</p>
-<p>De Fri3d Camp organisatie.</p>
+<p>Het Fri3d Camp orga-team.</p>
 <p><small>Dit is een automatische mail. Heb je nog vragen? Mail dan naar <a mailto="tickets@fri3d.be">tickets@fri3d.be</a>.</small></p>
 </body>
 </html>"""
@@ -173,6 +173,6 @@ Hier een overzicht van je vrijwilligers-schema dat je hebt ingegeven. Je kan lat
 
 Met vriendelijke groeten,
 
-De Fri3d Camp organisatie.
+Het Fri3d Camp orga-team.
 
 Dit is een automatische mail. Heb je nog vragen? Mail dan naar tickets@fri3d.be."""
