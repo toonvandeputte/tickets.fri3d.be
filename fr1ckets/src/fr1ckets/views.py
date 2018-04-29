@@ -946,17 +946,18 @@ def purchase_view(purchase_id):
 		g.db_commit = True
 	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 	items = model.purchase_items_get(g.db_cursor, purchase_id)
-	voucher = model.voucher_get(g.db_cursor, purchase['voucher_id'])[0]
+	reservation = model.reservation_find(g.db_cursor, purchase['email'])
+	vouchers = model.vouchers_for_purchase(g.db_cursor, purchase_id)
 	history = model.purchase_history_get(g.db_cursor, purchase_id)
 	purchase['payment_code'] = prettify_purchase_code(purchase['payment_code'])
 	purchase['created_at'] = purchase['created_at'].isoformat()
 	purchase['business_address'] = purchase['business_address'].splitlines()
-	voucher['available_from'] = voucher['available_from'].isoformat()
+	reservation['available_from'] = reservation['available_from'].isoformat()
 	n_billables = bool(sum([ i['billable'] for i in items ]))
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
 	price_total = price_normal + price_billable
 	return render_template('purchase_view.html', items=items, form=form,
-			purchase=purchase, voucher=voucher,
+			purchase=purchase, vouchers=vouchers, reservation=reservation,
 			n_billables=n_billables, history=history,
 			price_normal=price_normal, price_billable=price_billable, price_total=price_total,
 			form_dest=url_for('purchase_view', purchase_id=purchase_id),
