@@ -631,7 +631,7 @@ function mk_cb_update_visitor_options(index) {
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken altijd wel mensen die graag mee het kamp komen opbouwen, zo mogelijk al vanaf donderdag.">';
+			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken altijd wel mensen die graag mee het kamp komen opbouwen, zo mogelijk al vanaf donderdag.">';
 			f += '      Helpt opbouwen (mogelijk al vanaf donderdag 16 augustus).';
 			f += '    </label>';
 			f += '  </div>';
