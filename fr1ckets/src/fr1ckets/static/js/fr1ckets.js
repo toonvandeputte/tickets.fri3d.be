@@ -625,19 +625,19 @@ function mk_cb_update_visitor_options(index) {
 			if (billable) {
 				ef = 'checked="checked"';
 			}
-			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Om het kamp te doen lukken, hopen we dat iedereen vanaf 16 jaar een volunteer-shift van een drietal uurtjes kan bijdragen. Als dit niet voor je lukt, kan je dit aanvinken, je betaalt dan wel iets meer.">';
-			f += '      Kan géén vrijwilligers-shift doen.';
+			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Om het kamp te doen lukken, hopen we dat iedereen vanaf 16 jaar minstens één volunteer-shift van een drietal uurtjes kan bijdragen. Als dit niet voor je lukt, kan je dit aanvinken, je betaalt dan wel iets meer.">';
+			f += '      Kan géén vrijwilligers-shift doen (<i>premium</i>).';
 			f += '    </label>';
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken mensen die vanaf donderdag graag mee het kamp komen opbouwen. Pizza en karma voorzien!">';
-			f += '      Helpt opbouwen (mogelijk al vanaf donderdag 16 augustus).';
+			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken mensen die vanaf donderdag graag mee het kamp komen opbouwen. Good karma!">';
+			f += '      Helpt mee opbouwen voor het kamp.';
 			f += '    </label>';
 			f += '  </div>';
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Pizza en karma voorzien!">';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Good karma!">';
 			f += '      Helpt opkuisen op 21 augustus';
 			f += '    </label>';
 			f += '  </div>';
