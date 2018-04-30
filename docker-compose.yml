@@ -3,8 +3,7 @@ services:
     web:
         image: nginx
         ports:
-            - 80:80
-            - 443:443
+            - 8002:80
         volumes:
             - ./web/default.conf:/etc/nginx/conf.d/default.conf:ro
             - ./web/cert.pem:/cert.pem:ro
@@ -31,6 +30,8 @@ services:
             - queue:queue
         env_file:
             - ./env
+        volumes:
+            - ./fr1ckets/csv:/csv
     worker:
         build: ./worker
         links:
