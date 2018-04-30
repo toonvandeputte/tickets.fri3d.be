@@ -17,7 +17,7 @@ except IOError:
 		print "YOU ARE RUNNING THE STOCK CONFIG, which is not in git, smtp passwords and so on, ask jef for fr1ckets_priv.conf"
 	app.config.from_pyfile('fr1ckets.conf')
 
-if len(sys.argv) <= 4:
+if len(sys.argv) < 4:
 	print "usage: {0} how_many discount_in_eur reason".format(sys.argv[0])
 	sys.exit(1)
 
