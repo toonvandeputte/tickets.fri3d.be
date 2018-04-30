@@ -121,8 +121,8 @@
 				<div class="thumbnail">
 					<img src="/static/img/bade_robot_parts.jpg" class="img-rounded">
 					<div class="caption text-center">
-						<h3>Robot parts voor de badge</h3>
-						<p>Voor elke badge kan je ook de stukken bestellen om er een robot mee te maken!</p>
+						<h3>Robot parts - <strong>€ 17</strong></h3>
+						<p>Met deze onderdelen maak je van je <a href="http://www.fri3d.be/badge/" target="_blank">Fri3d Camp badge</a> een dansende robot. Er zullen toegankelijke workshops zijn voor het bouwen van de robots, zodat we een heuse danswedstrijd kunnen houden!</p>
 					</div>
 				</div>
 			</div>
@@ -170,7 +170,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-xs-12 col-sm-6 col-sm-offset-3">		
+			<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 				<div class="row">
 					<div class="form-group">
 						<label for="tshirt_kid_s" class="col-xs-6 col-sm-3 control-label">3-4</label>
@@ -254,7 +254,7 @@
 							</select>
 						</div>
 					</div>
-				</div>				
+				</div>
 			</div>
 		</div>
 		<!-- END KID TSHIRTS -->
@@ -272,7 +272,7 @@
 			</div>
 			<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 				<div class="row">
-					<div class="form-group">						
+					<div class="form-group">
 						<label for="tshirt_adult_f_s" class="col-xs-2 col-sm-2 control-label">S</label>
 						<div class="col-xs-4 col-sm-4">
 							<select id="tshirt_adult_f_s" name="tshirt_adult_f_s" class="form-control">
@@ -336,7 +336,7 @@
 								<option value="9">9</option>
 								<option value="10">10</option>
 							</select>
-						</div>						
+						</div>
 					</div>
 				</div>
 			</div>
@@ -356,7 +356,7 @@
 			</div>
 			<div class="col-xs-12 col-sm-6 col-sm-offset-3">
 				<div class="row">
-					<div class="form-group">						
+					<div class="form-group">
 						<label for="tshirt_adult_m_s" class="col-xs-2 col-sm-2 control-label">S</label>
 						<div class="col-xs-4 col-sm-4">
 							<select id="tshirt_adult_m_s" name="tshirt_adult_m_s" class="form-control">
@@ -462,9 +462,7 @@
 						<div class="col-md-6 col-sm-6 col-xs-6">
 							<select id="token" name="token" class="form-control">
 								<option value="0" selected>0</option>
-								<option value="5">5 – € 7,50</option>
 								<option value="10">10 – € 15</option>
-								<option value="15">15 – € 22,50</option>
 								<option value="20">20 – € 30</option>
 								<option value="30">30 – € 45</option>
 								<option value="40">40 – € 60</option>
@@ -543,8 +541,8 @@
 						<strong>Totaal:</strong>
 						<span id="price_total">no js :/</span>
 					</div>
-					<div class="form-group col-xs-6 text-right">						
-						<button type="submit" class="btn btn-submit" id="check_button">Bestellen</button>
+					<div class="form-group col-xs-6 text-right">
+						<button type="submit" class="btn btn-submit" id="check_button">Bestelling controleren</button>
 					</div>
 			</div>
 		</div>
@@ -564,9 +562,10 @@
 				<div class="modal-body">
 					<div id="overview_content">
 					</div>
+						<div class="loader hidden text-center" id="overview_spinner"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Aanpassen</button>
+					<button type="button" class="btn btn-default" id="overview_cancel" data-dismiss="modal">Aanpassen</button>
 					<button type="button" class="btn btn-default" id="overview_order">Bestellen!</button>
 				</div>
 			</div>

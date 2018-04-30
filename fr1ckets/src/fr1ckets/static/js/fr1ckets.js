@@ -1,13 +1,62 @@
 var products = [];
-var total_discount = 0;
+var vouchers = {}
+const VOUCHERS_MAX = 10;
+const VOUCHER_LEN = 10;
 
 $('.no_js_warning').hide();
+
+function vouchers_add(voucher)
+{
+
+	vouchers[voucher.code] = voucher;
+
+}
+
+function vouchers_reset()
+{
+
+	vouchers = {}
+
+}
+
+function vouchers_discount()
+{
+
+	var discount = 0;
+
+	for (var code in vouchers) {
+		discount += vouchers[code].discount;
+	}
+
+	return discount;
+
+}
+
+function vouchers_present()
+{
+
+	return Object.keys(vouchers).length > 0;
+
+}
 
 $('#overview_order').on('click', function() {
 	var root = location.protocol + '//' + location.hostname;
 	if (location.port) {
 		root += ':' + location.port;
 	}
+
+	function order_inflight(b) {
+		$('#overview_order').prop('disabled', b);
+		$('#overview_cancel').prop('disabled', b);
+		if (b) {
+			$('#overview_spinner').removeClass('hidden');
+		} else {
+			$('#overview_spinner').addClass('hidden');
+		}
+	}
+
+	order_inflight(true);
+
 	$.ajax({
 		url : root + '/api/tickets_register',
 		type : 'post',
@@ -24,13 +73,16 @@ $('#overview_order').on('click', function() {
 					$('#outcome_modal').modal('show');
 				}
 			}
+			order_inflight(false);
 		},
 		error : function(resp) {
+			order_inflight(false);
 			$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 			$('#outcome_modal').modal('show');
 		},
 		statusCode : {
 			502 : function() {
+				order_inflight(false);
 				$('#outcome_content').text("Er is een fout opgetreden, waarschijnlijk overbelasting. Probeer het nog eens.");
 				$('#outcome_modal').modal('show');
 			},
@@ -44,19 +96,17 @@ function is_safari() {
 $('#ticket_form').submit(function(e) {
 	e.preventDefault();
 
-	if (!("required" in document.createElement("input")) || is_safari()) {
-		errors = validate_choices();
-		if (errors.length > 0) {
-			var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
-			f += '<ul>';
-			for (var e in errors) {
-				f += '<li>'+errors[e]+'</li>';
-			}
-			f += '</ul>'
-			$('#validation_content').html(f);
-			$('#validation_modal').modal('show');
-			return;
+	errors = validate_choices();
+	if (errors.length > 0) {
+		var f = '<p>Er zijn nog enkele onvolledigheden in de ingave, gelieve deze te corrigeren:</p>';
+		f += '<ul>';
+		for (var e in errors) {
+			f += '<li>'+errors[e]+'</li>';
 		}
+		f += '</ul>'
+		$('#validation_content').html(f);
+		$('#validation_modal').modal('show');
+		return;
 	}
 
 	$('#overview_content').html(update_overview());
@@ -95,17 +145,19 @@ function update_overview() {
 	for (var i = 0; i < choices.length; i++) {
 		f += '    <tr>';
 		f += '      <td>'+choices[i].name+'</td>';
-		f += '      <td>'+choices[i].price+'</td>';
+		f += '      <td>€'+choices[i].price+'</td>';
 		f += '      <td>'+choices[i].n+'</td>';
-		f += '      <td>'+(choices[i].price*choices[i].n)+'</td>';
+		f += '      <td>€'+(choices[i].price*choices[i].n)+'</td>';
 		f += '    </tr>';
 	}
-	if (total_discount) {
+	//if (vouchers_present()) {
+	for (var code in vouchers) {
+		var v = vouchers[code];
 		f += '    <tr class="success">';
-		f += '      <td>Korting</td>';
+		f += '      <td>Voucher '+v.reason+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '      <td></td>';
-		f += '      <td></td>';
-		f += '      <td>€'+total_discount+'</td>';
+		f += '      <td>-€'+v.discount+'</td>';
 		f += '    </tr>';
 	}
 	f += '    <tr>';
@@ -145,12 +197,21 @@ function handle_voucher(i, data) {
 		$('.form-group-voucher_code_'+i).addClass("goodvoucher");
 		f += '<div class="row">';
 		f += '  <div class="voucher-alert alert alert-success text-center" role="alert">';
-		f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		if (voucher.reason.length > 0) {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting! Reden: "'+voucher.reason+'"</p>';
+		} else {
+			f += '    <p>Met deze voucher krijg je éénmalig €'+voucher.discount+' korting!</p>';
+		}
 		f += '  </div>';
 	} else if (available) {
 		$('.form-group-voucher_code_'+i).removeClass("badvoucher");
 		$('.form-group-voucher_code_'+i).removeClass("goodvoucher");
 		f = '';
+	}
+
+	if (voucher.code != 'none') {
+		vouchers_add(voucher);
+		update_price_total_display();
 	}
 
 	$("#voucher_"+i+"_message_collapse").html(f);
@@ -160,18 +221,20 @@ function handle_voucher(i, data) {
 function handle_reservation(data) {
 
 	var reservation = JSON.parse(data);
-	console.log("reservation:");
-	console.dir(reservation);
 	var available = Date.now() >= (reservation.available_from*1000);
-	console.log("available=",available);
 	var f = '';
 
 	if (!available) {
-		var available_date = new Date();
-		available_date.setTime(reservation.available_from*1000);
+		var s = moment(reservation.available_from*1000).format('YYYY-MM-DD HH:mm:ss');
 		f += '<div class="row">';
 		f += '  <div class="alert alert-danger text-center" role="alert">';
-		f += '    <p>Met dit email-adres kan je pas vanaf '+available_date.toLocaleDateString()+' '+available_date.toLocaleTimeString()+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen.</p>';
+		f += '    <p>Met dit email-adres kan je pas vanaf '+s+' bestellen! Je kan het formulier tot 24 uur op voorhand invullen. Als je vermoedt dat je een reservatie op een ander email-adres hebt, gelieve ons te <a href="mailto:tickets@fri3d.be">mailen</a>.</p>';
+		f += '  </div>';
+		f += '</div>';
+	} else if (!reservation.is_default) {
+		f += '<div class="row">';
+		f += '  <div class="alert alert-success text-center" role="alert">';
+		f += '    <p>Reservatie gevonden! Let op, deze reservatie is slechts goed voor één bestelling. Eens de publieke verkoop start kan je natuurlijk bijbestellen.</p>';
 		f += '  </div>';
 		f += '</div>';
 	}
@@ -227,7 +290,6 @@ function validate_choices() {
 		var name = $('#' + name_src).val();
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 
-		console.log(dob_year, dob_month, dob_day);
 		if (!dob_year || ((dob_year < 1900) || (dob_year > now.getFullYear()))) {
 			errors.push("Geboortejaar ticket "+(i+1));
 		}
@@ -330,7 +392,7 @@ function calculate_total() {
 		total += choices[i].n * choices[i].price;
 	}
 
-	total = Math.max(0, total - total_discount);
+	total = Math.max(0, total - vouchers_discount());
 
 	return total;
 
@@ -343,8 +405,9 @@ function update_price_total_display() {
 }
 
 function showhide_vouchers() {
-	for (var i = 0; i < 5; i++) {
+	for (var i = 0; i < VOUCHERS_MAX; i++) {
 		nextfield = i+1;
+		console.log("voucher "+i+": contents="+$('#voucher_code_'+i).val());
 		if ( !$('#voucher_code_'+i).val() ) {
 			console.log('hide next empty field');
 			if (!$('.form-group-voucher_code_'+nextfield+' input.form-control').val()) {
@@ -358,7 +421,6 @@ function showhide_vouchers() {
 }
 
 function update_voucher(i) {
-	console.log("update_voucher(i="+i+")");
 	var code = $('#voucher_code_'+i).val() ? $('#voucher_code_'+i).val() : 'unknown';
 	$.ajax({
 		url : 'api/get_voucher/' + code,
@@ -404,9 +466,8 @@ $(document).ready(function() {
 	$('#have_voucher').on('change', function() {
 		var have = $('#have_voucher').prop('checked');
 		var f = '';
-		console.log("have_voucher="+have);
 		if (have) {
-			for (var i = 0; i < 5; i++) {
+			for (var i = 0; i < VOUCHERS_MAX; i++) {
 				f += '<div class="form-group form-group-voucher_code form-group-voucher_code_'+i+'"><div class="row">';
 				f += '  <label for="voucher_code_'+i+'" class="control-label col-sm-3 col-sm-offset-1">Voucher</label>';
 				f += '  <div class="col-sm-8">';
@@ -416,6 +477,8 @@ $(document).ready(function() {
 				f += '  </div></div>';
 				f += '</div>';
 			}
+		} else {
+			vouchers_reset();
 		}
 		$('#voucher').html(f);
 
@@ -425,13 +488,18 @@ $(document).ready(function() {
 			$("#voucher").collapse('hide');
 		}
 
-		for (var i = 0; i < 5; i++) {
+		for (var i = 0; i < VOUCHERS_MAX; i++) {
 			(function(i) {
-				$('#voucher_code_'+i).on('change', function() {
-					update_voucher(i);
-				});
-				$('#voucher_code_'+i).on('keyup', function() {
+				$('#voucher_code_'+i).on('change keyup paste', function() {
 					showhide_vouchers();
+					if ($('#voucher_code_'+i).val().length == VOUCHER_LEN) {
+						update_voucher(i);
+					}
+				});
+				$('#voucher_code_'+i).on('focusout', function() {
+					if ($('#voucher_code_'+i).val().length) {
+						update_voucher(i);
+					}
 				});
 			})(i);
 		}
@@ -526,11 +594,11 @@ function mk_cb_update_visitor_options(index) {
 		var ef = '';
 		// this part needs to be shown for every ticket
 		if (ticket) {
-			f += '<div class="row">';
-			f += '  <div class="col-sm-6 col-sm-offset-4">';
-			f += '    <p id="'+ticket_name_id+'">'+ticket.display+'</p>';
+			f += '<div class="row ticketinfo" >';
+			f += '  <div class="col-sm-6 col-sm-offset-4 ticketname">';
+			f += '    <p id="'+ticket_name_id+'"><i class="glyphicon glyphicon-ok"></i> '+ticket.display+'</p>';
 			f += '  </div>';
-			f += '  <div class="col-sm-2 text-right">';
+			f += '  <div class="col-sm-2 text-right ticketprice">';
 			f += '    <p id="'+ticket_price_id+'">€'+ticket.volunteering_price+'</p>';
 			f += '  </div>';
 			f += '</div>';
@@ -551,18 +619,25 @@ function mk_cb_update_visitor_options(index) {
 		if (ticket && can_volunteer) {
 			var volunteering_id = fmt + "_options_not_volunteering_during";
 			var cleanup_id = fmt + "_options_volunteers_after";
+			var buildup_id = fmt + "_options_volunteers_before";
 			f += '  <div class="checkbox col-sm-4 col-xs-6">';
 			f += '    <label>';
 			if (billable) {
 				ef = 'checked="checked"';
 			}
-			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Om het kamp te doen lukken, hopen we dat iedereen vanaf 16 jaar een volunteer-shift van een drietal uurtjes kan bijdragen. Als dit niet voor je lukt, kan je dit aanvinken, je betaalt dan wel iets meer.">';
-			f += '      Kan géén vrijwilligers-shift doen.';
+			f += '      <input type="checkbox" id="'+volunteering_id+'" name="'+volunteering_id+'" '+ef+' data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Om het kamp te doen lukken, hopen we dat iedereen vanaf 16 jaar minstens één volunteer-shift van een drietal uurtjes kan bijdragen. Als dit niet voor je lukt, kan je dit aanvinken, je betaalt dan wel iets meer.">';
+			f += '      Kan géén vrijwilligers-shift doen (<i>premium</i>).';
 			f += '    </label>';
 			f += '  </div>';
-			f += '  <div class="checkbox col-sm-offset-4 col-sm-8 col-xs-6">';
+			f += '  <div class="checkbox col-sm-offset-4 col-sm-4 col-xs-6">';
 			f += '    <label>';
-			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Pizza en karma voorzien!">';
+			f += '      <input type="checkbox" id="'+buildup_id+'" name="'+buildup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken mensen die vanaf donderdag graag mee het kamp komen opbouwen. Good karma!">';
+			f += '      Helpt mee opbouwen voor het kamp.';
+			f += '    </label>';
+			f += '  </div>';
+			f += '  <div class="checkbox col-sm-4 col-xs-6">';
+			f += '    <label>';
+			f += '      <input type="checkbox" id="'+cleanup_id+'" name="'+cleanup_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="We zoeken een twintigtal mensen die graag een nachtje langer bijven kamperen en op dinsdag 21 augustus 2018 helpen opruimen. Good karma!">';
 			f += '      Helpt opkuisen op 21 augustus';
 			f += '    </label>';
 			f += '  </div>';
@@ -608,7 +683,7 @@ $('#n_tickets').on('change', function() {
 	var f = "";
 
 	f += '<div class="row text-center">';
-	f += '  <p><h4>Individuele tickets:</h4></p>';
+	f += '  <p><h4>Jouw tickets:</h4></p>';
 	f += '</div>';
 
 	// for each ticket, add some form fields to the collapsible target
@@ -627,7 +702,7 @@ $('#n_tickets').on('change', function() {
 		f += '<div class="form-group">';
 		f += '  <label for="'+name_id+'" class="control-label col-sm-3 col-sm-offset-1">Naam</label>';
 		f += '  <div class="col-sm-8">';
-		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Voor de terrein-uitbater hebben we van iedereen de naam en geboortedatum nodig. We berekenen ondertussen het voordeligste ticket.">';
+		f += '    <input class="form-control" id="'+name_id+'" name="'+name_id+'" type=text required aria-required="true">';
 		f += '  </div>';
 		f += '</div>';
 		// dob box
@@ -645,9 +720,8 @@ $('#n_tickets').on('change', function() {
 		f += '</div>';
 		// bill box
 		f += '<div class="form-group">';
-		f += '  <label class="control-label col-sm-3 col-sm-offset-1 for="'+billable_id+'">Met factuur (€256+BTW)</label>';
-		f += '  <div class="col-sm-8">';
-		f += '    <input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op.">'
+		f += '  <div class="checkbox col-sm-8 col-sm-offset-4">';
+		f += '    <label><input type="checkbox" id="'+billable_id+'" name="'+billable_id+'" data-toggle="popover" data-placement="top" data-trigger="focus" data-content="Je kiest ervoor om dit ticket te laten factureren. We nemen hiervoor zo snel mogelijk contact op."> Ticket met factuur (altijd €317 inclusief BTW)</label>'
 		f += '  </div>';
 		f += '</div>';
 		// collapse for options depending on input above
@@ -657,14 +731,23 @@ $('#n_tickets').on('change', function() {
 	f += '<hr/>';
 
 	f += '<div class="form-group">';
-	f += '  <div class="col-xs-12 col-sm-11 col-sm-offset-1">';
-	f += '    <div class="checkbox">';
-	f += '      <label>';
-	f += '        <input type="checkbox" id="bringing_camper" name="bringing_camper">';
-	f += '        Graag een plaatsje op de voorziene parking voor onze camper!';
-	f += '      </label>';
-	f += '    </div>';
+	f += '  <div class="row">';
+	f += '  <label for="transportation" class="col-xs-12 col-sm-4 control-label">Vervoer</label>';
+	f += '  <div class="col-xs-12 col-sm-6">';
+	f += '    <select id="transportation" name="transportation" class="form-control">';
+	f += '      <option value="UNSURE">nog niet zeker</option>';
+	f += '      <option value="CAR">wagen</option>';
+	f += '      <option value="CAMPERVAN">een kampeerwagen (camper of caravan)</option>';
+	f += '      <option value="PUBLIC">openbaar vervoer</option>';
+	f += '      <option value="CARPOOL">carpooling</option>';
+	f += '    </select>';
 	f += '  </div>';
+	f += '  </div>';
+	f += '  <div class="row">';
+	f += '  <div class="col-sm-5 col-sm-offset-4">';
+	f += '  	<p>Dit heeft geen impact op de ticketprijs, maar zo weten we ongeveer hoeveel parkeerplaatsen en plaatsen voor caravans en campers we moeten voorzien.</p>';
+	f += '  </div>';
+	f += '</div>';
 	f += '</div>';
 
 	f += '<hr/>';

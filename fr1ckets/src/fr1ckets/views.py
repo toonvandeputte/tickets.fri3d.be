@@ -14,6 +14,8 @@ import time
 import json
 import datetime
 
+from pprint import pprint as P
+
 D = app.logger.debug
 
 def check_auth_admin(u, p):
@@ -46,8 +48,11 @@ def req_auth_public(f):
 
 def generate_tshirt_names():
 	out = []
-	for tshirt in [ 'adult_f', 'adult_m' ]:
-		for size in [ 'xs', 's', 'm', 'l', 'xl', 'xxl' ]:
+	for tshirt in [ 'adult_f' ]:
+		for size in [ 's', 'm', 'l', 'xl' ]:
+			out.append("tshirt_{0}_{1}".format(tshirt, size))
+	for tshirt in [ 'adult_m' ]:
+		for size in [ 's', 'm', 'l', 'xl', 'xxl' ]:
 			out.append("tshirt_{0}_{1}".format(tshirt, size))
 	for tshirt in [ 'kid' ]:
 		for size in [ 'xs', 's', 'm', 'l', 'xl' ]:
@@ -81,6 +86,11 @@ class TicketForm(Form):
 	voucher_code_2 = StringField('voucher_code_2', validators=[])
 	voucher_code_3 = StringField('voucher_code_3', validators=[])
 	voucher_code_4 = StringField('voucher_code_4', validators=[])
+	voucher_code_5 = StringField('voucher_code_5', validators=[])
+	voucher_code_6 = StringField('voucher_code_6', validators=[])
+	voucher_code_7 = StringField('voucher_code_7', validators=[])
+	voucher_code_8 = StringField('voucher_code_8', validators=[])
+	voucher_code_9 = StringField('voucher_code_9', validators=[])
 
 	n_tickets = IntegerField('n_tickets', validators=[
 		validators.NumberRange(min=0, max=20),
@@ -122,7 +132,7 @@ def make_form_individual_tickets(n_tickets):
 		pass
 
 	if n_tickets:
-		setattr(IndividualTicketForm, 'bringing_camper', BooleanField('bringing_camper'))
+		setattr(IndividualTicketForm, 'transportation', StringField('transportation'))
 
 	for i in range(n_tickets):
 		fmt = "tickets_{0}".format(i)
@@ -149,7 +159,7 @@ def make_form_individual_tickets(n_tickets):
 				]))
 
 		fmt += "_options"
-		for field in [ '_not_volunteering_during', '_volunteers_after', '_vegitarian' ]:
+		for field in [ '_volunteers_before', '_not_volunteering_during', '_volunteers_after', '_vegitarian' ]:
 			name = fmt + field
 			setattr(IndividualTicketForm, name, BooleanField(name, default=False))
 	return IndividualTicketForm
@@ -166,8 +176,8 @@ def extract_billing_info(form_tickets):
 def extract_general_ticket_info(form_tickets):
 	out = {}
 
-	field = getattr(form_tickets, 'bringing_camper', None)
-	out['bringing_camper'] = field.data if field else False
+	field = getattr(form_tickets, 'transportation', None)
+	out['transportation'] = field.data if field else False
 
 	return out
 
@@ -183,20 +193,29 @@ def extract_products(cursor, form_general, form_tickets):
 
 	n_tickets = form_general.n_tickets.data
 
+	def find_product(p, product_id):
+		for product in p:
+			if product['id'] == product_id:
+				return product
+		return None
+
 	def find_knowns(known, form):
 		out = []
 		for k_t in known:
 			n = getattr(form, k_t['name'], None)
 			if not (n and n.data):
 				continue
+			relevant_product = find_product(p, k_t['id'])
 			out.append({
 				'product_id' : k_t['id'],
 				'n' : n.data,
 				'person_name' : None,
 				'person_dob' : None,
+				'person_volunteers_before' : False,
 				'person_volunteers_during' : False,
 				'person_volunteers_after' : False,
 				'person_food_vegitarian' : False,
+				'textual' : '{0} ({1:d}x)'.format(relevant_product['display'], n.data),
 			})
 		return out
 
@@ -217,15 +236,35 @@ def extract_products(cursor, form_general, form_tickets):
 				break
 		if billable:
 			seen_business_tickets = True
+		person_name = getattr(form_tickets, fmt + '_name').data
+		person_volunteers_before = getattr(form_tickets, fmt + '_options_volunteers_before').data
+		person_volunteers_during = not getattr(form_tickets, fmt + '_options_not_volunteering_during').data
+		person_volunteers_after =  getattr(form_tickets, fmt + '_options_volunteers_after').data
+		person_food_vegitarian = getattr(form_tickets, fmt + '_options_vegitarian').data
+		textual_options = []
+		if person_food_vegitarian:
+			textual_options.append('vegetarisch')
+		if person_volunteers_before:
+			textual_options.append('helpt opbouwen')
+		if person_volunteers_during:
+			textual_options.append('vrijwilliger-shifts')
+		else:
+			textual_options.append('premium')
+		if person_volunteers_after:
+			textual_options.append('helpt afbreken')
+		textual = '{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name, ', '.join(textual_options))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
 			'person_dob' : dob,
-			'person_name' : getattr(form_tickets, fmt + '_name').data,
-			'person_volunteers_during' : not getattr(form_tickets, fmt + '_options_not_volunteering_during').data,
-			'person_volunteers_after' : getattr(form_tickets, fmt + '_options_volunteers_after').data,
-			'person_food_vegitarian' : getattr(form_tickets, fmt + '_options_vegitarian').data,
+			'person_name' : person_name,
+			'person_volunteers_before' : person_volunteers_before,
+			'person_volunteers_during' : person_volunteers_during,
+			'person_volunteers_after' : person_volunteers_after,
+			'person_food_vegitarian' : person_food_vegitarian,
+			'textual' : textual,
 		})
+		
 	
 	return out, seen_business_tickets
 
@@ -238,6 +277,10 @@ def price_distribution_strategy(cursor, nonce):
 	price_unbillable = price_total - price_billable
 	price_discount = model.get_purchase_discount(g.db_cursor, nonce)
 
+	print "price_total={0!r}".format(price_total)
+	print "price_billable={0!r}".format(price_billable)
+	print "price_unbillable={0!r}".format(price_unbillable)
+	print "price_discount={0!r}".format(price_discount)
 	if price_discount > price_total:
 		# all expenses covered by discount
 		return 0, 0
@@ -289,13 +332,9 @@ def ticket_register():
 			message=u"U kan slechts reserveren vanaf {0} UTC, probeer nogmaals over {1} seconden!".format(reservation['available_from'], int(time_to_go.total_seconds())))
 
 	# check the voucher first
-	voucher_codes = []
-	for i in range(5):
-		voucher_codes.append(getattr(form, "voucher_code_{0}".format(i)).data)
-	voucher_codes = filter(lambda x: len(x) > 0, voucher_codes)
+	voucher_codes = filter(lambda x: len(x) > 0,
+		[ getattr(form, "voucher_code_{0}".format(i)).data for i in range(10) ])
 	print "voucher_codes={0}".format(voucher_codes)
-	#voucher = model.voucher_find(g.db_cursor, form.voucher_code_0.data)
-	#print "found voucher: {0!r}".format(voucher)
 
 	# validate the dynamic part
 	individual_form = make_form_individual_tickets(n_tickets)()
@@ -308,7 +347,7 @@ def ticket_register():
 	# the dynamic part of the form validated as well, get out all the data
 	# and write to database
 	products, contains_billables  = extract_products(g.db_cursor, form, individual_form)
-	print "products={0!r}".format(products)
+	P(products)
 	business_form = None
 	if contains_billables:
 		# one or more of the products are billable, validate business info
@@ -340,7 +379,15 @@ def ticket_register():
 		'payment_code' : prettify_purchase_code(purchase['payment_code']),
 		'payment_account' : app.config['OUR_BANK_ACCOUNT'],
 		'email' : form.email.data,
+		'items_overview_text' : '',
+		'items_overview_html' : '',
 	}
+
+	mail_data['items_overview_html'] += '<ul>'
+	for p in products:
+		mail_data['items_overview_html'] += '<li>{0}</li>'.format(p['textual'])
+		mail_data['items_overview_text'] += '  - {0}\n'.format(p['textual'])
+	mail_data['items_overview_html'] += '</ul>'
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
 		if not queued:
@@ -366,6 +413,10 @@ def ticket_register():
 		else:
 			mail.send_notif("new registration: {0} bought {1} QUEUED tickets, total sold now {2}".format(form.email.data, n_tickets, n_tickets + tickets_total_sold))
 
+	if form.email.data == 'jef.vdb+break@gmail.com':
+		import time
+		time.sleep(5)
+		raise Exception("foo")
 	g.db_commit = True
 
 	# smashing!
@@ -579,6 +630,10 @@ class VoucherForm(Form):
 	comments = TextAreaField('Internal comments', validators=[
 		validators.Optional(),
 		])
+	reason = TextAreaField('Externally shown reason', validators=[
+		validators.Optional(),
+		])
+
 
 @app.route('/admin/voucher_edit/<int:id>', methods=[ 'GET', 'POST'])
 @req_auth_admin
@@ -595,6 +650,7 @@ def voucher_edit(id):
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
+			'reason' : form.reason.data,
 		}
 		model.voucher_update(g.db_cursor, id, changeset)
 		g.db_commit = True
@@ -626,6 +682,7 @@ def voucher_add():
 			'claimed' : bool(form.claimed.data),
 			'claimed_at' : form.claimed_at.data or None,
 			'comments' : form.comments.data,
+			'reason' : form.reason.data,
 		}
 		code = model.voucher_create(g.db_cursor, changeset)
 		g.db_commit = True
@@ -889,17 +946,18 @@ def purchase_view(purchase_id):
 		g.db_commit = True
 	purchase = model.purchase_get(g.db_cursor, id=purchase_id)
 	items = model.purchase_items_get(g.db_cursor, purchase_id)
-	voucher = model.voucher_get(g.db_cursor, purchase['voucher_id'])[0]
+	reservation = model.reservation_find(g.db_cursor, purchase['email'])
+	vouchers = model.vouchers_for_purchase(g.db_cursor, purchase_id)
 	history = model.purchase_history_get(g.db_cursor, purchase_id)
 	purchase['payment_code'] = prettify_purchase_code(purchase['payment_code'])
 	purchase['created_at'] = purchase['created_at'].isoformat()
 	purchase['business_address'] = purchase['business_address'].splitlines()
-	voucher['available_from'] = voucher['available_from'].isoformat()
+	reservation['available_from'] = reservation['available_from'].isoformat()
 	n_billables = bool(sum([ i['billable'] for i in items ]))
 	price_normal, price_billable = price_distribution_strategy(g.db_cursor, purchase['nonce'])
 	price_total = price_normal + price_billable
 	return render_template('purchase_view.html', items=items, form=form,
-			purchase=purchase, voucher=voucher,
+			purchase=purchase, vouchers=vouchers, reservation=reservation,
 			n_billables=n_billables, history=history,
 			price_normal=price_normal, price_billable=price_billable, price_total=price_total,
 			form_dest=url_for('purchase_view', purchase_id=purchase_id),
@@ -973,6 +1031,7 @@ def api_get_voucher(code):
 	return json.dumps({
 			'code' : r['code'],
 			'discount' : r['discount'],
+			'reason' : r['reason'],
 		})
 
 @app.route("/api/get_reservation/<email>", methods=[ 'GET' ])
@@ -980,6 +1039,7 @@ def api_get_voucher(code):
 def api_get_reservation(email):
 	r = model.reservation_find(g.db_cursor, email)
 	return json.dumps({
+			'is_default' : r['email'] == 'default',
 			'available_from' : r['available_from_unix'],
 		})
 

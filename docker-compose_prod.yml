@@ -30,8 +30,6 @@ services:
             - queue:queue
         env_file:
             - ./env
-        volumes:
-            - ./fr1ckets/csv:/csv
     worker:
         build: ./worker
         links:

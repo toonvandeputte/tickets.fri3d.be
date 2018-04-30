@@ -34,7 +34,8 @@ def voucher_find(cursor, code):
 		select
 			id,
 			code,
-			discount
+			discount,
+			reason
 		from
 			voucher
 		where
@@ -50,6 +51,7 @@ def voucher_find(cursor, code):
 		'id' : None,
 		'code' : 'none',
 		'discount' : 0,
+		'reason' : '',
 	}
 
 def voucher_claim(cursor, code, purchase_id):
@@ -74,7 +76,6 @@ def voucher_claim(cursor, code, purchase_id):
 	}
 
 	cursor.execute(q, qd)
-
 	return res
 
 def voucher_get(cursor, id=None):
@@ -88,11 +89,29 @@ def voucher_get(cursor, id=None):
 			discount,
 			claimed,
 			claimed_at,
-			comments
+			comments,
+			reason
 		from
 			voucher
 		""" + f + ";"
 	cursor.execute(q, { 'id' : id })
+	return cursor.fetchall()
+
+def vouchers_for_purchase(cursor, purchase_id):
+	q = """
+		select
+			id,
+			code,
+			discount,
+			claimed,
+			claimed_at,
+			comments,
+			reason
+		from
+			voucher
+		where
+			purchase_id = %(purchase_id)s;"""
+	cursor.execute(q, { 'purchase_id' : purchase_id })
 	return cursor.fetchall()
 
 def voucher_delete(cursor, id):
@@ -113,7 +132,8 @@ def voucher_update(cursor, id, values):
 			discount=%(discount)s,
 			claimed=%(claimed)s,
 			claimed_at=%(claimed_at)s,
-			comments=%(comments)s
+			comments=%(comments)s,
+			reason=%(reason)s
 		where
 			id=%(id)s;
 		"""
@@ -122,7 +142,6 @@ def voucher_update(cursor, id, values):
 	cursor.execute(q, qd)
 
 def voucher_create(cursor, values):
-	print values
 	q = """
 		insert into
 			voucher (
@@ -130,14 +149,16 @@ def voucher_create(cursor, values):
 				discount,
 				claimed,
 				claimed_at,
-				comments
+				comments,
+				reason
 			)
 		values (
 			%(code)s,
 			%(discount)s,
 			%(claimed)s,
 			%(claimed_at)s,
-			%(comments)s
+			%(comments)s,
+			%(reason)s
 		);
 		"""
 	code = random_voucher()
@@ -245,7 +266,6 @@ def reservation_update(cursor, id, values):
 	cursor.execute(q, qd)
 
 def reservation_create(cursor, values):
-	print values
 	q = """
 		insert into
 			reservation (
@@ -301,11 +321,12 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 		insert into purchase (
 			email, nonce, reservation_id, created_at, queued,
 			business_name, business_address, business_vat,
-			payment_code, bringing_camper)
+			payment_code, transportation)
 		values
 			(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
 		"""
 	n_tries = 20
+
 	while True:
 		"""
 		we have randomness in the payment code, should it ever clash, retry
@@ -315,8 +336,9 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 			payment_code = generate_payment_code(now)
 			cursor.execute(q, (email, nonce, reservation['id'], now, queued,
 				billing_info['name'], billing_info['address'], billing_info['vat'],
-				payment_code, general_ticket_info['bringing_camper']))
+				payment_code, general_ticket_info['transportation']))
 		except MySQLdb.IntegrityError as e:
+			print e
 			n_tries -= 1
 			if n_tries == 0:
 				raise e
@@ -331,10 +353,12 @@ def purchase_create(cursor, email, voucher_codes, products, billing_info, genera
 	q = """
 		insert into purchase_items (
 			purchase_id, product_id, n, person_name, person_dob,
-			person_volunteers_during, person_volunteers_after, person_food_vegitarian)
+			person_volunteers_before, person_volunteers_during, person_volunteers_after,
+			person_food_vegitarian)
 		values
 			(%(purchase_id)s, %(product_id)s, %(n)s, %(person_name)s, %(person_dob)s,
-			%(person_volunteers_during)s, %(person_volunteers_after)s, %(person_food_vegitarian)s);
+			%(person_volunteers_before)s, %(person_volunteers_during)s, %(person_volunteers_after)s,
+			%(person_food_vegitarian)s);
 		"""
 	for p in products:
 		p['purchase_id'] = purchase_id
@@ -479,14 +503,14 @@ def get_purchase_discount(cursor, nonce):
 			sum(voucher.discount) as discount
 		from
 			voucher
-			inner join purchase on voucher.purchase_id = voucher.id
+			inner join purchase on voucher.purchase_id = purchase.id
 		where
 			purchase.nonce = %(nonce)s;
 		"""
 	qd = { 'nonce' : nonce }
 	cursor.execute(q, qd)
 	rs = cursor.fetchone()
-	return rs['discount'] or 0
+	return float(rs['discount'] or 0)
 
 def get_purchase_total(cursor, nonce, only_billable=False):
 	"""
@@ -623,7 +647,7 @@ def get_purchases(cursor, strip_removed=False):
 				then pr.volunteering_price
 				else pr.price
 				end)
-			) - res.discount as total_price,
+			) - v.total_discount as total_price,
 			sum(
 				case
 				when pr.name like 'ticket%'
@@ -656,7 +680,7 @@ def get_purchases(cursor, strip_removed=False):
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
 			inner join product pr on pui.product_id = pr.id
-			inner join voucher res on pu.voucher_id = res.id
+			inner join (select sum(discount) as total_discount, purchase_id from voucher group by purchase_id) as v on pui.purchase_id = v.purchase_id
 		{0}
 		group by
 			pu.id;

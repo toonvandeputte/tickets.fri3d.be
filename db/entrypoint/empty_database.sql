@@ -14,12 +14,12 @@ create table product (
 );
 
 insert into product (name, display, price, volunteering_price, max_dob, billable) values
-	( 'ticket_3bit',     '3bit 0-3 jaar',                  8, 8, '2015-08-18 02:00:00', 0),
-	( 'ticket_4bit',     '4bit 3-6 jaar',                  16, 16, '2012-08-18 02:00:00', 0),
-	( 'ticket_5bit',     '5bit 6-12 jaar',                 32, 32, '2006-08-18 02:00:00', 0),
-	( 'ticket_6bit',     '6bit 12-24 jaar',                64, 56, '1994-08-18 02:00:00', 0),
-	( 'ticket_7bit',     '7bit +24 jaar',                  128, 112, '1900-01-01 00:00:00', 0),
-	( 'ticket_8bit',     '8bit zakelijk',                  309.76, 309.76, '1900-01-01 00:00:00', 1),
+	( 'ticket_3bit',     'ticket 0-3 jaar',                  7, 7, '2015-08-18 02:00:00', 0),
+	( 'ticket_4bit',     'ticket 3-6 jaar',                  17, 17, '2012-08-18 02:00:00', 0),
+	( 'ticket_5bit',     'ticket 6-12 jaar',                 37, 37, '2006-08-18 02:00:00', 0),
+	( 'ticket_6bit',     'ticket 12-24 jaar',                73, 73, '1994-08-18 02:00:00', 0),
+	( 'ticket_7bit',     'ticket +24 jaar',                  157, 137, '1900-01-01 00:00:00', 0),
+	( 'ticket_8bit',     'ticket zakelijk',                  317, 317, '1900-01-01 00:00:00', 1),
 	( 'tshirt_adult_m_xs',  'volwassenen mannen tshirt XS',       20, 20, '1900-01-01 00:00:00', 0),
 	( 'tshirt_adult_m_s',  'volwassenen mannen tshirt S',       20, 20, '1900-01-01 00:00:00', 0),
 	( 'tshirt_adult_m_m',  'volwassenen mannen tshirt M',      20, 20, '1900-01-01 00:00:00', 0),
@@ -43,7 +43,7 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'ticket_vip_saturday', 'VIP ticket voor zaterdag', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_sunday', 'VIP ticket voor zondag', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_monday', 'VIP ticket voor maandag', 0, 0, '1900-01-01 00:00:00', 0),
-	( 'badge_robot_parts', 'Robot parts', 10, 10, '1900-01-01 00:00:00', 0);
+	( 'badge_robot_parts', 'Robot parts', 17, 17, '1900-01-01 00:00:00', 0);
 
 drop table if exists reservation;
 create table reservation (
@@ -57,7 +57,8 @@ create table reservation (
 	index reservation_email_index (email asc)
 );
 insert into reservation (email, available_from) values
-	('default', '2018-06-01 19:00:00');
+	('default', '2018-05-14 19:00:00'),
+	('someone@who.reserved', '2018-05-01 19:00:00');
 
 drop table if exists purchase;
 create table purchase (
@@ -66,7 +67,7 @@ create table purchase (
 	nonce varchar(128) not null,
 	payment_code varchar(128) not null unique,
 	reservation_id integer,
-	bringing_camper integer default 0,
+	transportation varchar(64) not null,
 	queued integer default 0,
 	once_queued integer default 0,
 	paid integer default 0,
@@ -93,6 +94,7 @@ create table voucher (
 	discount integer default 0,
 	claimed integer default 0,
 	claimed_at datetime default null,
+	reason text,
 	comments text,
 	purchase_id integer,
 	primary key (id),
@@ -131,6 +133,7 @@ create table purchase_items (
 	n integer not null,
 	person_name text null,
 	person_dob date null,
+	person_volunteers_before integer not null,
 	person_volunteers_during integer not null,
 	person_volunteers_after integer not null,
 	person_food_vegitarian integer not null,

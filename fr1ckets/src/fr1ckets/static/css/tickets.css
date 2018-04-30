@@ -1,3 +1,1 @@
-select {
-	margin-bottom: 10px;
-};
+select{margin-bottom:10px}@keyframes spin{0%{-webkit-transform:rotate(0)}100%{-webkit-transform:rotate(360deg)}}.loader{width:50px;height:50px;animation:spin 1s linear infinite;-webkit-animation:spin 1s linear infinite;border:10px solid #afaaa7;border-top:10px solid #ddf0f4;border-radius:50%}

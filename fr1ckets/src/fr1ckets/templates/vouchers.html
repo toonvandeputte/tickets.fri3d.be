@@ -10,6 +10,7 @@
 				<th>discount</th>
 				<th>claimed</th>
 				<th>claimed at</th>
+				<th>shown reason</th>
 				<th>comments</th>
 				<th>edit</th>
 				<th>remove</th>
@@ -22,6 +23,7 @@
 				<td>{{ voucher.discount }}</td>
 				<td>{{ voucher.claimed }}</td>
 				<td>{{ voucher.claimed_at }}</td>
+				<td>{{ voucher.reason }}</td>
 				<td>{{ voucher.comments }}</td>
 				<td>
 					<a class="btn btn-default btn-sm" href="/admin/voucher_edit/{{ voucher.id }}">
