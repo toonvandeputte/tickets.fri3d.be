@@ -5,4 +5,4 @@ DDIR=`dirname $0`/../
 
 . $DDIR/env
 
-docker-compose exec fr1ckets /src/vouchers_generate.py
+docker-compose exec fr1ckets /src/vouchers_generate.py $@
