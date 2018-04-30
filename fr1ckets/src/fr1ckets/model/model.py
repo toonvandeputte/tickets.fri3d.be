@@ -266,7 +266,6 @@ def reservation_update(cursor, id, values):
 	cursor.execute(q, qd)
 
 def reservation_create(cursor, values):
-	print values
 	q = """
 		insert into
 			reservation (
