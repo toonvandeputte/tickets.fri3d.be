@@ -244,14 +244,17 @@ def extract_products(cursor, form_general, form_tickets):
 		textual_options = []
 		if person_food_vegitarian:
 			textual_options.append('vegetarisch')
-		if person_volunteers_before:
-			textual_options.append('helpt opbouwen')
-		if person_volunteers_during:
-			textual_options.append('vrijwilliger-shifts')
-		else:
-			textual_options.append('premium')
-		if person_volunteers_after:
-			textual_options.append('helpt afbreken')
+
+		cutoff_date = datetime.datetime.strptime(app.config['VOLUNTEERING_CUTOFF_DATE'], '%Y-%m-%d')
+		if dob < cutoff_date:
+			if person_volunteers_before:
+				textual_options.append('helpt opbouwen')
+			if person_volunteers_during:
+				textual_options.append('vrijwilliger-shifts')
+			else:
+				textual_options.append('premium')
+			if person_volunteers_after:
+				textual_options.append('helpt afbreken')
 		textual = u'{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name, ', '.join(textual_options))
 		out.append({
 			'product_id' : relevant_ticket['id'],
