@@ -252,7 +252,7 @@ def extract_products(cursor, form_general, form_tickets):
 			textual_options.append('premium')
 		if person_volunteers_after:
 			textual_options.append('helpt afbreken')
-		textual = '{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name.encode('ascii', 'replace'), ', '.join(textual_options))
+		textual = u'{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name, ', '.join(textual_options))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
@@ -385,8 +385,8 @@ def ticket_register():
 
 	mail_data['items_overview_html'] += '<ul>'
 	for p in products:
-		mail_data['items_overview_html'] += '<li>{0}</li>'.format(p['textual'])
-		mail_data['items_overview_text'] += '  - {0}\n'.format(p['textual'])
+		mail_data['items_overview_html'] += u'<li>{0}</li>'.format(p['textual'])
+		mail_data['items_overview_text'] += u'  - {0}\n'.format(p['textual'])
 	mail_data['items_overview_html'] += '</ul>'
 
 	if form.email.data[-len('.notreal'):] != '.notreal':
