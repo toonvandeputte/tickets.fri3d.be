@@ -252,7 +252,7 @@ def extract_products(cursor, form_general, form_tickets):
 			textual_options.append('premium')
 		if person_volunteers_after:
 			textual_options.append('helpt afbreken')
-		textual = '{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name, ', '.join(textual_options))
+		textual = '{0} voor {1} ({2})'.format(relevant_ticket['display'], person_name.encode('ascii', 'replace'), ', '.join(textual_options))
 		out.append({
 			'product_id' : relevant_ticket['id'],
 			'n' : 1,
