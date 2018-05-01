@@ -580,7 +580,7 @@ function mk_cb_update_visitor_options(index) {
 			$('#'+dob_day_id).val() == '') {
 			return;
 		}
-		var dob = new Date($('#'+dob_year_id).val(), $('#'+dob_month_id).val(), $('#'+dob_day_id).val()).getTime();
+		var dob = new Date($('#'+dob_year_id).val(), $('#'+dob_month_id).val()-1, $('#'+dob_day_id).val()).getTime();
 		var billable = Boolean($('#'+billable_id).prop('checked'));
 		var can_volunteer = Boolean(dob < ticket_volunteering_cutoff);
 
