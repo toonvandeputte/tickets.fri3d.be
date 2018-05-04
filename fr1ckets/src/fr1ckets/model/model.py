@@ -647,7 +647,7 @@ def get_purchases(cursor, strip_removed=False):
 				then pr.volunteering_price
 				else pr.price
 				end)
-			) - v.total_discount as total_price,
+			) - ifnull(v.total_discount, 0) as total_price,
 			sum(
 				case
 				when pr.name like 'ticket%'
@@ -680,10 +680,10 @@ def get_purchases(cursor, strip_removed=False):
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
 			inner join product pr on pui.product_id = pr.id
-			inner join (select sum(discount) as total_discount, purchase_id from voucher group by purchase_id) as v on pui.purchase_id = v.purchase_id
+			left outer join (select sum(discount) as total_discount, purchase_id from voucher group by purchase_id) as v on pui.purchase_id = v.purchase_id
 		{0}
 		group by
-			pu.id;
+			pu.id, v.total_discount;
 		"""
 	if strip_removed:
 		opt = "where pu.removed = 0"
