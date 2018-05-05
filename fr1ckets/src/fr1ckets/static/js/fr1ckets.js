@@ -355,7 +355,7 @@ function enumerate_choices() {
 		var cleanup_src = src + "_options_volunteers_after";
 		var billable_src = src + "_billable";
 
-		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val(), $('#'+day_src).val()).getTime();
+		var dob = new Date($('#'+year_src).val(), $('#'+month_src).val()-1, $('#'+day_src).val()).getTime();
 		var billable = Boolean($('#'+billable_src).prop('checked'));
 		var ticket = find_ticket_by_dob(dob, billable);
 		if (!ticket)
