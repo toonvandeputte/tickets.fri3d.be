@@ -664,6 +664,13 @@ def get_purchases(cursor, strip_removed=False):
 			) as n_tokens,
 			sum(
 				case
+				when pr.name like 'badge_robot_parts%'
+				then pui.n
+				else 0
+				end
+			) as n_badge_robot_parts,
+			sum(
+				case
 				when pr.name like 'tshirt%'
 				then pui.n
 				else 0
@@ -887,6 +894,7 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 	q = """
 		select
 			pr.name as type,
+			pr.display as display,
 			sum(pui.n) as n_total,
 			sum(case
 				when pui.person_dob >= %(cutoff)s
@@ -900,6 +908,12 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 				else pui.person_volunteers_after
 				end
 			) as n_volunteers_after,
+			sum(case
+				when pui.person_dob >= %(cutoff)s
+				then 0
+				else pui.person_volunteers_before
+				end
+			) as n_volunteers_before,
 			sum(case
 				when pui.person_food_vegitarian
 				then 1
@@ -915,7 +929,7 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 			and pu.removed = %(removed)s
 			and pu.queued = %(queued)s
 		group by
-			pr.name;
+			pr.name, pr.display;
 		"""
 	qd = {
 		'removed' : removed,
@@ -937,6 +951,30 @@ def get_stats_tshirts(cursor, removed=0, queued=0):
 			inner join product pr on pui.product_id = pr.id
 		where
 			pr.name like 'tshirt%%'
+			and pu.removed = %(removed)s
+			and pu.queued = %(queued)s
+		group by
+			pr.name;
+		"""
+	qd = {
+		'removed' : removed,
+		'queued' : queued,
+	}
+
+	cursor.execute(q, qd)
+	return cursor.fetchall()
+
+def get_stats_badge_robot_parts(cursor, removed=0, queued=0):
+	q = """
+		select
+			pr.name as type,
+			sum(pui.n) as n_total
+		from
+			purchase_items pui
+			inner join purchase pu on pui.purchase_id = pu.id
+			inner join product pr on pui.product_id = pr.id
+		where
+			pr.name like 'badge_robot_parts%%'
 			and pu.removed = %(removed)s
 			and pu.queued = %(queued)s
 		group by

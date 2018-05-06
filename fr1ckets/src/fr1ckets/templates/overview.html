@@ -57,6 +57,7 @@
 			<thead>
 				<th></th>
 				<th>Totaal</th>
+				<th>Vrijwilliger opbouw</th>
 				<th>Vrijwilliger tijdens</th>
 				<th>Vrijwilliger opkuis</th>
 				<th>Vegitariër</th>
@@ -64,8 +65,9 @@
 			<tbody>
 	{% for t in tickets %}
 			{% if 'total' in t.type %}<tr class="success">{% else %}<tr>{% endif %}
-					<td>{{ t.type }}</td>
+					<td>{{ t.display }}</td>
 					<td>{{ t.n_total}}</td>
+					<td>{{ t.n_volunteers_before }}</td>
 					<td>{{ t.n_volunteers_during }}</td>
 					<td>{{ t.n_volunteers_after }}</td>
 					<td>{{ t.n_vegetarian }}</td>
@@ -92,6 +94,25 @@
 		</table>
 
 	</div><!-- col-sm-6 -->
+	<div class="col-sm-6 col-xs-12">
+		<table class="table table-condensed table-striped table-bordered">
+			<caption>Breakdown badge_robot_parts</caption>
+			<thead>
+				<th></th>
+				<th>Totaal</th>
+			</thead>
+			<tbody>
+	{% for b in badge_robot_parts %}
+			{% if 'total' in b.type %}<tr class="success">{% else %}<tr>{% endif %}
+					<td>{{ b.type }}</td>
+					<td>{{ b.n_total}}</td>
+				</tr>
+	{% endfor %}
+			</tbody>
+		</table>
+
+	</div><!-- col-sm-6 -->
+
 </div>
 
 

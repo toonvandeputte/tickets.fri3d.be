@@ -715,13 +715,17 @@ def overview():
 	tickets_queued = map(dict, model.get_stats_tickets(g.db_cursor, queued=1))
 	tshirts_active = map(dict, model.get_stats_tshirts(g.db_cursor))
 	tshirts_queued = map(dict, model.get_stats_tshirts(g.db_cursor, queued=1))
+	badge_robot_parts_active = map(dict, model.get_stats_badge_robot_parts(g.db_cursor))
+	badge_robot_parts_queued = map(dict, model.get_stats_badge_robot_parts(g.db_cursor, queued=1))
 
+	print tickets_active
 	stats_purchases = { t :
 		{
 			'orders' : 0,
 			'tickets' : 0,
 			'tshirts' : 0,
 			'tokens' : 0,
+			'badge_robot_parts' : 0,
 			'money' : 0,
 		} for t in [ 'active_paid', 'active_unpaid', 'active_total', 'queued', 'total' ]
 	}
@@ -739,6 +743,7 @@ def overview():
 			stats_purchases[dest]['tickets'] += det['n_tickets']
 			stats_purchases[dest]['tshirts'] += det['n_tshirts']
 			stats_purchases[dest]['tokens'] += det['n_tokens']
+			stats_purchases[dest]['badge_robot_parts'] += det['n_badge_robot_parts']
 			stats_purchases[dest]['money'] += det['total_price']
 			stats_purchases[dest]['orders'] += 1
 	
@@ -816,10 +821,46 @@ def overview():
 	tshirts.extend(tshirts_queued)
 	tshirts.append(tshirts_total)
 
+	badge_robot_parts_active_total = {}
+	badge_robot_parts_active_total['type'] = 'total active'
+	badge_robot_parts_queued_total = {}
+	badge_robot_parts_queued_total['type'] = 'total queued'
+	badge_robot_parts_total = {}
+	badge_robot_parts_total['type'] = 'total'
+	for t in badge_robot_parts_active:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in badge_robot_parts_active_total:
+					badge_robot_parts_active_total[k] = 0
+				if k not in badge_robot_parts_total:
+					badge_robot_parts_total[k] = 0
+				badge_robot_parts_active_total[k] += t[k]
+				badge_robot_parts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' active'
+	badge_robot_parts_active.append(badge_robot_parts_active_total)
+	for t in badge_robot_parts_queued:
+		for k in t:
+			if k[0:len('n_')] == 'n_':
+				if k not in badge_robot_parts_queued_total:
+					badge_robot_parts_queued_total[k] = 0
+				if k not in badge_robot_parts_total:
+					badge_robot_parts_total[k] = 0
+				badge_robot_parts_queued_total[k] += t[k]
+				badge_robot_parts_total[k] += t[k]
+			else:
+				t[k] = t[k] + ' queued'
+	badge_robot_parts_queued.append(badge_robot_parts_queued_total)
+	badge_robot_parts = []
+	badge_robot_parts.extend(badge_robot_parts_active)
+	badge_robot_parts.extend(badge_robot_parts_queued)
+	badge_robot_parts.append(badge_robot_parts_total)
+
 	return render_template('overview.html',
 		purchases=stats_purchases,
 		tickets=tickets,
 		tshirts=tshirts,
+		badge_robot_parts=badge_robot_parts,
 		page_opts={
 			'charting' : True,
 			'internal' : True})
