@@ -430,6 +430,7 @@ def purchase_items_get(cursor, id):
 				else
 					pr.price
 			end) as price_total,
+			pui.person_volunteers_before as volunteers_before,
 			pui.person_volunteers_during as volunteers_during,
 			pui.person_volunteers_after as volunteers_after,
 			pui.person_name as person_name,

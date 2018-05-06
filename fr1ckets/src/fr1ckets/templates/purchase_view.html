@@ -32,6 +32,7 @@
 				<th>number</th>
 				<th>person</th>
 				<th>day of birth</th>
+				<th>buildup</th>
 				<th>volunteer</th>
 				<th>cleanup</th>
 				<th>vegetarian</th>
@@ -45,6 +46,7 @@
 					<td>{{ i.n }}</td>
 					<td>{{ i.person_name }}</td>
 					<td>{{ i.person_dob }}</td>
+					<td>{% if i.volunteers_before %}Y{% endif %}</td>
 					<td>{% if i.volunteers_during %}Y{% endif %}</td>
 					<td>{% if i.volunteers_after %}Y{% endif %}</td>
 					<td>{% if i.person_vegitarian %}Y{% endif %}</td>
@@ -55,6 +57,7 @@
 {% for v in vouchers %}
 				<tr>
 					<td>voucher {{ v.code }} ({{ v.reason }})</td>
+					<td></td>
 					<td></td>
 					<td></td>
 					<td></td>
@@ -75,11 +78,13 @@
 					<td></td>
 					<td></td>
 					<td></td>
+					<td></td>
 					<td>{{ price_billable }}</td>
 				</tr>
 {% endif %}
 				<tr>
 					<td><b>TOTAL</b></td>
+					<td></td>
 					<td></td>
 					<td></td>
 					<td></td>
