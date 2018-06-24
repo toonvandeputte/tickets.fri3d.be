@@ -215,6 +215,10 @@ function schedule_render()
 
 	var times_names = new Array();
 	for (var t in times) {
+		// the index column is currently stubbed as the rowid, but
+		// can be serverside set to an int column manually entered
+		// so timeslots can be inserted into our view list, rather
+		// than appended
 		times_names.push(times[t]['index']);
 	}
 	var cmp = function(a, b) {

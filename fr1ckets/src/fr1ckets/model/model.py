@@ -785,8 +785,7 @@ def get_volunteering_times(cursor):
 		select
 			id,
 			description as name,
-			day as day,
-			logical_index as `index`
+			day as day
 		from
 			shift_time
 		order by id;
@@ -794,7 +793,7 @@ def get_volunteering_times(cursor):
 
 	cursor.execute(q)
 	for r in cursor.fetchall():
-		out[r['id']] = { 'name' : r['name'], 'day' : r['day'], 'index' : r['index'] }
+		out[r['id']] = { 'name' : r['name'], 'day' : r['day'], 'index' : r['id'] }
 	return out
 
 def get_volunteering_posts(cursor):
@@ -834,8 +833,8 @@ def get_volunteering_schedule(cursor):
 			left outer join shift_volunteer sv on s.id = sv.shift_id
 			left outer join purchase_items pui on sv.purchase_item_id = pui.id
 			left outer join purchase pu on pui.purchase_id = pu.id
-		group by st.id, sp.id, sv.purchase_item_id
-		order by st.id, sp.id, sv.purchase_item_id;
+		group by s.id, st.id, sp.id, sv.purchase_item_id
+		order by s.id, st.id, sp.id, sv.purchase_item_id;
 		"""
 
 	cursor.execute(q)
