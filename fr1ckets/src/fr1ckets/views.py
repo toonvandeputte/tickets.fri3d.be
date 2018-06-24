@@ -13,6 +13,7 @@ from functools import wraps
 import time
 import json
 import datetime
+import unicodedata
 
 from pprint import pprint as P
 
@@ -1211,7 +1212,8 @@ def api_get_volunteering_data(nonce):
 	def anonymize(name):
 		t = name.strip().split(' ')
 		if len(t) > 1:
-			return "{0} {1}".format(t[0], ''.join([ i[0] for i in t[1:] ]))
+			a = [ unicodedata.normalize('NFKD', x).encode('ascii', 'ignore') for x in t ]
+			return "{0} {1}".format(a[0], ''.join([ i[0] for i in a[1:] ]))
 		else:
 			return name
 	for v in volunteers_all:
