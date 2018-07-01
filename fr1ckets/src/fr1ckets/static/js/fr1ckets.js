@@ -175,6 +175,9 @@ function update_overview() {
 		f += '  </p>';
 		f += '</div>';
 	}
+	f += '<div class="alert alert-info" role="alert">';
+	f += '  <p>Bestelde tickets en goederen worden niet teruggenomen!</p>';
+	f += '</div>';
 
 	return f;
 
