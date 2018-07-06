@@ -895,6 +895,8 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 		select
 			pr.name as type,
 			pr.display as display,
+			pr.price as price_premium,
+			pr.volunteering_price as price_volunteering,
 			sum(pui.n) as n_total,
 			sum(case
 				when pui.person_dob >= %(cutoff)s
@@ -902,6 +904,17 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 				else pui.person_volunteers_during
 				end
 			) as n_volunteers_during,
+			sum(case
+				when pui.person_dob >= %(cutoff)s
+				then 1
+				else
+					case
+					when pui.person_volunteers_during = 1
+					then 0
+					else 1
+					end
+				end
+			) as n_premium,
 			sum(case
 				when pui.person_dob >= %(cutoff)s
 				then 0
@@ -929,7 +942,7 @@ def get_stats_tickets(cursor, removed=0, queued=0):
 			and pu.removed = %(removed)s
 			and pu.queued = %(queued)s
 		group by
-			pr.name, pr.display;
+			pr.name, pr.display, pr.price, pr.volunteering_price;
 		"""
 	qd = {
 		'removed' : removed,

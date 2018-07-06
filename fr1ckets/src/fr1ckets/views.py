@@ -719,7 +719,6 @@ def overview():
 	badge_robot_parts_active = map(dict, model.get_stats_badge_robot_parts(g.db_cursor))
 	badge_robot_parts_queued = map(dict, model.get_stats_badge_robot_parts(g.db_cursor, queued=1))
 
-	print tickets_active
 	stats_purchases = { t :
 		{
 			'orders' : 0,
@@ -767,6 +766,8 @@ def overview():
 					tickets_total[k] = 0
 				tickets_active_total[k] += t[k]
 				tickets_total[k] += t[k]
+			elif k[0:len('price_')] == 'price_':
+				pass
 			else:
 				t[k] = t[k] + ' active'
 	tickets_active.append(tickets_active_total)
