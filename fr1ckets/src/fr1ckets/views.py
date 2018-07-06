@@ -780,6 +780,8 @@ def overview():
 					tickets_total[k] = 0
 				tickets_queued_total[k] += t[k]
 				tickets_total[k] += t[k]
+			elif k[0:len('price_')] == 'price_':
+				pass
 			else:
 				t[k] = t[k] + ' queued'
 	tickets_queued.append(tickets_queued_total)
