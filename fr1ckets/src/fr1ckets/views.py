@@ -759,28 +759,26 @@ def overview():
 	tickets_total['type'] = 'total'
 	for t in tickets_active:
 		for k in t:
-			if k[0:len('n_')] == 'n_':
+			if k[0:len('n_')] == 'n_' or k[0:len('price_')] == 'price_':
 				if k not in tickets_active_total:
 					tickets_active_total[k] = 0
 				if k not in tickets_total:
 					tickets_total[k] = 0
-				tickets_active_total[k] += t[k]
-				tickets_total[k] += t[k]
-			elif k[0:len('price_')] == 'price_':
+				tickets_active_total[k] += int(t[k])
+				tickets_total[k] += int(t[k])
 				t[k] = int(t[k])
 			else:
 				t[k] = t[k] + ' active'
 	tickets_active.append(tickets_active_total)
 	for t in tickets_queued:
 		for k in t:
-			if k[0:len('n_')] == 'n_':
+			if k[0:len('n_')] == 'n_' or k[0:len('price_')] == 'price_':
 				if k not in tickets_queued_total:
 					tickets_queued_total[k] = 0
 				if k not in tickets_total:
 					tickets_total[k] = 0
-				tickets_queued_total[k] += t[k]
-				tickets_total[k] += t[k]
-			elif k[0:len('price_')] == 'price_':
+				tickets_queued_total[k] += int(t[k])
+				tickets_total[k] += int(t[k])
 				t[k] = int(t[k])
 			else:
 				t[k] = t[k] + ' queued'

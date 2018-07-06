@@ -77,10 +77,17 @@
 					<td>{{ t.n_volunteers_before }}</td>
 					<td>{{ t.n_volunteers_after }}</td>
 					<td>{{ t.n_vegetarian }}</td>
+				{% if 'total' in t.type %}
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				{% else %}
 					<td>{{ t.price_premium }}</td>
 					<td>{{ t.price_volunteering }}</td>
-					<td>{{ (t.price_premium or 0) * t.n_premium }}</td>
-					<td>{{ (t.price_volunteering or 0) * t.n_volunteers_during }}</td>
+					<td>{{ t.price_premium * t.n_premium }}</td>
+					<td>{{ t.price_volunteering * t.n_volunteers_during }}</td>
+				{% endif %}
 				</tr>
 	{% endfor %}
 			</tbody>
