@@ -767,7 +767,7 @@ def overview():
 				tickets_active_total[k] += t[k]
 				tickets_total[k] += t[k]
 			elif k[0:len('price_')] == 'price_':
-				pass
+				t[k] = int(t[k])
 			else:
 				t[k] = t[k] + ' active'
 	tickets_active.append(tickets_active_total)
@@ -781,7 +781,7 @@ def overview():
 				tickets_queued_total[k] += t[k]
 				tickets_total[k] += t[k]
 			elif k[0:len('price_')] == 'price_':
-				pass
+				t[k] = int(t[k])
 			else:
 				t[k] = t[k] + ' queued'
 	tickets_queued.append(tickets_queued_total)

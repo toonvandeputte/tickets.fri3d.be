@@ -64,6 +64,8 @@
 				<th>Vegitariër</th>
 				<th>Prijs premium</th>
 				<th>Prijs volunteer</th>
+				<th>Totaal premium</th>
+				<th>Totaal volunteer</th>
 			</thead>
 			<tbody>
 	{% for t in tickets %}
@@ -77,6 +79,8 @@
 					<td>{{ t.n_vegetarian }}</td>
 					<td>{{ t.price_premium }}</td>
 					<td>{{ t.price_volunteering }}</td>
+					<td>{{ (t.price_premium or 0) * t.n_premium }}</td>
+					<td>{{ (t.price_volunteering or 0) * t.n_volunteers_during }}</td>
 				</tr>
 	{% endfor %}
 			</tbody>
