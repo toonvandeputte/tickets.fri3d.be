@@ -726,6 +726,7 @@ def overview():
 			'tshirts' : 0,
 			'tokens' : 0,
 			'badge_robot_parts' : 0,
+			'badge_robot_parts_prev_price' : 0,
 			'money' : 0,
 		} for t in [ 'active_paid', 'active_unpaid', 'active_total', 'queued', 'total' ]
 	}
@@ -744,6 +745,7 @@ def overview():
 			stats_purchases[dest]['tshirts'] += det['n_tshirts']
 			stats_purchases[dest]['tokens'] += det['n_tokens']
 			stats_purchases[dest]['badge_robot_parts'] += det['n_badge_robot_parts']
+			stats_purchases[dest]['badge_robot_parts_prev_price'] += det['n_badge_robot_parts_prev_price']
 			stats_purchases[dest]['money'] += det['total_price']
 			stats_purchases[dest]['orders'] += 1
 	

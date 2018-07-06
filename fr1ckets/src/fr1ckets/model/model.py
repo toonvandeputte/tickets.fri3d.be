@@ -665,11 +665,18 @@ def get_purchases(cursor, strip_removed=False):
 			) as n_tokens,
 			sum(
 				case
-				when pr.name like 'badge_robot_parts%'
+				when pr.name like 'badge_robot_parts'
 				then pui.n
 				else 0
 				end
 			) as n_badge_robot_parts,
+			sum(
+				case
+				when pr.name like 'badge_robot_parts_prev_price'
+				then pui.n
+				else 0
+				end
+			) as n_badge_robot_parts_prev_price,
 			sum(
 				case
 				when pr.name like 'tshirt%'
