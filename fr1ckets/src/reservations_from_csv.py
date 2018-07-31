@@ -24,7 +24,7 @@ with app.app_context():
 	setup.setup_db()
 	with open(sys.argv[1], 'rb') as csvfile:
 		r = csv.DictReader(csvfile, fieldnames=[ 'email',
-			'discount', 'available_from', 'comments'])
+			'available_from', 'comments'])
 		statics = {
 			'claimed' : False,
 			'claimed_at' : None,
@@ -34,14 +34,13 @@ with app.app_context():
 
 		all_reservations = { res['email'] : res for res in model.reservation_get(g.db_cursor) }
 		for row in r:
-			row['discount'] = int(row['discount'])
 			row['comments'] = '{0} ({1})'.format(row['comments'] if row['comments'] else '', static_comment)
 			row.update(statics)
 			if row['email'] in all_reservations:
-				print "updating %(email)s to discount=%(discount)d av_from=%(available_from)s" % row
+				print "updating %(email)s to av_from=%(available_from)s" % row
 				model.reservation_update(g.db_cursor, all_reservations[row['email']]['id'], row)
 			else:
-				print "creating %(email)s to discount=%(discount)d av_from=%(available_from)s" % row
+				print "creating %(email)s to av_from=%(available_from)s" % row
 				model.reservation_create(g.db_cursor, row)
 		g.db_commit = True
 		setup.wrapup_db(None)

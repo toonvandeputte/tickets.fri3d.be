@@ -97,6 +97,23 @@ def voucher_get(cursor, id=None):
 	cursor.execute(q, { 'id' : id })
 	return cursor.fetchall()
 
+def vouchers_for_purchase(cursor, purchase_id):
+	q = """
+		select
+			id,
+			code,
+			discount,
+			claimed,
+			claimed_at,
+			comments,
+			reason
+		from
+			voucher
+		where
+			purchase_id = %(purchase_id)s;"""
+	cursor.execute(q, { 'purchase_id' : purchase_id })
+	return cursor.fetchall()
+
 def voucher_delete(cursor, id):
 	q = """
 		delete from
@@ -249,7 +266,6 @@ def reservation_update(cursor, id, values):
 	cursor.execute(q, qd)
 
 def reservation_create(cursor, values):
-	print values
 	q = """
 		insert into
 			reservation (
@@ -631,7 +647,7 @@ def get_purchases(cursor, strip_removed=False):
 				then pr.volunteering_price
 				else pr.price
 				end)
-			) - res.discount as total_price,
+			) - v.total_discount as total_price,
 			sum(
 				case
 				when pr.name like 'ticket%'
@@ -664,7 +680,7 @@ def get_purchases(cursor, strip_removed=False):
 			purchase_items pui
 			inner join purchase pu on pui.purchase_id = pu.id
 			inner join product pr on pui.product_id = pr.id
-			inner join voucher res on pu.voucher_id = res.id
+			inner join (select sum(discount) as total_discount, purchase_id from voucher group by purchase_id) as v on pui.purchase_id = v.purchase_id
 		{0}
 		group by
 			pu.id;
