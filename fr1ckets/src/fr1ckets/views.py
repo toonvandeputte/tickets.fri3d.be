@@ -1129,7 +1129,6 @@ def api_set_volunteering_data(nonce):
 	for k in updates_str:
 		updates[int(k)] = [ int(x) for x in updates_str[k] ]
 
-	D("pre: {0}".format(all_shifts[1]))
 	for person, shifts in updates.iteritems():
 		if person not in volunteers:
 			D('person {0} not in volunteers for email {1}'.format(person, email))
@@ -1140,12 +1139,10 @@ def api_set_volunteering_data(nonce):
 				return jsonify(status='FAIL', msg='unknown shift referenced')
 			D("substracting from shft {0}".format(shift))
 			all_shifts[shift]['people_present'] += 1
-			D(all_shifts[1])
 			if (all_shifts[shift]['people_needed'] - all_shifts[shift]['people_present']) < 0:
 				D('overcommited on shift {0} by email {1}'.format(shift, email))
 				return jsonify(status='FAIL', msg='overcommited on shift')
 
-	D("post {0}".format(all_shifts[1]))
 	for person in volunteers:
 		if person not in updates or len(updates[person]) < app.config['VOLUNTEERING_MIN_SHIFTS']:
 			D('undercommited for person {0} by email {1}'.format(person, email))
@@ -1166,8 +1163,8 @@ def api_set_volunteering_data(nonce):
 	schedule_html = '<ul style="padding: 0; Margin: 0;">'
 	schedule_text = ''
 	for person in mail_schedule:
-		schedule_html += '<li style="Margin: 0;">{0}:<ul>'.format(person)
-		schedule_text += '* {0}:\n'.format(person)
+		schedule_html += '<li style="Margin: 0;">{0}:<ul>'.format(unicodedata.normalize('NFKD', person).encode('ascii', 'ignore'))
+		schedule_text += '* {0}:\n'.format(unicodedata.normalize('NFKD', person).encode('ascii', 'ignore'))
 		for e in mail_schedule[person]:
 			when, what = e
 			schedule_html += '    <li>{0}: {1}</li>'.format(when, what)
