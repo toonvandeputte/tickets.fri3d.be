@@ -43,7 +43,8 @@ insert into product (name, display, price, volunteering_price, max_dob, billable
 	( 'ticket_vip_saturday', 'VIP ticket voor zaterdag', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_sunday', 'VIP ticket voor zondag', 0, 0, '1900-01-01 00:00:00', 0),
 	( 'ticket_vip_monday', 'VIP ticket voor maandag', 0, 0, '1900-01-01 00:00:00', 0),
-	( 'badge_robot_parts', 'Robot parts', 17, 17, '1900-01-01 00:00:00', 0);
+	( 'badge_robot_parts_prev_price', 'Robot parts', 17, 17, '1900-01-01 00:00:00', 0),
+	( 'badge_robot_parts', 'Robot parts', 27, 27, '1900-01-01 00:00:00', 0);
 
 drop table if exists reservation;
 create table reservation (
@@ -57,7 +58,7 @@ create table reservation (
 	index reservation_email_index (email asc)
 );
 insert into reservation (email, available_from) values
-	('default', '2018-05-14 19:00:00'),
+	('default', '2018-05-01 19:00:00'),
 	('someone@who.reserved', '2018-05-01 19:00:00');
 
 drop table if exists purchase;
@@ -179,6 +180,7 @@ create table shift_volunteer (
 );
 
 insert into shift_time (description, day) values
+	( 'Vrijdag 15:00 - 18:00', 1),
 	( 'Vrijdag 18:00 - 21:00', 1 ),
 	( 'Vrijdag 21:00 - einde', 1 ),
 	( 'Zaterdag 09:00 - 12:00', 2 ),
@@ -193,16 +195,20 @@ insert into shift_time (description, day) values
 	( 'Zondag 21:00 - einde', 3 ),
 	( 'Maandag 09:00 - 12:00', 4 ),
 	( 'Maandag 12:00 - 15:00', 4 ),
-	( 'Maandag 15:00 - 18:00', 4 ),
-	( 'Maandag 18:00 - 21:00', 4 );
+	( 'Maandag 15:00 - 18:00', 4 );
 
 insert into shift_post (what, description) values
-	( 'Bar', 'De toog bemannen en drank verschaffen, de koelkast en het koffiemachien bijvullen, een snackje serveren.' ),
-	( 'Infodesk', 'Toekomers ontvangen, vragen beantwoorden, tokens verkopen, special guests en content bringers van informatie voorzien, oogje op de meteo houden.'),
-	( 'Vliegende keeper', 'Enkel de meest willekeurige taken zijn goed genoeg voor de vliegende keeper! Mensen zoeken, gasten doorverwijzen, last minute patches...'),
-	( 'Koken', 'Op zaterdag fri3tjes bakken, op zondag de BBQ bemannen. Tafels en stoelen opstellen en later weer terug zetten voor de talks & workshops.'),
-	( 'Content support', 'Content-brengers helpen met opzet/afbraak van hun talks en workshops, bezoekers begeleiden, opvolgen dat het tijdsschema gerespecteerd blijft.'),
-	( 'Parking/bakfietsen', 'Zodat de toekomende en vertrekkende gasten vlot hun bagage kunnen transporteren, de bakfietsen heen en weer tussen parking en kamp voeren.');
+	( 'Inkom', 'Toegangscontrole, mensen doorverwijzen naar infobalie.' ),
+	( 'Parkeerwachter', 'Mensen naar parkingplaatsen gidsen.' ),
+	( 'Vliegende keeper', 'Enkel de meest willekeurige taken zijn goed genoeg voor de vliegende keeper! Mensen zoeken, gasten doorverwijzen, last minute patches...' ),
+	( 'Infodesk', 'Toekomers ontvangen, vragen beantwoorden, tokens verkopen, special guests en content bri      ngers van informatie voorzien, oogje op de meteo houden.'),
+	( 'Nachtwacht', 'Oogje op de nachtelijke vrede houden.'),
+	( 'EHB(R/B)O', 'Badge problemen helpen oplossen.'),
+	( 'Bar Blokhut', 'De bar bemannen (blokhut)'),
+	( 'Bar Mainstage', 'De bar bemannen (mainstage)'),
+	( 'Bar Hoofdgebouw', 'De bar bemannen (hoofdgebouw)'),
+	( 'Food', 'Frieten bakken!'),
+	( 'Workshop support', 'Workshops bijstaan en gidsen.');
 
 insert into `shift` (shift_time_id, shift_post_id, persons) values
 	( 1, 1, 2 ),
